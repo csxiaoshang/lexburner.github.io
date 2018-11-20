@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>Docker Network—Bridge 模式 | 徐靖峰|个人博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="概述Docker 强大的原因之一在于多个 Docker 容器之间的互相连接。涉及到连接，就引出了网络通信的几种模式。Docker 默认提供了 5 种网络驱动模式。">
+<meta name="keywords" content="Docker,Network">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker Network—Bridge 模式">
+<meta property="og:url" content="http://lexburner.github.io/docker-network-bridge/index.html">
+<meta property="og:site_name" content="徐靖峰|个人博客">
+<meta property="og:description" content="概述Docker 强大的原因之一在于多个 Docker 容器之间的互相连接。涉及到连接，就引出了网络通信的几种模式。Docker 默认提供了 5 种网络驱动模式。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-20T11:10:40.335Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker Network—Bridge 模式">
+<meta name="twitter:description" content="概述Docker 强大的原因之一在于多个 Docker 容器之间的互相连接。涉及到连接，就引出了网络通信的几种模式。Docker 默认提供了 5 种网络驱动模式。">
+    
+
+    
+        <link rel="alternate" href="/atom.xml" title="徐靖峰|个人博客" type="application/atom+xml">
+    
+
+    
+        <link rel="icon" href="/css/images/avatar.png">
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-118574570-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">徐靖峰|个人博客</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/categories">分类</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/about">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">分类</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/about">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile" class="profile-fixed">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png">
+            <h2 id="name">徐靖峰</h2>
+            <h3 id="title">software engineer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Nanking, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lexburner">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                98
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                42
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lexburner" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/css/images/kirito_wechat.jpg" target="_blank" title="wechat" class="tooltip">
+                            <i class="fa fa-wechat"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/atom.xml" target="_blank" title="rss" class="tooltip">
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-docker-network-bridge" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Docker Network—Bridge 模式
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        <!-- 增加文章类型 -->
+                        
+	
+		<div class="article-type">
+		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
+		</div>
+	
+	
+	
+		
+	
+
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/docker-network-bridge/">
+            <time datetime="2018-04-03T14:56:45.000Z" itemprop="datePublished">2018-04-03</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Docker/">Docker</a>
+    </div>
+
+                        <!-- 不显示标签 -->
+                        <!-- 
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/Docker/">Docker</a>, <a class="tag-link" href="/tags/Network/">Network</a>
+    </div>
+ -->
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>Docker 强大的原因之一在于多个 Docker 容器之间的互相连接。涉及到连接，就引出了网络通信的几种模式。Docker 默认提供了 5 种网络驱动模式。<br><a id="more"></a></p>
+<ul>
+<li>bridge:    默认的网络驱动模式。如果不指定驱动程序，bridge 便会作为默认的网络驱动模式。当应用程序运行在需要通信的独立容器(standalone containers)中时，通常会选择 bridge 模式。</li>
+<li>host：移除容器和 Docker 宿主机之间的网络隔离，并直接使用主机的网络。host 模式仅适用于 Docker 17.06+。</li>
+<li>overlay：overlay 网络将多个 Docker 守护进程连接在一起，并使集群服务能够相互通信。您还可以使用 overlay 网络来实现 swarm 集群和独立容器之间的通信，或者不同 Docker 守护进程上的两个独立容器之间的通信。该策略实现了在这些容器之间进行操作系统级别路由的需求。</li>
+<li>macvlan：Macvlan 网络允许为容器分配 MAC 地址，使其显示为网络上的物理设备。 Docker 守护进程通过其 MAC 地址将流量路由到容器。对于希望直连到物理网络的传统应用程序而言，使用 macvlan 模式一般是最佳选择，而不应该通过 Docker 宿主机的网络进行路由。</li>
+<li>none：对于此容器，禁用所有联网。通常与自定义网络驱动程序一起使用。none 模式不适用于集群服务。</li>
+</ul>
+<p>通过在 Docker 上安装和使用第三方网络插件可以算作额外的扩展方式。</p>
+<h3 id="默认网络"><a href="#默认网络" class="headerlink" title="默认网络"></a>默认网络</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">kiritodeMacBook-Pro:~ kirito$ docker network ls</span><br><span class="line">NETWORK ID          NAME                         DRIVER              SCOPE</span><br><span class="line">15315759c263        bridge                       bridge              local</span><br><span class="line">d72064d9febf        host                         host                local</span><br><span class="line">83ea989d3fec        none                         null                local</span><br></pre></td></tr></table></figure>
+<p>这 3 个网络包含在 Docker 实现中。运行一个容器时，可以使用 <strong>–network</strong> 参数指定在哪种网络模式下运行该容器。</p>
+<p>这篇文章重点介绍 bridge 模式。 所有 Docker 安装后都存在的 docker0 网络，这在 Docker 基础中有过介绍。除非使用 <strong>docker run –network=<network></network></strong>选项另行指定，否则 Docker 守护进程默认情况下会将容器连接到 docker0 这个网络。</p>
+<h3 id="创建自定义的网络"><a href="#创建自定义的网络" class="headerlink" title="创建自定义的网络"></a>创建自定义的网络</h3><p>使用如下命令就可以创建一个名称为 my-net ，网络驱动模式为 bridge 的自定义网络。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> docker network create my-net</span><br></pre></td></tr></table></figure>
+<p>再次查看存在的网络可以发现上述命令执行之后产生的变化：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">kiritodeMacBook-Pro:~ kirito$ docker network ls</span><br><span class="line">NETWORK ID          NAME                         DRIVER              SCOPE</span><br><span class="line">15315759c263        bridge                       bridge              local</span><br><span class="line">d72064d9febf        host                         host                local</span><br><span class="line">73e32007f19f        my-net                       bridge              local</span><br><span class="line">83ea989d3fec        none                         null                local</span><br></pre></td></tr></table></figure>
+<h3 id="使用-busybox-测试容器连通性"><a href="#使用-busybox-测试容器连通性" class="headerlink" title="使用 busybox 测试容器连通性"></a>使用 busybox 测试容器连通性</h3><blockquote>
+<p>BusyBox 是一个集成了一百多个最常用 Linux 命令和工具（如 cat、echo、grep、mount、telnet 、ping、ifconfig 等）的精简工具箱，它只需要几 MB 的大小，很方便进行各种快速验证，被誉为“Linux 系统的瑞士军刀”。</p>
+</blockquote>
+<p>我们使用 busybox 来测试容器间的网络情况。(一开始我尝试使用 ubuntu 作为基础镜像来构建测试容器，但 ubuntu 镜像删减了几乎所有的常用工具，连同 ping，ifconfig 等命令都需要额外安装软件，而 busybox 则不存在这些问题。)</p>
+<h4 id="使用默认网桥-docker0"><a href="#使用默认网桥-docker0" class="headerlink" title="使用默认网桥 docker0"></a>使用默认网桥 docker0</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kiritodeMacBook-Pro:~ kirito$ docker run --name box1 -it --rm busybox sh</span><br><span class="line">/ # ifconfig</span><br><span class="line">eth0      Link encap:Ethernet  HWaddr 02:42:AC:11:00:07</span><br><span class="line">          inet addr:172.17.0.7  Bcast:172.17.255.255  Mask:255.255.0.0</span><br></pre></td></tr></table></figure>
+<p>—rm 指令可以让我们在退出容器时自动销毁该容器，这样便于测试。查看自身的 ip 为 172.17.0.7，接下来创建第二个容器 box2。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kiritodeMacBook-Pro:~ kirito$ docker run --name box2 -it --rm busybox sh</span><br><span class="line">/ # ifconfig</span><br><span class="line">eth0      Link encap:Ethernet  HWaddr 02:42:AC:11:00:08</span><br><span class="line">          inet addr:172.17.0.8  Bcast:172.17.255.255  Mask:255.255.0.0</span><br></pre></td></tr></table></figure>
+<p>查看自身的 ip 为 172.17.0.8。</p>
+<p>在 box2 中执行 ping 命令测试与 box1 的连通性：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">使用 IP</span><br><span class="line">/ # ping 172.17.0.8</span><br><span class="line">PING 172.17.0.8 (172.17.0.8): 56 data bytes</span><br><span class="line">64 bytes from 172.17.0.8: seq=0 ttl=64 time=0.107 ms</span><br><span class="line">64 bytes from 172.17.0.8: seq=1 ttl=64 time=0.116 ms</span><br><span class="line">64 bytes from 172.17.0.8: seq=2 ttl=64 time=0.114 ms</span><br><span class="line">64 bytes from 172.17.0.8: seq=3 ttl=64 time=0.126 ms</span><br><span class="line"></span><br><span class="line">使用容器名称</span><br><span class="line">/ # ping box1</span><br><span class="line">无响应</span><br></pre></td></tr></table></figure>
+<p>我们发现使用默认网桥 docker0 的桥接模式下，ip 是通的，但是无法使用容器名作为通信的 host。</p>
+<h4 id="使用自定义网桥-my-net"><a href="#使用自定义网桥-my-net" class="headerlink" title="使用自定义网桥 my-net"></a>使用自定义网桥 my-net</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kiritodeMacBook-Pro:~ kirito$ docker run --name box3 -it --rm  --network my-net busybox sh</span><br><span class="line">/ # ifconfig</span><br><span class="line">eth0      Link encap:Ethernet  HWaddr 02:42:AC:15:00:02</span><br><span class="line">          inet addr:172.21.0.2  Bcast:172.21.255.255  Mask:255.255.0.0</span><br></pre></td></tr></table></figure>
+<p>使用 <code>—network</code> 指定使用的网络模式，<code>my-net</code> 便是在此之前我们通过 <code>docker network create</code> 命令新创建的网络。新启动一个 shell 创建 box4</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kiritodeMacBook-Pro:~ kirito$ docker run -it --name box4 --rm --network my-net busybox sh</span><br><span class="line">/ # ifconfig</span><br><span class="line">eth0      Link encap:Ethernet  HWaddr 02:42:AC:15:00:03</span><br><span class="line">          inet addr:172.21.0.3  Bcast:172.21.255.255  Mask:255.255.0.0</span><br></pre></td></tr></table></figure>
+<p>在 box4 中执行 ping 命令测试与 box3 的连通性：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">使用 IP</span><br><span class="line">/ # ping 172.21.0.2</span><br><span class="line">PING 172.21.0.2 (172.21.0.2): 56 data bytes</span><br><span class="line">64 bytes from 172.21.0.2: seq=0 ttl=64 time=0.203 ms</span><br><span class="line">64 bytes from 172.21.0.2: seq=1 ttl=64 time=0.167 ms</span><br><span class="line">64 bytes from 172.21.0.2: seq=2 ttl=64 time=0.169 ms</span><br><span class="line">64 bytes from 172.21.0.2: seq=3 ttl=64 time=0.167 ms</span><br><span class="line"></span><br><span class="line">使用容器名称</span><br><span class="line">/ # ping box3</span><br><span class="line">PING box3 (172.21.0.2): 56 data bytes</span><br><span class="line">64 bytes from 172.21.0.2: seq=0 ttl=64 time=0.229 ms</span><br><span class="line">64 bytes from 172.21.0.2: seq=1 ttl=64 time=0.170 ms</span><br><span class="line">64 bytes from 172.21.0.2: seq=2 ttl=64 time=0.165 ms</span><br><span class="line">64 bytes from 172.21.0.2: seq=3 ttl=64 time=0.168 ms</span><br></pre></td></tr></table></figure>
+<p>与默认的网络 docker0 不同的是，指定了自定义 network 的容器可以使用容器名称相互通信，实际上这也是 docker 官方推荐使用 <code>—network</code> 参数运行容器的原因之一。</p>
+<h3 id="对比自定义-bridge-my-net-与默认-bridge-docker0"><a href="#对比自定义-bridge-my-net-与默认-bridge-docker0" class="headerlink" title="对比自定义 bridge(my-net)与默认 bridge(docker0)"></a>对比自定义 bridge(my-net)与默认 bridge(docker0)</h3><h4 id="自定义-bridge-提供更好的隔离性和容器间的互操作性"><a href="#自定义-bridge-提供更好的隔离性和容器间的互操作性" class="headerlink" title="自定义 bridge 提供更好的隔离性和容器间的互操作性"></a>自定义 bridge 提供更好的隔离性和容器间的互操作性</h4><p>连接到同一个自定义 bridge 网络的容器会自动将所有端口相互暴露，并且无法连接到容器之外的网络。这使得容器化的应用能轻松地相互通信，并且与外部环境产生了良好的隔离性。</p>
+<p>例如一个包含了 web 应用，数据库，redis 等组件的应用程序。很有可能只希望对外界暴露 80 端口，而不允许外界访问数据库端口和 redis 端口，而又不至于让 web 应用本身无法访问数据库和 redis， 便可以使用自定义 bridge 网络轻松实现。如果在默认 bridge 网络上运行相同的应用程序，则需要使用 -p 或 —publish 标志打开 web 端口，数据库端口，redis 端口。这意味着 Docker 宿主机需要通过其他方式阻止对数据库端口，redis 端口的访问，无意增大了工作量。</p>
+<h4 id="自定义-bridge-提供容器间的自动-DNS-解析"><a href="#自定义-bridge-提供容器间的自动-DNS-解析" class="headerlink" title="自定义 bridge 提供容器间的自动 DNS 解析"></a>自定义 bridge 提供容器间的自动 DNS 解析</h4><p>这一点在上一节的实验中已经验证过了。默认 bridge 网络上的容器只能通过 IP 地址互相访问，除非使用在 docker run 时添加 <code>—link</code> 参数。这么做个人认为有两点不好的地方：</p>
+<p>一：容器关系只要稍微复杂一些，便会对管理产生不便。</p>
+<p>二： <code>—link</code> 参数在官方文档中已经被标记为过期的参数，不被建议使用。</p>
+<p>在用户定义的桥接网络上，容器可以通过容器名称(<code>--name</code> 指定的名称)或别名来解析对方。可能有人说，在默认 bridge 模式下我可以去修改 <code>/etc/hosts</code>文件呀，但这显然不是合理的做法。</p>
+<h4 id="容器可以在运行中与自定义-bridge-网络连接和分离"><a href="#容器可以在运行中与自定义-bridge-网络连接和分离" class="headerlink" title="容器可以在运行中与自定义 bridge 网络连接和分离"></a>容器可以在运行中与自定义 bridge 网络连接和分离</h4><p>在容器的生命周期中，可以在运行中将其与自定义网络连接或断开连接。 而要从默认 bridge 网络中移除容器，则需要停止容器并使用不同的网络选项重新创建容器。</p>
+<h4 id="每个自定义的-bridge-网络都会创建一个可配置的网桥"><a href="#每个自定义的-bridge-网络都会创建一个可配置的网桥" class="headerlink" title="每个自定义的 bridge 网络都会创建一个可配置的网桥"></a>每个自定义的 bridge 网络都会创建一个可配置的网桥</h4><p>如果容器使用默认 bridge 网络，虽然可以对其进行配置，但所有容器都使用相同的默认设置，例如 MTU 和防火墙规则。另外，配置默认 bridge 网络隔离于 Docker 本身之外，并且需要重新启动 Docker 才可以生效。</p>
+<p>自定义的 bridge 是使用 docker network create 创建和配置的。如果不同的应用程序组具有不同的网络要求，则可以在创建时分别配置每个用户定义的 bridge 网络，这无疑增加了灵活性和可控性。</p>
+<h4 id="使用默认-bridge-容器共享所有的环境变量"><a href="#使用默认-bridge-容器共享所有的环境变量" class="headerlink" title="使用默认 bridge 容器共享所有的环境变量"></a>使用默认 bridge 容器共享所有的环境变量</h4><p>在 Docker 的旧版本中，两个容器之间共享环境变量的唯一方法是使用 <code>—link</code> 标志来进行链接。这种类型的变量共享对于自定义的网络是不存在的。但是，自定义网络有更好方式来实现共享环境变量：</p>
+<ul>
+<li>多个容器可以使用 Docker 卷来挂载包含共享信息的文件或目录。</li>
+<li>多个容器可以使用 docker-compose 一起启动，并且 docker-compose.yml 文件可以定义共享变量。</li>
+<li>使用集群服务而不是独立容器，并利用共享密钥和配置。</li>
+</ul>
+<p>结合上述这些论述和官方文档的建议，使用 bridge 网络驱动模式时，最好添加使用 <code>—network</code> 来指定自定义的网络。</p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p><a href="https://docs.docker.com/network/bridge/#connect-a-container-to-the-default-bridge-network" target="_blank" rel="noopener">https://docs.docker.com/network/bridge/#connect-a-container-to-the-default-bridge-network</a></p>
+<p><a href="https://www.ibm.com/developerworks/cn/linux/l-docker-network/index.html" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/l-docker-network/index.html</a></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="http://lexburner.github.io/docker-network-bridge/" data-id="cjopn2qgx005uvu9e91pylln2" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/java-how-to-learn/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    技术精进的三境界
+                
+            </div>
+        </a>
+    
+    
+        <a href="/java-eqaulsandhashcode/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">JAVA 拾遗--eqauls 和 hashCode 方法</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+	<div id="commentContainer"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/java-random/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/JAVA并发合集/">JAVA并发合集</a></p>
+                            <p class="item-title"><a href="/java-random/" class="title">Java随机数探秘</a></p>
+                            <p class="item-date"><time datetime="2018-09-12T11:47:28.000Z" itemprop="datePublished">2018-09-12</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/spring-xsd/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/spring-xsd/" class="title">Spring中的XML schema扩展机制</a></p>
+                            <p class="item-date"><time datetime="2018-09-03T11:47:28.000Z" itemprop="datePublished">2018-09-03</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/high-performance-queue/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/JAVA并发合集/">JAVA并发合集</a></p>
+                            <p class="item-title"><a href="/high-performance-queue/" class="title">JCTools -- 高性能内存队列探秘(写作中...)</a></p>
+                            <p class="item-date"><time datetime="2018-09-01T11:47:28.000Z" itemprop="datePublished">2018-09-01</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/contribute-to-opensource/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/技术杂谈/">技术杂谈</a></p>
+                            <p class="item-title"><a href="/contribute-to-opensource/" class="title">如何向开源项目做贡献(以incubator-dubbo为例)</a></p>
+                            <p class="item-date"><time datetime="2018-08-22T11:47:28.000Z" itemprop="datePublished">2018-08-22</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/java-concurrent-counter/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/JAVA并发合集/">JAVA并发合集</a></p>
+                            <p class="item-title"><a href="/java-concurrent-counter/" class="title">Java并发计数器探秘</a></p>
+                            <p class="item-date"><time datetime="2018-08-22T11:47:28.000Z" itemprop="datePublished">2018-08-22</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/DevOps/" style="font-size: 11.25px;">DevOps</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 10px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JWT/" style="font-size: 12.5px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12.5px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/RPC/" style="font-size: 18.75px;">RPC</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18.75px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12.5px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11.25px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11.25px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 17.5px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12.5px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13.75px;">Spring Session</a> <a href="/tags/Validation/" style="font-size: 11.25px;">Validation</a> <a href="/tags/XML/" style="font-size: 11.25px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13.75px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11.25px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 15px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/技术杂谈/" style="font-size: 16.25px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 10px;">数据库</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13.75px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11.25px;">网关</a> <a href="/tags/规则引擎/" style="font-size: 13.75px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11.25px;">领域驱动设计</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="https://ntzyz.io/">namespace_ntzyz</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://blog.didispace.com/">程序猿DD|博客</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://vip.iocoder.cn/">芋道源码</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.jiangxinlingdu.com/">匠心零度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 徐靖峰<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+	<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+	<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+	<script>
+		var gitment = new Gitment({
+			owner: 'lexburner',
+			repo: 'lexburner.github.io',
+			oauth: {
+				client_id: 'd5fc3e1150477a0d433d',
+				client_secret: 'aa94acd5f130281051b9e703c19b4c6d878e90c4',
+			},
+		})
+		gitment.render('commentContainer')
+	</script>
+	
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

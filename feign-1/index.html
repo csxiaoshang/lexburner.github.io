@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>从Feign使用注意点到RESTFUL接口设计规范 | 徐靖峰|个人博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="最近项目中大量使用了Spring Cloud Feign来对接http接口，踩了不少坑，也产生了一些对RESTFUL接口设计的想法，特此一篇记录下。 [TOC] SpringMVC的请求参数绑定机制了解Feign历史的朋友会知道，Feign本身是Netflix的产品，Spring Cloud Feign是在原生Feign的基础上进行了封装，引入了大量的SpringMVC注解支持，这一方面使得其更容">
+<meta name="keywords" content="Spring Cloud">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从Feign使用注意点到RESTFUL接口设计规范">
+<meta property="og:url" content="http://lexburner.github.io/feign-1/index.html">
+<meta property="og:site_name" content="徐靖峰|个人博客">
+<meta property="og:description" content="最近项目中大量使用了Spring Cloud Feign来对接http接口，踩了不少坑，也产生了一些对RESTFUL接口设计的想法，特此一篇记录下。 [TOC] SpringMVC的请求参数绑定机制了解Feign历史的朋友会知道，Feign本身是Netflix的产品，Spring Cloud Feign是在原生Feign的基础上进行了封装，引入了大量的SpringMVC注解支持，这一方面使得其更容">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://kirito.iocoder.cn/feignlog.png">
+<meta property="og:updated_time" content="2018-11-20T11:51:26.911Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="从Feign使用注意点到RESTFUL接口设计规范">
+<meta name="twitter:description" content="最近项目中大量使用了Spring Cloud Feign来对接http接口，踩了不少坑，也产生了一些对RESTFUL接口设计的想法，特此一篇记录下。 [TOC] SpringMVC的请求参数绑定机制了解Feign历史的朋友会知道，Feign本身是Netflix的产品，Spring Cloud Feign是在原生Feign的基础上进行了封装，引入了大量的SpringMVC注解支持，这一方面使得其更容">
+<meta name="twitter:image" content="http://kirito.iocoder.cn/feignlog.png">
+    
+
+    
+        <link rel="alternate" href="/atom.xml" title="徐靖峰|个人博客" type="application/atom+xml">
+    
+
+    
+        <link rel="icon" href="/css/images/avatar.png">
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-118574570-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">徐靖峰|个人博客</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/categories">分类</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/about">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">分类</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/about">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile" class="profile-fixed">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png">
+            <h2 id="name">徐靖峰</h2>
+            <h3 id="title">software engineer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Nanking, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lexburner">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                98
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                42
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lexburner" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/css/images/kirito_wechat.jpg" target="_blank" title="wechat" class="tooltip">
+                            <i class="fa fa-wechat"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/atom.xml" target="_blank" title="rss" class="tooltip">
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-feign-1" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            从Feign使用注意点到RESTFUL接口设计规范
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        <!-- 增加文章类型 -->
+                        
+	
+		<div class="article-type">
+		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
+		</div>
+	
+	
+	
+		
+	
+
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/feign-1/">
+            <time datetime="2017-09-09T06:43:28.000Z" itemprop="datePublished">2017-09-09</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Spring-Cloud/">Spring Cloud</a>
+    </div>
+
+                        <!-- 不显示标签 -->
+                        <!-- 
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/Spring-Cloud/">Spring Cloud</a>
+    </div>
+ -->
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>最近项目中大量使用了Spring Cloud Feign来对接http接口，踩了不少坑，也产生了一些对RESTFUL接口设计的想法，特此一篇记录下。</p>
+<p>[TOC]</p>
+<h2 id="SpringMVC的请求参数绑定机制"><a href="#SpringMVC的请求参数绑定机制" class="headerlink" title="SpringMVC的请求参数绑定机制"></a>SpringMVC的请求参数绑定机制</h2><p>了解Feign历史的朋友会知道，Feign本身是Netflix的产品，Spring Cloud Feign是在原生Feign的基础上进行了封装，引入了大量的SpringMVC注解支持，这一方面使得其更容易被广大的Spring使用者开箱即用，但也产生了不小的混淆作用。所以在使用Spring Cloud Feign之前，笔者先介绍一下SpringMVC的一个入参机制。预设一个RestController，在本地的8080端口启动一个应用，用于接收http请求。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BookController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/hello"</span>) <span class="comment">// &lt;1&gt;</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hello</span><span class="params">(String name)</span> </span>&#123; <span class="comment">// &lt;2&gt;</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"hello "</span> + name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个接口写起来非常简单，但实际springmvc做了非常多的兼容，使得这个接口可以接受多种请求方式。</p>
+<p><1> RequestMapping代表映射的路径，使用GET,POST,PUT,DELETE方式都可以映射到该端点。</1></p>
+<p><2> SpringMVC中常用的请求参数注解有（@RequestParam,@RequestBody,@PathVariable）等。name被默认当做@RequestParam。形参<code>String name</code>由框架使用字节码技术获取name这个名称，自动检测请求参数中key值为name的参数，也可以使用@RequestParam(“name”)覆盖变量本身的名称。当我们在url中携带name参数或者form表单中携带name参数时，会被获取到。</2></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/hello</span> HTTP/1.1</span><br><span class="line"><span class="attribute">Host</span>: localhost:8080</span><br><span class="line"><span class="attribute">Content-Type</span>: application/x-www-form-urlencoded</span><br><span class="line"></span><br><span class="line">name=formParam</span><br></pre></td></tr></table></figure>
+<p>或</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/hello?name=queryString</span> HTTP/1.1</span><br><span class="line"><span class="attribute">Host</span>: localhost:8080</span><br></pre></td></tr></table></figure>
+<h2 id="Feign的请求参数绑定机制"><a href="#Feign的请求参数绑定机制" class="headerlink" title="Feign的请求参数绑定机制"></a>Feign的请求参数绑定机制</h2><p>上述的SpringMVC参数绑定机制，大家应该都是非常熟悉的，但这一切在Feign中有些许的不同。</p>
+<p>我们来看一个非常简单的，但是实际上错误的接口写法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//注意：错误的接口写法</span></span><br><span class="line"><span class="meta">@FeignClient</span>(<span class="string">"book"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">BookApi</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/hello"</span>,method = RequestMethod.GET)</span><br><span class="line">    <span class="function">String <span class="title">hello</span><span class="params">(String name)</span></span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>配置请求地址：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">ribbon:</span></span><br><span class="line"><span class="attr">  eureka:</span></span><br><span class="line"><span class="attr">   enabled:</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="attr">book:</span></span><br><span class="line"><span class="attr">  ribbon:</span></span><br><span class="line"><span class="attr">    listOfServers:</span> <span class="attr">http://localhost:8080</span></span><br></pre></td></tr></table></figure>
+<p>我们按照写SpringMVC的RestController的习惯写了一个FeignClient，按照我们的一开始的想法，由于指定了请求方式是GET，那么name应该会作为QueryString拼接到Url中吧？发出一个这样的GET请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/hello?name=xxx</span> HTTP/1.1</span><br><span class="line"><span class="attribute">Host</span>: localhost:8080</span><br></pre></td></tr></table></figure>
+<p>而实际上，RestController并没有接收到，我们在RestController一侧的应用中获得了一些提示：</p>
+<p><img src="http://kirito.iocoder.cn/feignlog.png" alt="服务端DEBUG信息"></p>
+<ul>
+<li>并没有按照期望使用GET方式发送请求，而是POST方式</li>
+<li>name参数没有被封装，获得了一个null值</li>
+</ul>
+<p>查看文档发现，如果不加默认的注解，Feign则会对参数默认加上@RequestBody注解，而RequestBody一定是包含在请求体中的，GET方式无法包含。所以上述两个现象得到了解释。Feign在GET请求包含RequestBody时强制转成了POST请求，而不是报错。</p>
+<p>理解清楚了这个机制我们就可以在开发Feign接口避免很多坑。而解决上述这个问题也很简单</p>
+<ul>
+<li>在Feign接口中为name添加@RequestParam(“name”)注解，name必须指定，Feign的请求参数不会利用SpringMVC字节码的机制自动给定一个默认的名称。</li>
+<li>由于Feign默认使用@RequestBody，也可以改造RestController，使用@RequestBody接收。但是，请求参数通常是多个，推荐使用上述的@RequestParam，而@RequestBody一般只用于传递对象。</li>
+</ul>
+<h2 id="Feign绑定复合参数"><a href="#Feign绑定复合参数" class="headerlink" title="Feign绑定复合参数"></a>Feign绑定复合参数</h2><p>指定请求参数的类型与请求方式，上述问题的出现实际上是由于在没有理清楚Feign内部机制的前提下想当然的和SpringMVC进行了类比。同样，在使用对象作为参数时，也需要注意这样的问题。</p>
+<p>对于这样的接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient</span>(<span class="string">"book"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">BookApi</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/book"</span>,method = RequestMethod.POST)</span><br><span class="line">    <span class="function">Book <span class="title">book</span><span class="params">(@RequestBody Book book)</span></span>; <span class="comment">// &lt;1&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/book"</span>,method = RequestMethod.POST)</span><br><span class="line">    <span class="function">Book <span class="title">book</span><span class="params">(@RequestParam(<span class="string">"id"</span>)</span> String id,@<span class="title">RequestParam</span><span class="params">(<span class="string">"name"</span>)</span> String name)</span>; <span class="comment">// &lt;2&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/book"</span>,method = RequestMethod.POST)</span><br><span class="line">    <span class="function">Book <span class="title">book</span><span class="params">(@RequestParam Map map)</span></span>; <span class="comment">// &lt;3&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">//错误的写法</span></span><br><span class="line">  	<span class="meta">@RequestMapping</span>(value = <span class="string">"/book"</span>,method = RequestMethod.POST)</span><br><span class="line">    <span class="function">Book <span class="title">book</span><span class="params">(@RequestParam Book book)</span></span>; <span class="comment">// &lt;4&gt;</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><1> 使用@RequestBody传递对象是最常用的方式。</1></p>
+<p><2> 如果参数并不是很多，可以平铺开使用@RequestParam</2></p>
+<p><3> 使用Map，这也是完全可以的，但不太符合面向对象的思想，不能从代码立刻看出该接口需要什么样的参数。</3></p>
+<p><4> 错误的用法，Feign没有提供这样的机制自动转换实体为Map。</4></p>
+<h2 id="Feign中使用-PathVariable与RESTFUL规范"><a href="#Feign中使用-PathVariable与RESTFUL规范" class="headerlink" title="Feign中使用@PathVariable与RESTFUL规范"></a>Feign中使用@PathVariable与RESTFUL规范</h2><p>这涉及到一个如何设计RESTFUL接口的话题，我们知道在自从RESTFUL在2000年初被提出来之后，就不乏文章提到资源，契约规范，CRUD对应增删改查操作等等。下面笔者从两个实际的接口来聊聊自己的看法。</p>
+<p>根据id查找用户接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient</span>(<span class="string">"user"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserApi</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/user/&#123;userId&#125;"</span>,method = RequestMethod.GET)</span><br><span class="line">    <span class="function">String <span class="title">findById</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> String userId)</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这应该是没有争议的，注意前面强调的，@PathVariable(“id”)括号中的id不可以忘记。那如果是“根据邮箱查找用户呢”?很有可能下意识的写出这样的接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient</span>(<span class="string">"user"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserApi</span> </span>&#123;</span><br><span class="line">  </span><br><span class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/user/&#123;email&#125;"</span>,method = RequestMethod.GET)</span><br><span class="line">    <span class="function">String <span class="title">findByEmail</span><span class="params">(@PathVariable(<span class="string">"email"</span>)</span> String email)</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>首先看看Feign的问题。email中通常包含’.‘这个特殊字符，如果在路径中包含，会出现意想不到的结果。我不想探讨如何去解决它（实际上可以使用{email:.+}的方式),因为我觉得这不符合设计。</li>
+<li>再谈谈规范的问题。这两个接口是否是相似的，email是否应该被放到path中？这就要聊到RESTFUL的初衷，为什么userId这个属性被普遍认为适合出现在RESTFUL路径中，因为id本身起到了资源定位的作用，他是资源的标记。而email不同，它可能是唯一的，但更多的，它是资源的属性，所以，笔者认为不应该在路径中出现非定位性的动态参数。而是把email作为@RequestParam参数。</li>
+</ul>
+<h2 id="RESUFTL结构化查询"><a href="#RESUFTL结构化查询" class="headerlink" title="RESUFTL结构化查询"></a>RESUFTL结构化查询</h2><p>笔者成功的从Feign的话题过度到了RESTFUL接口的设计问题，也导致了本文的篇幅变长了，不过也不打算再开一片文章谈了。</p>
+<p>再考虑一个接口设计，查询某一个月某个用户的订单，可能还会携带分页参数，这时候参数变得很多，按照传统的设计，这应该是一个查询操作，也就是与GET请求对应，那是不是意味着应当将这些参数拼接到url后呢？再思考Feign，正如本文的第二段所述，是不支持GET请求携带实体类的，这让我们设计陷入了两难的境地。而实际上参考一些DSL语言的设计如elasticSearch，也是使用POST JSON的方式来进行查询的，所以在实际项目中，笔者并不是特别青睐CRUD与四种请求方式对应的这种所谓的RESTFUL规范，如果说设计RESTFUL应该遵循什么规范，那大概是另一些名词，如契约规范和领域驱动设计。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient</span>(<span class="string">"order"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">BookApi</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/order/history"</span>,method = RequestMethod.POST)</span><br><span class="line">    Page&lt;List&lt;Orders&gt;&gt; queryOrderHistory(<span class="meta">@RequestBody</span> QueryVO queryVO);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="RESTFUL行为限定"><a href="#RESTFUL行为限定" class="headerlink" title="RESTFUL行为限定"></a>RESTFUL行为限定</h2><p>在实际接口设计中，我遇到了这样的需求，用户模块的接口需要支持修改用户密码，修改用户邮箱，修改用户姓名，而笔者之前阅读过一篇文章，也是讲舍弃CRUD而是用领域驱动设计来规范RESTFUL接口的定义，与项目中我的想法不谋而合。看似这三个属性是同一个实体类的三个属性，完全可以如下设计：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@FeignClient(&quot;user&quot;)</span><br><span class="line">public interface UserApi &#123;</span><br><span class="line"></span><br><span class="line">    @RequestMapping(value = &quot;/user&quot;,method = RequestMethod.POST)</span><br><span class="line">    User update(@RequestBody User user);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但实际上，如果再考虑多一层，就应该产生这样的思考：这三个功能所需要的权限一致吗？真的应该将他们放到一个接口中吗？实际上，笔者并不希望接口调用方传递一个实体，因为这样的行为是不可控的，完全不知道它到底是修改了什么属性，如果真的要限制行为，还需要在User中添加一个操作类型的字段，然后在接口实现方加以校验，这太麻烦了。而实际上，笔者觉得规范的设计应当如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient</span>(<span class="string">"user"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserApi</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/user/&#123;userId&#125;/password/update"</span>,method = RequestMethod.POST)</span><br><span class="line">    <span class="function">ResultBean&lt;Boolean&gt; <span class="title">updatePassword</span><span class="params">(@PathVariable(<span class="string">"userId) String userId,@RequestParam("</span>password<span class="string">") password);</span></span></span></span><br><span class="line"><span class="function"><span class="params"><span class="string">    </span></span></span></span><br><span class="line"><span class="function"><span class="params"><span class="string">    @RequestMapping(value = "</span>/user/&#123;userId&#125;/email/update<span class="string">",method = RequestMethod.POST)</span></span></span></span><br><span class="line"><span class="function"><span class="params"><span class="string">    ResultBean&lt;Boolean&gt; updateEmail(@PathVariable("</span>userId)</span> String userId,@<span class="title">RequestParam</span><span class="params">(<span class="string">"email"</span>)</span> String email)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/user/&#123;userId&#125;/username/update"</span>,method = RequestMethod.POST)</span><br><span class="line">    <span class="function">ResultBean&lt;Boolean&gt; <span class="title">updateUsername</span><span class="params">(@PathVariable(<span class="string">"userId) String userId,@RequestParam("</span>username<span class="string">") String username);</span></span></span></span><br><span class="line"><span class="function"><span class="params"><span class="string"></span></span></span></span><br><span class="line"><span class="function"><span class="params"><span class="string">&#125;</span></span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>一般意义上RESTFUL接口不应该出现动词，这里的update并不是一个动作，而是标记着操作的类型，因为针对某个属性可能出现的操作类型可能会有很多，所以我习惯加上一个update后缀，明确表达想要进行的操作，而不是仅仅依赖于GET，POST，PUT，DELETE。实际上，修改操作推荐使用的请求方式应当是PUT，这点笔者的理解是，已经使用update标记了行为，实际开发中不习惯使用PUT。</li>
+<li>password，email，username都是user的属性，而userId是user的识别符号，所以userId以PathVariable的形式出现在url中，而三个属性出现在ReqeustParam中。</li>
+</ul>
+<p>顺带谈谈逻辑删除，如果一个需求是删除用户的常用地址，这个api的操作类型，我通常也不会设计为DELETE请求，而是同样使用delete来标记操作行为</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping</span>(value = <span class="string">"/user/&#123;userId&#125;/address/&#123;addressId&#125;/delete"</span>,method = RequestMethod.POST)</span><br><span class="line">    <span class="function">ResultBean&lt;Boolean&gt; <span class="title">updateEmail</span><span class="params">(@PathVariable(<span class="string">"userId"</span>)</span> String userId,@<span class="title">PathVariable</span><span class="params">(<span class="string">"userId"</span>)</span> String email)</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文从Feign的使用注意点，聊到了RESTFUL接口的设计问题，其实是一个互相补充的行为。接口设计需要载体，所以我以Feign的接口风格谈了谈自己对RESTFUL设计的理解，而Feign中一些坑点，也正是我想要规范RESTFUL设计的出发点。如有对RESTFUL设计不同的理解，欢迎与我沟通。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="http://lexburner.github.io/feign-1/" data-id="cjopn2qh6006dvu9ea7fc3cgc" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/event-1/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    浅析Spring中的事件驱动机制
+                
+            </div>
+        </a>
+    
+    
+        <a href="/spring-session-3/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Re：从零开始的Spring Session(三)</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+	<div id="commentContainer"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/java-random/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/JAVA并发合集/">JAVA并发合集</a></p>
+                            <p class="item-title"><a href="/java-random/" class="title">Java随机数探秘</a></p>
+                            <p class="item-date"><time datetime="2018-09-12T11:47:28.000Z" itemprop="datePublished">2018-09-12</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/spring-xsd/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/spring-xsd/" class="title">Spring中的XML schema扩展机制</a></p>
+                            <p class="item-date"><time datetime="2018-09-03T11:47:28.000Z" itemprop="datePublished">2018-09-03</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/high-performance-queue/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/JAVA并发合集/">JAVA并发合集</a></p>
+                            <p class="item-title"><a href="/high-performance-queue/" class="title">JCTools -- 高性能内存队列探秘(写作中...)</a></p>
+                            <p class="item-date"><time datetime="2018-09-01T11:47:28.000Z" itemprop="datePublished">2018-09-01</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/contribute-to-opensource/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/技术杂谈/">技术杂谈</a></p>
+                            <p class="item-title"><a href="/contribute-to-opensource/" class="title">如何向开源项目做贡献(以incubator-dubbo为例)</a></p>
+                            <p class="item-date"><time datetime="2018-08-22T11:47:28.000Z" itemprop="datePublished">2018-08-22</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/java-concurrent-counter/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/JAVA并发合集/">JAVA并发合集</a></p>
+                            <p class="item-title"><a href="/java-concurrent-counter/" class="title">Java并发计数器探秘</a></p>
+                            <p class="item-date"><time datetime="2018-08-22T11:47:28.000Z" itemprop="datePublished">2018-08-22</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/DevOps/" style="font-size: 11.25px;">DevOps</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 10px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JWT/" style="font-size: 12.5px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12.5px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/RPC/" style="font-size: 18.75px;">RPC</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18.75px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12.5px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11.25px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11.25px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 17.5px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12.5px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13.75px;">Spring Session</a> <a href="/tags/Validation/" style="font-size: 11.25px;">Validation</a> <a href="/tags/XML/" style="font-size: 11.25px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13.75px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11.25px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 15px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/技术杂谈/" style="font-size: 16.25px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 10px;">数据库</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13.75px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11.25px;">网关</a> <a href="/tags/规则引擎/" style="font-size: 13.75px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11.25px;">领域驱动设计</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="https://ntzyz.io/">namespace_ntzyz</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://blog.didispace.com/">程序猿DD|博客</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://vip.iocoder.cn/">芋道源码</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.jiangxinlingdu.com/">匠心零度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 徐靖峰<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+	<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+	<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+	<script>
+		var gitment = new Gitment({
+			owner: 'lexburner',
+			repo: 'lexburner.github.io',
+			oauth: {
+				client_id: 'd5fc3e1150477a0d433d',
+				client_secret: 'aa94acd5f130281051b9e703c19b4c6d878e90c4',
+			},
+		})
+		gitment.render('commentContainer')
+	</script>
+	
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

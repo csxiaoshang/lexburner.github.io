@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>JAVA 拾遗--eqauls 和 hashCode 方法 | 徐靖峰|个人博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="缘起—lombok 引发的惨案 Lombok 是一种 Java™ 实用工具，可用于帮助开发人员消除 Java 的冗长，尤其是对于简单的 Java 对象（POJO）。它通过注解实现这一目的。  最近一个新项目中开始使用了 lombok，由于其真的是太简单易懂了，以至于我连文档都没看，直接就上手使用了，引发了一桩惨案。">
+<meta name="keywords" content="JAVA">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JAVA 拾遗--eqauls 和 hashCode 方法">
+<meta property="og:url" content="http://lexburner.github.io/java-eqaulsandhashcode/index.html">
+<meta property="og:site_name" content="徐靖峰|个人博客">
+<meta property="og:description" content="缘起—lombok 引发的惨案 Lombok 是一种 Java™ 实用工具，可用于帮助开发人员消除 Java 的冗长，尤其是对于简单的 Java 对象（POJO）。它通过注解实现这一目的。  最近一个新项目中开始使用了 lombok，由于其真的是太简单易懂了，以至于我连文档都没看，直接就上手使用了，引发了一桩惨案。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-20T11:10:40.341Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JAVA 拾遗--eqauls 和 hashCode 方法">
+<meta name="twitter:description" content="缘起—lombok 引发的惨案 Lombok 是一种 Java™ 实用工具，可用于帮助开发人员消除 Java 的冗长，尤其是对于简单的 Java 对象（POJO）。它通过注解实现这一目的。  最近一个新项目中开始使用了 lombok，由于其真的是太简单易懂了，以至于我连文档都没看，直接就上手使用了，引发了一桩惨案。">
+    
+
+    
+        <link rel="alternate" href="/atom.xml" title="徐靖峰|个人博客" type="application/atom+xml">
+    
+
+    
+        <link rel="icon" href="/css/images/avatar.png">
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-118574570-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">徐靖峰|个人博客</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/categories">分类</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/about">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">分类</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/about">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile" class="profile-fixed">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png">
+            <h2 id="name">徐靖峰</h2>
+            <h3 id="title">software engineer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Nanking, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lexburner">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                98
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                42
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lexburner" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/css/images/kirito_wechat.jpg" target="_blank" title="wechat" class="tooltip">
+                            <i class="fa fa-wechat"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/atom.xml" target="_blank" title="rss" class="tooltip">
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-java-eqaulsandhashcode" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            JAVA 拾遗--eqauls 和 hashCode 方法
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        <!-- 增加文章类型 -->
+                        
+	
+		<div class="article-type">
+		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
+		</div>
+	
+	
+	
+		
+	
+
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/java-eqaulsandhashcode/">
+            <time datetime="2018-03-28T14:56:45.000Z" itemprop="datePublished">2018-03-28</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/JAVA/">JAVA</a>
+    </div>
+
+                        <!-- 不显示标签 -->
+                        <!-- 
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/JAVA/">JAVA</a>
+    </div>
+ -->
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h2 id="缘起—lombok-引发的惨案"><a href="#缘起—lombok-引发的惨案" class="headerlink" title="缘起—lombok 引发的惨案"></a>缘起—lombok 引发的惨案</h2><blockquote>
+<p>Lombok 是一种 Java™ 实用工具，可用于帮助开发人员消除 Java 的冗长，尤其是对于简单的 Java 对象（POJO）。它通过注解实现这一目的。</p>
+</blockquote>
+<p>最近一个新项目中开始使用了 lombok，由于其真的是太简单易懂了，以至于我连文档都没看，直接就上手使用了，引发了一桩惨案。<br><a id="more"></a><br><strong>实体类定义</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Project</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String projectName;</span><br><span class="line">    <span class="keyword">private</span> List&lt;Project&gt; projects;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我在项目中设计了一个 Project 类，其包含了一个 List<project> projects 属性，表达了项目间的依赖关系。@Data 便是 Lombok 提供的常用注解，我的本意是使用它来自动生成 getter/setter 方法。这样的实体类定义再简单不过了。</project></p>
+<p><strong>意外出现</strong></p>
+<p>使用 Project 类表达项目间的依赖关系是我的初衷，具体的分析步骤不在此赘述，对 Project 类的操作主要包括创建，打印，保存几个简单操作。运行初期，一切看似风平浪静，但经过长时间运行后，我意外的获得了如下的异常：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread <span class="string">"Tmoe.cnkirito.dependency0"</span> java.lang.StackOverflowError</span><br><span class="line"> at moe.cnkirito.dependency.model.Project.hashCode(Project.java:<span class="number">20</span>)</span><br><span class="line"> at java.util.AbstracList.hashCode(AbstractList.java:<span class="number">541</span>)</span><br></pre></td></tr></table></figure>
+<p>这让我感到很意外，我并没有对 Project 类进行什么复杂的操作，也没有进行什么递归操作，怎么会得到 StackOverflowError 这个错误呢？更令我百思不得其解的地方在于，怎么报错的日志中还出现了 hashCode 和 AbstractList 这两个家伙？等等…hashCode…emmmmm…我压根没有重写过它啊，怎么可能会报错呢….再想了想 Lombok 的 @Data 注解，我似乎发现了什么…emmmmm…抱着怀疑的态度翻阅了下 Lombok 的文档，看到了如下的介绍</p>
+<blockquote>
+<p><code>@Data</code> is a convenient shortcut annotation that bundles the features of <a href="https://projectlombok.org/features/ToString" target="_blank" rel="noopener"><code>@ToString</code></a>, <a href="https://projectlombok.org/features/EqualsAndHashCode" target="_blank" rel="noopener"><code>@EqualsAndHashCode</code></a>, <a href="https://projectlombok.org/features/GetterSetter" target="_blank" rel="noopener"><code>@Getter</code> / <code>@Setter</code></a> and <a href="https://projectlombok.org/features/constructor" target="_blank" rel="noopener"><code>@RequiredArgsConstructor</code></a> together: In other words, <code>@Data</code> generates <em>all</em> the boilerplate that is normally associated with simple POJOs (Plain Old Java Objects) and beans: getters for all fields, setters for all non-final fields, and appropriate <code>toString</code>, <code>equals</code> and <code>hashCode</code> implementations that involve the fields of the class, and a constructor that initializes all final fields, as well as all non-final fields with no initializer that have been marked with <code>@NonNull</code>, in order to ensure the field is never null.</p>
+</blockquote>
+<p>原来 @Data 注解不仅帮我们实现了生成了<a href="https://projectlombok.org/features/GetterSetter" target="_blank" rel="noopener"><code>@Getter</code> / <code>@Setter</code></a> 注解，还包含了<a href="https://projectlombok.org/features/ToString" target="_blank" rel="noopener"><code>@ToString</code></a>, <a href="https://projectlombok.org/features/EqualsAndHashCode" target="_blank" rel="noopener"><code>@EqualsAndHashCode</code></a>, 和 <a href="https://projectlombok.org/features/constructor" target="_blank" rel="noopener"><code>@RequiredArgsConstructor</code></a> 注解，这其中的 @EqualsAndHashCode 注解似乎和我这次的惨案密切相关了。顺藤摸瓜，看看 @EqualsAndHashCode 的文档：</p>
+<blockquote>
+<p>Any class definition may be annotated with <code>@EqualsAndHashCode</code> to let lombok generate implementations of the <code>equals(Object other)</code> and <code>hashCode()</code> methods. By default, it’ll use all non-static, non-transient fields</p>
+</blockquote>
+<p>@EqualsAndHashCode 会自动生成 <code>equals(Object other)</code> 和 <code>hashCode()</code> 两个方法，默认会使用所有非静态，非瞬时状态的字段。</p>
+<p>回到我的案例中，也就是说，Lombok 会将 Project 类中的 List<project> projects 当做是 hashCode 计算的一部分（同理，equals,toString 也会存在同样的问题），而如果我的项目中出现循环引用，这就会导致死循环，最终就会抛出 StackOverFlowError。</project></p>
+<p>为了验证我的想法，简化的项目中的代码后，来测试下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">testHashCode</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Project project = <span class="keyword">new</span> Project();</span><br><span class="line">    Project other = <span class="keyword">new</span> Project();</span><br><span class="line">    other.setProjects(Arrays.asList(project));</span><br><span class="line">    project.setProjects(Arrays.asList(other));</span><br><span class="line">    System.out.println(project.hashCode());</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"success"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用该代码后，复现了上述的异常。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread <span class="string">"Tmoe.cnkirito.dependency0"</span> java.lang.StackOverflowError</span><br><span class="line"> at moe.cnkirito.dependency.model.Project.hashCode(Project.java:<span class="number">20</span>)</span><br><span class="line"> at java.util.AbstracList.hashCode(AbstractList.java:<span class="number">541</span>)</span><br></pre></td></tr></table></figure>
+<p>紧接着，继续测试下 toString 和 eqauls 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">## 测试循环引用实体类中下的 toString 方法</span><br><span class="line">java.lang.StackOverflowError: <span class="keyword">null</span></span><br><span class="line">	at java.lang.AbstractStringBuilder.ensureCapacityInternal(AbstractStringBuilder.java:<span class="number">125</span>) ~[na:<span class="number">1.8</span>.0_161]</span><br><span class="line">	at java.lang.AbstractStringBuilder.appendNull(AbstractStringBuilder.java:<span class="number">493</span>) ~[na:<span class="number">1.8</span>.0_161]</span><br><span class="line">	at java.lang.AbstractStringBuilder.append(AbstractStringBuilder.java:<span class="number">446</span>) ~[na:<span class="number">1.8</span>.0_161]</span><br><span class="line">	at java.lang.StringBuilder.append(StringBuilder.java:<span class="number">136</span>) ~[na:<span class="number">1.8</span>.0_161]</span><br><span class="line">	at com.qianmi.dependency.model.Project.toString(Project.java:<span class="number">18</span>) ~[classes/:na]</span><br><span class="line">## 测试循环引用实体类中下的 equals 方法	</span><br><span class="line">java.lang.StackOverflowError: <span class="keyword">null</span></span><br><span class="line">	at java.util.AbstractList.rangeCheckForAdd(AbstractList.java:<span class="number">604</span>) ~[na:<span class="number">1.8</span>.0_161]</span><br><span class="line">	at java.util.AbstractList.listIterator(AbstractList.java:<span class="number">325</span>) ~[na:<span class="number">1.8</span>.0_161]</span><br><span class="line">	at java.util.AbstractList.listIterator(AbstractList.java:<span class="number">299</span>) ~[na:<span class="number">1.8</span>.0_161]</span><br><span class="line">	at java.util.AbstractList.equals(AbstractList.java:<span class="number">518</span>) ~[na:<span class="number">1.8</span>.0_161]</span><br><span class="line">	at com.qianmi.dependency.model.Project.equals(Project.java:<span class="number">18</span>) ~[classes/:na]</span><br></pre></td></tr></table></figure>
+<p>不出所料，都存在同样的问题。</p>
+<p>这一案例可以稍微总结下，一是在使用新的技术框架（Lombok）之前没有看文档，对其特性不太了解，望文生义，认为 @Data 不会重写 hashCode 等方法，二是没有考虑到 hashCode，eqauls 等方法应该如何正确地覆盖。</p>
+<h2 id="回顾-JAVA-中最基础的方法：-hashCode-和-equals"><a href="#回顾-JAVA-中最基础的方法：-hashCode-和-equals" class="headerlink" title="回顾 JAVA 中最基础的方法： hashCode 和 equals"></a>回顾 JAVA 中最基础的方法： hashCode 和 equals</h2><p>这两个方法说是 JAVA 最基础的方法一点不为过，但往往越基础的东西越容易被人忽视，让我想起了 JAVA 闲聊群中一位长者经常吐槽的一点：『现在的面试、群聊动不动就是高并发，JVM，中间件，却把基础给遗忘了』。 我感觉很幸运，在当初刚学 JAVA 时，便接触了一本神书《effective java》，一本号称怎么夸都不为过的书，它的序是这么写的</p>
+<blockquote>
+<p>我很希望10年前就拥有这本书。可能有人认为我不需要任何Java方面的书籍，但是我需要这本书。</p>
+<p>——Java 之父 James Gosling</p>
+</blockquote>
+<p>其书中的第三章第 8 条，第 9 条阐述了 equals 和 hashCode 的一些重写原则，我将一些理论言简意赅的阐述在本节中，喜欢的话推荐去看原书哦。</p>
+<h3 id="第8条：覆盖equals时请遵守通用约定"><a href="#第8条：覆盖equals时请遵守通用约定" class="headerlink" title="第8条：覆盖equals时请遵守通用约定"></a>第8条：覆盖<code>equals</code>时请遵守通用约定</h3><blockquote>
+<p>什么时候应该覆盖<code>Object.equals</code>呢？如果类具有自己特有的“逻辑相等”概念（不同于对象等同的概念），而且超类还没有覆盖<code>equals</code>以实现期望的行为，这时我们就需要覆盖<code>equals</code>方法。这通常属于“值类（value class）”的情形。值类仅仅是一个表示值的类，例如<code>Integer</code>或者<code>Date</code>。程序员在利用<code>equals</code>方法来比较值对象的引用时，希望知道它们在逻辑上是否相等，而不是想了解它们是否指向同一个对象。为了满足程序员的要求，不仅必需覆盖<code>equals</code>方法，而且这样做也使得这个类的实例可以被用作映射表（map）的键（key），或者集合（set）的元素，使映射或者集合表现出预期的行为。</p>
+<p>在覆盖<code>equals</code>方法的时候，你必须要遵守它的通用约定。下面是约定的内容，来自<code>Object</code>的规范[JavaSE6]：</p>
+<p><code>equals</code>方法实现了<em>等价关系（equivalence relation）</em>：</p>
+<ul>
+<li><strong>自反性（reflexive）</strong>。对于任何非<code>null</code>的引用值<code>x</code>，<code>x.equals(x)</code>必须返回<code>true</code>。</li>
+<li><strong>对称性（symmetric）</strong>。对于任何非<code>null</code>的引用值<code>x</code>和<code>y</code>，当且仅当<code>y.equals(x)</code>返回<code>true</code>时，<code>x.equals(y)</code>必须返回<code>true</code>。</li>
+<li><strong>传递性（transitive）</strong>。对于任何非<code>null</code>的引用值<code>x</code>、<code>y</code>和<code>z</code>。如果<code>x.equals(y)</code>返回<code>true</code>，并且<code>y.equals(z)</code>也返回<code>true</code>，那么<code>x.equals(z)</code>也必须返回<code>true</code>。</li>
+<li><strong>一致性（consistent）</strong>。对于任何非<code>null</code>的引用值<code>x</code>和<code>y</code>，只要<code>equals</code>的比较操作在对象中所用的信息没有被修改，多次调用<code>x.equals(x)</code>就会一致地返回<code>true</code>，或者一致的返回<code>false</code>。</li>
+<li>对于任何非<code>null</code>的引用值<code>x</code>，<code>x.equals(null)</code>必须返回<code>false</code>。</li>
+</ul>
+</blockquote>
+<p>学过高数，离散的同学不会对上述的理论陌生，它们源自于数学理论，没了解过这些概念的同学也不必有所顾忌，因为你只需要养成习惯，在设计一个实体类时时刻惦记着上述几个关系，能符合的话大概就没有问题。结合所有这些要求，得出了以下实现高质量<code>equals</code>方法的诀窍：</p>
+<ol>
+<li><p><strong>使用==操作符检查“参数是否为这个对象的引用”</strong>。如果是，则返回<code>true</code>。这只不过是一种性能优化，如果比较操作有可能很昂贵，就值得这么做。</p>
+</li>
+<li><p><strong>使用 instanceof 操作符检查“参数是否为正确的类型”</strong>。如果不是，则返回<code>false</code>。一般说来，所谓“正确的类型”是指<code>equals</code>方法所在的那个类。有些情况下，是指该类所实现的某个接口。如果类实现的接口改进了<code>equals</code>约定，允许在实现了该接口的类之间进行比较，那么就使用接口。集合接口（collection interface）如<code>Set</code>、<code>List</code>、<code>Map</code>和<code>Map.Entry</code>具有这样的特性。</p>
+</li>
+<li><p><strong>把参数转换成正确的类型</strong>。因为转换之前进行过<code>instanceof</code>测试，所以确保会成功。</p>
+</li>
+<li><p><strong>对于该类中每个“关键（significant）域，检查参数中的域是否与该对象中对应的域相匹配”</strong>。如果这些测试全部成功，则返回<code>true</code>；否则返回<code>false</code>。如果第2步中的类型是个借口，就必须通过接口方法访问参数中的域；如果该类型是个类，也许就能够直接访问参数中的域，这要取决于它们的可访问性。</p>
+<p>对于既不是<code>float</code>也不是<code>double</code>类型的基本类型域，可以使用<code>==</code>操作符进行比较；对于对象引用域，可以递归地调用<code>equals</code>方法；对于<code>float</code>域，可以使用<code>Float.compare</code>方法；对于<code>double</code>域，则使用<code>Double.compare</code>。对于<code>float</code>和<code>double</code>域进行特殊的处理是有必要的，因为存在着<code>Float.NaN</code>、<code>-0.0f</code>以及类似的<code>double</code>常量；详细信息请参考<code>Float.equals</code>的文档。对于数组域，则要把以上这些指导原则应用到每个元素上。如果数组域中的每个元素都很重要，就可以使用发行版本1.5中新增的其中一个<code>Arrays.equals</code>方法。</p>
+<p>有些对象引用域包含<code>null</code>可能是合法的，所以，为了避免可能导致<code>NullPointerException</code>异常，则使用下面的习惯用法来比较这样的域：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(field == <span class="keyword">null</span> ? o.field == <span class="keyword">null</span> : field.equals(o.field))</span><br></pre></td></tr></table></figure>
+<p>如果<code>field</code>域和<code>o.field</code>通常是相同的对象引用，那么下面的做法就会更快一些：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(field == o.field || (field != <span class="keyword">null</span> &amp;&amp; field.equals(o.field)))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>当你编写完成了equals方法之后，应该问自己三个问题：它是不是对称的、传递的、一致的？</strong>并且不要只是自问，还要编写单元测试来检验这些特性！如果答案是否定的，就要找出原因，再相应地修改<code>equals</code>方法的代码。当然，<code>equals</code>方法也必须满足其他两个特性（自反性和非空性），但是这两种特性通常会自动满足。</p>
+</li>
+</ol>
+<p>其他原则还包括：</p>
+<ul>
+<li><strong>覆盖 equals 时总要覆盖 hashCode</strong>。(在下一节中介绍)</li>
+<li><strong>不要企图让 equals 方法过于智能</strong>。如果只是简单地测试域中的值是否相等，则不难做到遵守<code>equals</code>约定。如果想过度地去寻求各种等价关系，则很容易陷入麻烦之中。把任何一种别名形式考虑到等价的范围内，往往不会是个好主意。例如，<code>File</code>类不应该视图把指向同一个文件的符号链接（symbolic link）当作相等的对象来看待。所幸<code>File</code>类没有这样做。</li>
+<li><strong>不要将 equals 声明中的 Object 对象替换为其他的类型</strong>。</li>
+</ul>
+<h3 id="第9条：覆盖equals时总要覆盖hashCode"><a href="#第9条：覆盖equals时总要覆盖hashCode" class="headerlink" title="第9条：覆盖equals时总要覆盖hashCode"></a>第9条：覆盖<code>equals</code>时总要覆盖<code>hashCode</code></h3><blockquote>
+<p>一个很常见的错误根源在于没有覆盖<code>hashCode</code>方法。<em>在每个覆盖了equals方法的类中，也必须覆盖hashCode方法</em>。如果不这样做的话，就会违反<code>Object.hashcode</code>的通用约定，从而导致该类无法结合所有基于散列的集合一起正常工作，这样的集合包括<code>HashMap</code>、<code>HashSet</code>和<code>Hashtable</code>。</p>
+<p>下面是约定的内容，摘自<code>Object</code>规范[JavaSE6]：</p>
+<ul>
+<li>在应用程序的执行期间，只要对象的<code>equals</code>方法的比较操作所用到的信息没有被修改，那么对同一个对象调用多次，<code>hashCode</code>方法都必须始终如一地返回同一个整数。在同一个应用程序的多次执行过程中，每次执行所返回的整数可以不一致。</li>
+<li>如果两个对象根据<code>equals(Object)</code>方法比较是相等的，那么调用这两个对象中任意一个对象的<code>hashCode</code>方法都必须产生同样的整数结果。</li>
+<li>如果两个对象根据<code>equals(Object)</code>方法比较是不相等的，那么调用这两个对象中任意一个对象的<code>hashCode</code>方法，则不一定要产生不同的整数结果。但是程序员应该知道，给不相等的对象产生截然不同的整数结果，有可能提高散列表（hash table）的性能。</li>
+</ul>
+<p><em>因没有覆盖hashCode而违反的关键约定是第二条：相等的对象必须具有相等的散列码</em>（hash code）。根据类的<code>equals</code>方法，两个截然不同的实例在逻辑上有可能是相等的，但是，根据<code>Object</code>类的<code>hashCode</code>方法，它们仅仅是两个没有任何共同之处的对象。因此，对象的<code>hashCode</code>方法返回两个看起来是随机的整数，而不是根据第二个约定所要求的那样，返回两个相等的整数。</p>
+</blockquote>
+<p>默默看完书中的文字，是不是觉得有点哲学的韵味呢，写好一手代码真的不容易。</p>
+<h2 id="实战中如何重写-hashCode-和-equals？"><a href="#实战中如何重写-hashCode-和-equals？" class="headerlink" title="实战中如何重写 hashCode 和 equals？"></a>实战中如何重写 hashCode 和 equals？</h2><p>hashCode 和 equals 很重要，在使用中，与之密切相关的一般是几个容器类：HashMap 和 HashSet，意味着当我们将一个类作为其中的元素时，尤其需要考量下 hashCode 和 equals 的写法。</p>
+<p>话不多数，即刻介绍。对了，你指望我手敲 hashCode 和 equals 吗？不存在的，程序员应该优雅的偷懒，无论你是 eclipse 玩家还是 idea 玩家，都能找到对应的快捷键，帮你自动重写这两个方式，我们要做的就是对参数的选择做一些微调。例如使用 idea 生成下面这个类的 hashCode 和 equals 方法，设置前提：将所有字段当做关键（significant）域。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Example</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> a;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">float</span> b;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">double</span> c;</span><br><span class="line">    <span class="keyword">private</span> BigDecimal d;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">char</span> e;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">byte</span> f;</span><br><span class="line">    <span class="keyword">private</span> String g;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="方法一：Intellij-Default"><a href="#方法一：Intellij-Default" class="headerlink" title="方法一：Intellij Default"></a>方法一：Intellij Default</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span> == o) <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    <span class="keyword">if</span> (o == <span class="keyword">null</span> || getClass() != o.getClass()) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">super</span>.equals(o)) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    Example example = (Example) o;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (a != example.a) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (Float.compare(example.b, b) != <span class="number">0</span>) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (Double.compare(example.c, c) != <span class="number">0</span>) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (e != example.e) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (f != example.f) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (!d.equals(example.d)) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">return</span> g.equals(example.g);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> result = <span class="keyword">super</span>.hashCode();</span><br><span class="line">    <span class="keyword">long</span> temp;</span><br><span class="line">    result = <span class="number">31</span> * result + a;</span><br><span class="line">    result = <span class="number">31</span> * result + (b != +<span class="number">0.0f</span> ? Float.floatToIntBits(b) : <span class="number">0</span>);</span><br><span class="line">    temp = Double.doubleToLongBits(c);</span><br><span class="line">    result = <span class="number">31</span> * result + (<span class="keyword">int</span>) (temp ^ (temp &gt;&gt;&gt; <span class="number">32</span>));</span><br><span class="line">    result = <span class="number">31</span> * result + d.hashCode();</span><br><span class="line">    result = <span class="number">31</span> * result + (<span class="keyword">int</span>) e;</span><br><span class="line">    result = <span class="number">31</span> * result + (<span class="keyword">int</span>) f;</span><br><span class="line">    result = <span class="number">31</span> * result + g.hashCode();</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这可能是大家最熟悉的方法，先来分析下 equals 的写法。看样子的确是遵循了《effective java》中提及的 java1.6 规范的，值得注意的点再强调下：Float 和 Double 类型的比较应该使用各自的静态方法 Float.compare 和 Double.compare。</p>
+<p>hashCode 方法则更加有趣一点，你可能会有如下的疑问：</p>
+<ul>
+<li>Double.doubleToLongBits 是干嘛用的？</li>
+<li>为啥是 31？</li>
+<li>为什么还有 ^，&gt;&gt;&gt; 这些运算符号？</li>
+</ul>
+<p>带着疑问来看看下面的解释。</p>
+<p>一个好的散列函数通常倾向于“为不相等的对象产生不相等的散列码”。这正是上一节中<code>hashCode</code>约定中第三条的含义。理想情况下，散列函数应该把集合中不相等的实例均匀地分布到所有可能的散列值上。要想完全达到这种理想的情形是非常困难的。但相对接近这种理想情形则并不太苦难。《effective java》给出了一种简单的解决办法：</p>
+<blockquote>
+<ol>
+<li><p>把某个非零的常数值，比如说17，保存在一个名为<code>result</code>的<code>int</code>类型的变量中。</p>
+</li>
+<li><p>对于对象中每个关键域<code>f</code>（指<code>equals</code>方法中涉及的每个域），完成以下步骤：</p>
+<p>a. 为该域计算<code>int</code>类型的散列码<code>c</code>:</p>
+<p>i. 如果该域是<code>boolean</code>类型，则计算<code>(f ? 1 : 0)</code>.</p>
+<p>ii. 如果该域是<code>byte</code>、<code>char</code>、<code>short</code>或者<code>int</code>类型，则计算<code>(int)f</code>。</p>
+<p>iii. 如果该域是<code>long</code>类型，则计算<code>(int)(f ^ (f &gt;&gt;&gt; 32))</code>。</p>
+<p>iv. 如果该域是<code>float</code>类型，则计算<code>Float.floatToIntBits(f)</code>。</p>
+<p>v. 如果该域是<code>double</code>类型，则计算<code>Double.doubleToLongBits(f)</code>，然后按照步骤2.a.iii，为得到的<code>long</code>类型值计算散列值。</p>
+<p>vi. 如果该域是一个对象引用，并且该域的<code>equals</code>方法通过递归地调用<code>equals</code>的方式来比较这个域，则同样为这个域递归地调用<code>hashCode</code>。如果需要更复杂的比较，则为这个域计算一个“范式（canonical representation）”，然后针对这个范式调用<code>hashCode</code>。如果这个域的值为<code>null</code>，则返回0（或者其他某个常数，但通常是0）。</p>
+<p>vii. 如果该域是一个数组，则要把每一个元素当做单独的域来处理。也就是说，递归地应用上述规则，对每个重要的元素计算一个散列码，然后根据步骤2.b中的做法把这些散列值组合起来。如果数组域中的每个元素都很重要，可以利用发行版本1.5中增加的其中一个<code>Arrays.hashCode</code>方法。</p>
+<p>b. 按照下面的公式，把步骤2.a中计算得到的散列码<code>c</code>合并到<code>result</code>中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;    result = 31 * result + c;</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol>
+<li><p>返回result。</p>
+</li>
+<li><p>写完了<code>hashCode</code>方法之后，问问自己“相等的实例是否都具有相等的散列码”。要编写单元测试来验证你的推断。如果相等实例有着不相等的散列码，则要找出原因，并修正错误。</p>
+</li>
+</ol>
+<p>在散列码的计算过程中，可以把<em>冗余域（redundant field）</em>排除在外。换句话说，如果一个域的值可以根据参与计算的其他域值计算出来，则可以把这样的域排除在外。必须排除<code>equals</code>比较计算中没有用到的任何域，否则很有可能违反<code>hashCode</code>约定的第二条。</p>
+<p>上述步骤1中用到了一个非零的初始值，因此步骤2.a中计算的散列值为0的那些初始域，会影响到散列值。如果步骤1中的初始值为0，则整个散列值将不受这些初始域的影响，因为这些初始域会增加冲突的可能性。值<code>17</code>则是任选的。</p>
+<p>步骤2.b中的乘法部分使得散列值依赖于域的顺序，如果一个类包含多个相似的域，这样的乘法运算就会产生一个更好的散列函数。例如，如果<code>String</code>散列函数省略了这个乘法部分，那么只是字母顺序不同的所有字符串都会有相同的散列码。之所以选择31，是因为它是一个奇素数。如果乘数是偶数，并且乘法溢出的话，信息就会丢失，因为与2相乘等价于位移运算。使用素数的好处并不很明显，但是习惯上都使用素数来计算散列结果。31有个很好的特性，即用位移和减法来代替乘法，可以得到更好的性能，<code>31 * i == (i &lt;&lt; 5) - i</code>。现代的VM可以自动完成这种优化。</p>
+</blockquote>
+<p>是不是几个疑惑都解开了呢？</p>
+<h2 id="方法二：Objects-hash-和-Objects-equals"><a href="#方法二：Objects-hash-和-Objects-equals" class="headerlink" title="方法二：Objects.hash 和 Objects.equals"></a>方法二：Objects.hash 和 Objects.equals</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span> == o) <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    <span class="keyword">if</span> (o == <span class="keyword">null</span> || getClass() != o.getClass()) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">super</span>.equals(o)) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    Example example = (Example) o;</span><br><span class="line">    <span class="keyword">return</span> a == example.a &amp;&amp;</span><br><span class="line">            Float.compare(example.b, b) == <span class="number">0</span> &amp;&amp;</span><br><span class="line">            Double.compare(example.c, c) == <span class="number">0</span> &amp;&amp;</span><br><span class="line">            e == example.e &amp;&amp;</span><br><span class="line">            f == example.f &amp;&amp;</span><br><span class="line">            Objects.equals(d, example.d) &amp;&amp;</span><br><span class="line">            Objects.equals(g, example.g);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Objects.hash(<span class="keyword">super</span>.hashCode(), a, b, c, d, e, f, g);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>JAVA 是一个与时俱进的语言，有问题从自身解决，便利了开发者，如《effective java》所言，在 jdk1.6 中上述那些原则只是一纸空文。错误同真理的关系，就象睡梦同清醒的关系一样。一个人从错误中醒来，就会以新的力量走向真理。在 jdk1.7 中便造就了诸多的方法 Objects.hash 和 Objects.equals 帮助你智能的实现 hashCode 和 equals 方法。很明显，代码量上比方法一少了很多，并且有了 jdk 的原生支持，心里也更加有底了。</p>
+<h2 id="方法三：Lombok-的-EqualsAndHashCode"><a href="#方法三：Lombok-的-EqualsAndHashCode" class="headerlink" title="方法三：Lombok 的 @EqualsAndHashCode"></a>方法三：Lombok 的 @EqualsAndHashCode</h2><p>前面已经提到了 Lombok 的这个注解，在此详细介绍下这个注解的用法，方便大家写出规范的 hashCode 和 equals 方法。</p>
+<ol>
+<li>此注解会生成<code>equals(Object other)</code> 和 <code>hashCode()</code>方法。 </li>
+<li>它默认使用非静态，非瞬态的属性 </li>
+<li>可通过参数<code>exclude</code>排除一些属性 </li>
+<li>可通过参数<code>of</code>指定仅使用哪些属性 </li>
+<li>它默认仅使用该类中定义的属性且不调用父类的方法 </li>
+<li>可通过<code>callSuper=true</code>解决上一点问题。让其生成的方法中调用父类的方法。</li>
+</ol>
+<p>使用 Lombok 很便捷，整个代码也很清爽</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@EqualsAndHashCode</span>(of = &#123;<span class="string">"a"</span>,<span class="string">"b"</span>,<span class="string">"c"</span>,<span class="string">"d"</span>,<span class="string">"e"</span>,<span class="string">"f"</span>,<span class="string">"g"</span>&#125;)<span class="comment">//默认就是所有参数</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Example</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> a;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">float</span> b;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">double</span> c;</span><br><span class="line">    <span class="keyword">private</span> BigDecimal d;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">char</span> e;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">byte</span> f;</span><br><span class="line">    <span class="keyword">private</span> String g;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果想知道编译过后的庐山真面目，也可以在 target 包中找到 Example.java 生成的 Example.class，:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (o == <span class="keyword">this</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!(o <span class="keyword">instanceof</span> Example)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        Example other = (Example)o;</span><br><span class="line">        <span class="keyword">if</span> (!other.canEqual(<span class="keyword">this</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">this</span>.getA() != other.getA()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (Float.compare(<span class="keyword">this</span>.getB(), other.getB()) != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (Double.compare(<span class="keyword">this</span>.getC(), other.getC()) != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            Object <span class="keyword">this</span>$d = <span class="keyword">this</span>.getD();</span><br><span class="line">            Object other$d = other.getD();</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">this</span>$d == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (other$d != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="keyword">this</span>$d.equals(other$d)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">this</span>.getE() != other.getE()) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">this</span>.getF() != other.getF()) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                Object <span class="keyword">this</span>$g = <span class="keyword">this</span>.getG();</span><br><span class="line">                Object other$g = other.getG();</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">this</span>$g == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (other$g != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="keyword">this</span>$g.equals(other$g)) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">canEqual</span><span class="params">(Object other)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> other <span class="keyword">instanceof</span> Example;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> PRIME = <span class="keyword">true</span>;</span><br><span class="line">    <span class="keyword">int</span> result = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">int</span> result = result * <span class="number">59</span> + <span class="keyword">this</span>.getA();</span><br><span class="line">    result = result * <span class="number">59</span> + Float.floatToIntBits(<span class="keyword">this</span>.getB());</span><br><span class="line">    <span class="keyword">long</span> $c = Double.doubleToLongBits(<span class="keyword">this</span>.getC());</span><br><span class="line">    result = result * <span class="number">59</span> + (<span class="keyword">int</span>)($c &gt;&gt;&gt; <span class="number">32</span> ^ $c);</span><br><span class="line">    Object $d = <span class="keyword">this</span>.getD();</span><br><span class="line">    result = result * <span class="number">59</span> + ($d == <span class="keyword">null</span> ? <span class="number">43</span> : $d.hashCode());</span><br><span class="line">    result = result * <span class="number">59</span> + <span class="keyword">this</span>.getE();</span><br><span class="line">    result = result * <span class="number">59</span> + <span class="keyword">this</span>.getF();</span><br><span class="line">    Object $g = <span class="keyword">this</span>.getG();</span><br><span class="line">    result = result * <span class="number">59</span> + ($g == <span class="keyword">null</span> ? <span class="number">43</span> : $g.hashCode());</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>大致和前两种行为一致，这里选择素数从 31 替换成了 59，没有太大差异。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>我在开发时也曾考虑一个问题：一个数据库持久化对象到底怎么正确覆盖 hashCode 和 equals？以订单为例，是用主键 id 来判断，还是 流水编号 orderNo 来判断，可能没有准确的答案，各有各的道理，但如果将它丢进 HashSet，HashMap 中就要额外注意，hashCode 和 equals 会影响它们的行为！</p>
+<p>这次 Lombok 发生的惨案主要还是由于不合理的 hashCode 和 equals（也包括了 toString）方法导致的，循环引用这种问题虽然没有直接在《effective java》中介绍，但一个引用，一个集合类是不是应该作为 hashCode 和 equals 的关键域参与计算，还是值得开发者仔细推敲的。本文还介绍了一些 hashCode 和 equals 的通用原则，弱弱地推荐 Lombok 便捷开发，强烈安利《effective java》一书。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="http://lexburner.github.io/java-eqaulsandhashcode/" data-id="cjopn2ql900bfvu9ewwlgtjj6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/docker-network-bridge/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Docker Network—Bridge 模式
+                
+            </div>
+        </a>
+    
+    
+        <a href="/future-and-promise/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">JAVA 拾遗--Future 模式与 Promise 模式</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+	<div id="commentContainer"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/java-random/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/JAVA并发合集/">JAVA并发合集</a></p>
+                            <p class="item-title"><a href="/java-random/" class="title">Java随机数探秘</a></p>
+                            <p class="item-date"><time datetime="2018-09-12T11:47:28.000Z" itemprop="datePublished">2018-09-12</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/spring-xsd/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/spring-xsd/" class="title">Spring中的XML schema扩展机制</a></p>
+                            <p class="item-date"><time datetime="2018-09-03T11:47:28.000Z" itemprop="datePublished">2018-09-03</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/high-performance-queue/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/JAVA并发合集/">JAVA并发合集</a></p>
+                            <p class="item-title"><a href="/high-performance-queue/" class="title">JCTools -- 高性能内存队列探秘(写作中...)</a></p>
+                            <p class="item-date"><time datetime="2018-09-01T11:47:28.000Z" itemprop="datePublished">2018-09-01</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/contribute-to-opensource/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/技术杂谈/">技术杂谈</a></p>
+                            <p class="item-title"><a href="/contribute-to-opensource/" class="title">如何向开源项目做贡献(以incubator-dubbo为例)</a></p>
+                            <p class="item-date"><time datetime="2018-08-22T11:47:28.000Z" itemprop="datePublished">2018-08-22</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/java-concurrent-counter/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/JAVA并发合集/">JAVA并发合集</a></p>
+                            <p class="item-title"><a href="/java-concurrent-counter/" class="title">Java并发计数器探秘</a></p>
+                            <p class="item-date"><time datetime="2018-08-22T11:47:28.000Z" itemprop="datePublished">2018-08-22</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/DevOps/" style="font-size: 11.25px;">DevOps</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 10px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JWT/" style="font-size: 12.5px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12.5px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/RPC/" style="font-size: 18.75px;">RPC</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18.75px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12.5px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11.25px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11.25px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 17.5px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12.5px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13.75px;">Spring Session</a> <a href="/tags/Validation/" style="font-size: 11.25px;">Validation</a> <a href="/tags/XML/" style="font-size: 11.25px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13.75px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11.25px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 15px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/技术杂谈/" style="font-size: 16.25px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 10px;">数据库</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13.75px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11.25px;">网关</a> <a href="/tags/规则引擎/" style="font-size: 13.75px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11.25px;">领域驱动设计</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="https://ntzyz.io/">namespace_ntzyz</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://blog.didispace.com/">程序猿DD|博客</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://vip.iocoder.cn/">芋道源码</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.jiangxinlingdu.com/">匠心零度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 徐靖峰<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+	<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+	<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+	<script>
+		var gitment = new Gitment({
+			owner: 'lexburner',
+			repo: 'lexburner.github.io',
+			oauth: {
+				client_id: 'd5fc3e1150477a0d433d',
+				client_secret: 'aa94acd5f130281051b9e703c19b4c6d878e90c4',
+			},
+		})
+		gitment.render('commentContainer')
+	</script>
+	
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>
