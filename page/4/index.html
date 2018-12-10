@@ -161,7 +161,7 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                99
+                100
                 <span>文章</span>
             </div>
             <div class="article-info-block">
@@ -202,6 +202,211 @@ ga('send', 'pageview');
 
             
             <section id="main">
+    <article id="post-instrument" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/instrument/">JAVA 拾遗--Instrument 机制</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        <!-- 增加文章类型 -->
+                        
+	
+		<div class="article-type">
+		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
+		</div>
+	
+	
+	
+		
+	
+
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/instrument/">
+            <time datetime="2018-02-04T14:18:51.000Z" itemprop="datePublished">2018-02-04</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/JAVA/">JAVA</a>
+    </div>
+
+                        <!-- 不显示标签 -->
+                        <!-- 
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/JAVA/">JAVA</a>
+    </div>
+ -->
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>最近在研究 skywalking，发现其作为一个 APM 框架，比起作为 trace 框架的 zipkin 多了一个监控维度：对 JVM 的监控。而 skywalking 集成进系统的方式也和传统的框架不太一样，由于其需要对 JVM 进行无侵入式的监控，所以借助了 JAVA5 提供的 Instrument 机制。关于“Instrument”这个单词，没找到准确的翻译，个人理解为“增强，装配”。</p>
+<p>如果我们想要无侵入式的修改一个方法，大多数人想到的可能是 AOP 技术，Instrument 有异曲同工之处，它可以对方法进行增强，甚至替换整个类。</p>
+<p>下面借助一个 demo，了解下 Instrument 是如何使用的。第一个 demo 很简单，在某一方法调用时，额外打印出其调用时的时间。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Dog</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"wow wow~"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="keyword">new</span> Dog().hello());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Dog 存在一个 hello 方法，希望在调用该方法时打印出是什么时刻发生的调用。</p>
+<h2 id="实现-Agent"><a href="#实现-Agent" class="headerlink" title="实现 Agent"></a>实现 Agent</h2><p><strong>GreetingTransformer</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GreetingTransformer</span> <span class="keyword">implements</span> <span class="title">ClassFileTransformer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">byte</span>[] transform(ClassLoader loader, String className, Class&lt;?&gt; classBeingRedefined, ProtectionDomain protectionDomain, <span class="keyword">byte</span>[] classfileBuffer) <span class="keyword">throws</span> IllegalClassFormatException &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="string">"moe/cnkirito/agent/Dog"</span>.equals(className)) &#123;</span><br><span class="line">            System.out.println(<span class="string">"Dog's method invoke at\t"</span> + <span class="keyword">new</span> Date());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对类进行装配的第一步是编写一个 GreetingTransformer 类，其继承自：java.lang.instrument.ClassFileTransformer，打印语句便编写在其中。对于入参和返参我们先不去纠结，因为仅仅完成这么一个简单的 AOP 功能，还不需要了解它们。</p>
+<p><strong>GreetingAgent</strong></p>
+<p>除了上述的 Transformer，我们还需要有一个容器去加载它。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GreetingAgent</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">premain</span><span class="params">(String options, Instrumentation ins)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (options != <span class="keyword">null</span>) &#123;</span><br><span class="line">            System.out.printf(<span class="string">"  I've been called with options: \"%s\"\n"</span>, options);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            System.out.println(<span class="string">"  I've been called with no options."</span>);</span><br><span class="line">        ins.addTransformer(<span class="keyword">new</span> GreetingTransformer());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>GreetingAgent 便是我们后面要用的代理，可以发现它只有一个 premain 方法，很简单很形象，它和 main 方法真的很像</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不同的是 main 函数的参数是一个 string[]，而 premain 的入参是一个 String 和一个 Instrumentation。</p>
+<p>前者不用过多赘述，而后者 Instrumentation 便是 JAVA5 的 Instrument 机制的核心，它负责为类添加 ClassFileTransformer 的实现，从而对类进行装配。注意 premain 和它的两个参数不能随意修改，为啥？我们使用 main 函数的时候也没问为啥一定是 public static void main(String[] args) 啊，规定！规定！从premain 的命名也可以看出，它的运行显然是在 main 函数之前的。</p>
+<p><strong>MANIFEST.MF</strong></p>
+<p>我们最终会把上面的 GreetingTransformer 和 GreetingAgent 打成一个 jar 包，然后让 Main 函数在启动时加载，但想要使用这个 jar 包还得额外做的工作。</p>
+<p>我们得告诉 JVM 在哪儿加载我们的 premain 方法，所以需要在 classpath 下增加一个 resources\META-INF\MANIFEST.MF 文件</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">Manifest-Version: 1.0</span></span><br><span class="line"><span class="section">Premain-Class: moe.cnkirito.agent.GreetingAgent</span></span><br><span class="line"><span class="section">Can-Redefine-Classes: true</span></span><br></pre></td></tr></table></figure>
+<p><strong>MAVEN 插件</strong></p>
+<p>为了打包 agent 我们需要额外添加 maven 插件，将 mf 文件和两个类一起打包</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">finalName</span>&gt;</span>agent<span class="tag">&lt;/<span class="name">finalName</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-jar-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">archive</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">manifestFile</span>&gt;</span>src/main/resources/META-INF/MANIFEST.MF<span class="tag">&lt;/<span class="name">manifestFile</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">archive</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-assembly-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>$&#123;basedir&#125;<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">archive</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">index</span>&gt;</span>true<span class="tag">&lt;/<span class="name">index</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">manifest</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">addClasspath</span>&gt;</span>true<span class="tag">&lt;/<span class="name">addClasspath</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">manifestEntries</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">Premain-Class</span>&gt;</span>moe.cnkirito.agent.GreetingAgent<span class="tag">&lt;/<span class="name">Premain-Class</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">manifestEntries</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">archive</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">descriptorRefs</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">descriptorRef</span>&gt;</span>jar-with-dependencies<span class="tag">&lt;/<span class="name">descriptorRef</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">descriptorRefs</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-compiler-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">source</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">target</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>完成上述的配置，使用 maven install 即可得到一个 agent.jar，到这儿一切的准备工作就完成了。</p>
+<h2 id="使用代理运行-Main-方法"><a href="#使用代理运行-Main-方法" class="headerlink" title="使用代理运行 Main 方法"></a>使用代理运行 Main 方法</h2><p>如果不使用代理运行 Main 方法，毫无疑问我们只会得到一行 <code>wow wow~</code>。</p>
+<p>如果你使用的 IDEA，eclipse，只需要添加一行启动参数即可：</p>
+<p><img src="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720180204235047.png" alt="启动参数"></p>
+<p>-javaagent:jar_path=[options] 其中的 jar_path 为 agent.jar 的路径，options 是一个可选参数，其值会被 premain 方法的第一个参数接收 public static void premain(String options, Instrumentation ins).</p>
+<p>当需要装配多个 agent.jar 时，重复书写多次即可 -javaagent:C:\Users\xujingfeng\Desktop\agent.jar=hello -javaagent:C:\Users\xujingfeng\Desktop\agent.jar=hello2 …</p>
+<p>运行 Main.jar 的话就是这样的形式：java -javaagent:C:\Users\xujingfeng\Desktop\agent.jar=hello Main</p>
+<p><strong>运行结果</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">  I&apos;ve been called with options: &quot;hello&quot;</span><br><span class="line">Dog&apos;s method invoke at	Sun Feb 04 23:54:45 CST 2018</span><br><span class="line">wow wow~</span><br></pre></td></tr></table></figure>
+<p>I’ve been called with options: “hello” 代表我们的 premain 已经装载成功，并且正确接收到了启动参数。第二行语句也正常打印出了调用时间，至此便完成了 Dog 的装配。</p>
+<h2 id="Instrument-进阶"><a href="#Instrument-进阶" class="headerlink" title="Instrument 进阶"></a>Instrument 进阶</h2><p>什么？为了打印一行调用时间，我们花了这么大精力，这是要跟自己过不去吗？你可能会有这样的疑惑，但请不要质疑 Instrument 的价值。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ClassFileTransformer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">byte</span>[] transform(  ClassLoader         loader,</span><br><span class="line">                String              className,</span><br><span class="line">                Class&lt;?&gt;            classBeingRedefined,</span><br><span class="line">                ProtectionDomain    protectionDomain,</span><br><span class="line">                <span class="keyword">byte</span>[]              classfileBuffer)</span><br><span class="line">        <span class="keyword">throws</span> IllegalClassFormatException;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ClassFileTransformer 可以对所有的方法进行拦截，看见返回值 byte[] 了没有</p>
+<blockquote>
+<p>The implementation of this method may transform the supplied class file and return a new replacement class file.</p>
+<p>这个方法的实现可能会改变提供的类文件并返回一个新的替换类文件。</p>
+</blockquote>
+<p>这给了我们足够的操作自由度，我们甚至可以替换一个类的实现，只要你能够返回一个正确的替换类。ClassLoader 代表被转换类的类加载器，如果是 bootstrap loader 则可以省略，className 代表全类名，注意是以 <code>/</code>作为分隔符。其他参数我也不是太懂，想深究的同学自行翻看下文档。byte[] 代表被转换后的类的字节，为 null 则代表不转换。</p>
+<h3 id="替换-Dog-的实现"><a href="#替换-Dog-的实现" class="headerlink" title="替换 Dog 的实现"></a>替换 Dog 的实现</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Dog</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"miao miao~"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意，这里我修改了 Dog 的实现，不是打印 wow wow~ 而是 miao miao ~，只是为了得到新 Dog 的字节码 Dog.class。我将新的 Dog.class 丢在了我的桌面方便加载：C:/Users/xujingfeng/Desktop</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DogTransformer</span> <span class="keyword">implements</span> <span class="title">ClassFileTransformer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">byte</span>[] transform(ClassLoader loader, String className, Class&lt;?&gt; classBeingRedefined, ProtectionDomain protectionDomain, <span class="keyword">byte</span>[] classfileBuffer) <span class="keyword">throws</span> IllegalClassFormatException &#123;</span><br><span class="line">        System.out.println(<span class="string">"className: "</span> + className);</span><br><span class="line">        <span class="keyword">if</span> (!className.equalsIgnoreCase(<span class="string">"moe/cnkirito/agent/Dog"</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> getBytesFromFile(<span class="string">"C:/Users/xujingfeng/Desktop/Dog.class"</span>);<span class="comment">//新的 Dog</span></span><br><span class="line"><span class="comment">//        return getBytesFromFile("app/target/classes/moe/cnkirito/agent/Dog.class");</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] getBytesFromFile(String fileName) &#123;</span><br><span class="line">        File file = <span class="keyword">new</span> File(fileName);</span><br><span class="line">        <span class="keyword">try</span> (InputStream is = <span class="keyword">new</span> FileInputStream(file)) &#123;</span><br><span class="line">            <span class="comment">// precondition</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">long</span> length = file.length();</span><br><span class="line">            <span class="keyword">byte</span>[] bytes = <span class="keyword">new</span> <span class="keyword">byte</span>[(<span class="keyword">int</span>) length];</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Read in the bytes</span></span><br><span class="line">            <span class="keyword">int</span> offset = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">int</span> numRead = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span> (offset &lt;bytes.length</span><br><span class="line">                    &amp;&amp; (numRead = is.read(bytes, offset, bytes.length - offset)) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                offset += numRead;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (offset &lt; bytes.length) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IOException(<span class="string">"Could not completely read file "</span></span><br><span class="line">                        + file.getName());</span><br><span class="line">            &#125;</span><br><span class="line">            is.close();</span><br><span class="line">            <span class="keyword">return</span> bytes;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            System.out.println(<span class="string">"error occurs in _ClassTransformer!"</span></span><br><span class="line">                    + e.getClass().getName());</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>return getBytesFromFile(“C:/Users/xujingfeng/Desktop/Dog.class”) 一行返回了新的 Dog 试图替换原先的 Dog。注意，这一切都放生在 Agent.jar 之中，我并没有对 Main 函数（也就是我们自己的源代码）做任何改动。</p>
+<p><strong>控制台输出</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">miao miao~</span><br></pre></td></tr></table></figure>
+<p>替换成功！我们并没有对 Main 程序的 Dog 做任何修改，只是加载了一个新的 Dog.class 替换了 Main 程序中的 Dog。</p>
+<h3 id="统计方法运行耗时"><a href="#统计方法运行耗时" class="headerlink" title="统计方法运行耗时"></a>统计方法运行耗时</h3><p>这个需求有点接近我们研究 Instrument 的初衷了，统计方法的运行耗时。由于代码的篇幅问题，在本文中只给出思路，详细的实现，可以参考文末的 github 链接，本文的三个例子：</p>
+<ol>
+<li>打印 hello </li>
+<li>替换 Dog </li>
+<li>统计方法运行耗时</li>
+</ol>
+<p>代码都在其中。</p>
+<p>思路：对每个需要统计耗时的方法替换字节码，在方法开始前插入开始时间，在方法结束时插入结束时间，计算差值，more 你可以连同 methodName 和耗时一起发送出去，给 collector 统一采集…wait，这不就是一个简易的监控吗?!~</p>
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Call to method hello_timing took 1 ms.</span><br><span class="line">wow wow~</span><br></pre></td></tr></table></figure>
+<h2 id="JAVA6-的-agentmain"><a href="#JAVA6-的-agentmain" class="headerlink" title="JAVA6 的 agentmain"></a>JAVA6 的 agentmain</h2><p>值得一提的是，java6 提供了 public static void agentmain (String agentArgs, Instrumentation inst); 这个新的方法，可以在 main 函数之后装配（premain 是在 main 之前），这使得操控现有程序的自由度变得更高了，有兴趣的朋友可以去了解下 premain 和 agentmain 的特性。</p>
+<h2 id="本文示例代码"><a href="#本文示例代码" class="headerlink" title="本文示例代码"></a>本文示例代码</h2><p><a href="https://github.com/lexburner/java5-Instrumentation-demo" target="_blank" rel="noopener">https://github.com/lexburner/java5-Instrumentation-demo</a></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://www.ibm.com/developerworks/cn/java/j-lo-instrumentation/" target="_blank" rel="noopener">Java 5 特性 Instrumentation 实践</a></p>
+<p><a href="https://www.ibm.com/developerworks/cn/java/j-lo-jse61/index.html" target="_blank" rel="noopener">Java SE 6 的新特性：虚拟机启动后的动态 instrument</a></p>
+<p><a href="https://github.com/YunaiV/learning/tree/master/javaagent01" target="_blank" rel="noopener">芋道源码</a></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="http://lexburner.github.io/instrument/" data-id="cjpig6ems006l4r9et72btw0l" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
     <article id="post-chinese-copywriting-guidelines" class="article article-type-post" itemscope="" itemprop="blogPost">
     <div class="article-inner">
         
@@ -646,7 +851,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/chinese-copywriting-guidelines/" data-id="cjozxsksm000g069ey1jvv6ym" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/chinese-copywriting-guidelines/" data-id="cjpig6em8005h4r9ecihmkuxm" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -870,7 +1075,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/gracefully-shutdown/" data-id="cjozxskxv00ak069eai7bmfs2" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/gracefully-shutdown/" data-id="cjpig6eof00ak4r9exkfzegla" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1143,7 +1348,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/rpc-registry/" data-id="cjozxskwu008i069eea0quyks" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/rpc-registry/" data-id="cjpig6end008q4r9eyqjinhjg" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1357,7 +1562,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/rpc-protocol/" data-id="cjozxskwt008f069e8kw1wfo5" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/rpc-protocol/" data-id="cjpig6en4007x4r9ekbxksb85" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1523,7 +1728,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/motan-async/" data-id="cjozxsku00027069e7wjkoauz" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/motan-async/" data-id="cjpig6ej6001a4r9e24n7q7t6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1704,7 +1909,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/rpc-transport/" data-id="cjozxskws0089069ebnpet8dw" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/rpc-transport/" data-id="cjpig6en700864r9e7si0hnf7" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1913,7 +2118,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/rpc-dynamic-proxy/" data-id="cjozxskwq0080069ek8dhhr6l" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/rpc-dynamic-proxy/" data-id="cjpig6en3007u4r9ehr7tfvdp" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -2182,7 +2387,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/rpc-serialize-2/" data-id="cjozxskwt008c069eyv4oyscx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/rpc-serialize-2/" data-id="cjpig6en500804r9es3fcsq3z" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -2422,281 +2627,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/NJIAS2017/" data-id="cjozxsks70004069e628mih7v" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
-    <article id="post-rpc-serialize-1" class="article article-type-post" itemscope="" itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/rpc-serialize-1/">深入理解RPC之序列化篇--Kryo</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        <!-- 增加文章类型 -->
-                        
-	
-		<div class="article-type">
-		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
-		</div>
-	
-	
-	
-		
-	
-
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/rpc-serialize-1/">
-            <time datetime="2017-11-28T14:15:28.000Z" itemprop="datePublished">2017-11-28</time>
-        </a>
-    </div>
-
-
-                        
-    <div class="article-category">
-    	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/RPC/">RPC</a>
-    </div>
-
-                        <!-- 不显示标签 -->
-                        <!-- 
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/RPC/">RPC</a>
-    </div>
- -->
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p>一年前，笔者刚刚接触RPC框架，从单体式应用向分布式应用的变革无疑是让人兴奋的，同时也对RPC背后到底做了哪些工作产生了兴趣，但其底层的设计对新手而言并不是很友好，其涉及的一些常用技术点都有一定的门槛。如传输层常常使用的netty，之前完全没听过，想要学习它，需要掌握前置知识点nio；协议层，包括了很多自定义的协议，而每个RPC框架的实现都有差异；代理层的动态代理技术，如jdk动态代理，虽然实战经验不多，但至少还算会用，而cglib则又有一个盲区；序列化层倒还算是众多层次中相对简单的一环，但RPC为了追求可扩展性，性能等诸多因素，通常会支持多种序列化方式以供使用者插拔使用，一些常用的序列化方案hessian，kryo，Protobuf又得熟知…</p>
-<p>这个系列打算就RPC框架涉及到的一些知识点进行探讨，本篇先从序列化层的一种选择–kryo开始进行介绍。</p>
-<h2 id="序列化概述"><a href="#序列化概述" class="headerlink" title="序列化概述"></a>序列化概述</h2><p>大白话介绍下RPC中序列化的概念，可以简单理解为对象–&gt;字节的过程，同理，反序列化则是相反的过程。为什么需要序列化？因为网络传输只认字节。所以互信的过程依赖于序列化。有人会问，FastJson转换成字符串算不算序列化？对象持久化到数据库算不算序列化？没必要较真，广义上理解即可。</p>
-<h2 id="JDK序列化"><a href="#JDK序列化" class="headerlink" title="JDK序列化"></a>JDK序列化</h2><p>可能你没用过kryo，没用过hessian，但你一定用过jdk序列化。我最早接触jdk序列化，是在大二的JAVA大作业中，《XX管理系统》需要把对象保存到文件中（那时还没学数据库），jdk原生支持的序列化方式用起来也很方便。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Student</span> <span class="keyword">implements</span> <span class="title">Serializable</span></span>&#123;  </span><br><span class="line">   <span class="keyword">private</span> String name;  </span><br><span class="line">&#125;  </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Main</span></span>&#123;</span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception</span>&#123;  </span><br><span class="line">      <span class="comment">// create a Student</span></span><br><span class="line">      Student st = <span class="keyword">new</span> Student(<span class="string">"kirito"</span>);  </span><br><span class="line">     <span class="comment">// serialize the st to student.db file  </span></span><br><span class="line">     ObjectOutputStream oos = <span class="keyword">new</span> ObjectOutputStream(<span class="keyword">new</span> FileOutputStream(<span class="string">"student.db"</span>));  </span><br><span class="line">     oos.writeObject(st);  </span><br><span class="line">     oos.close();  </span><br><span class="line">     <span class="comment">// deserialize the object from student.db</span></span><br><span class="line">     ObjectInputStream ois = <span class="keyword">new</span> ObjectInputStream(<span class="keyword">new</span> FileInputStream(<span class="string">"student.db"</span>));  </span><br><span class="line">     Student kirito = (Student) ois.readObject();  </span><br><span class="line">     ois.close();  </span><br><span class="line">    <span class="comment">// assert</span></span><br><span class="line">    <span class="keyword">assert</span> <span class="string">"kirito"</span>.equals(kirito.getName());  </span><br><span class="line">   &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Student实体类需要实现Serializable接口，以告知其可被序列化。</p>
-<p>序列化协议的选择通常有下列一些常用的指标：</p>
-<ol>
-<li>通用性。是否只能用于java间序列化/反序列化，是否跨语言，跨平台。</li>
-<li>性能。分为空间开销和时间开销。序列化后的数据一般用于存储或网络传输，其大小是很重要的一个参数；解析的时间也影响了序列化协议的选择，如今的系统都在追求极致的性能。</li>
-<li>可扩展性。系统升级不可避免，某一实体的属性变更，会不会导致反序列化异常，也应该纳入序列化协议的考量范围。</li>
-<li>易用性。API使用是否复杂，会影响开发效率。</li>
-</ol>
-<p>容易用的模型通常性能不好，性能好的模型通常用起来都比较麻烦。显然，JDK序列化属于前者。我们不过多介绍它，直接引入今天的主角kryo作为它的替代品。</p>
-<h2 id="Kryo入门"><a href="#Kryo入门" class="headerlink" title="Kryo入门"></a>Kryo入门</h2><h3 id="引入依赖"><a href="#引入依赖" class="headerlink" title="引入依赖"></a>引入依赖</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.esotericsoftware<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>kryo<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.0.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>由于其底层依赖于ASM技术，与Spring等框架可能会发生ASM依赖的版本冲突（文档中表示这个冲突还挺容易出现）所以提供了另外一个依赖以供解决此问题</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.esotericsoftware<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>kryo-shaded<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.0.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h3 id="快速入门"><a href="#快速入门" class="headerlink" title="快速入门"></a>快速入门</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Student</span> <span class="keyword">implements</span> <span class="title">Serializable</span></span>&#123;  </span><br><span class="line">   <span class="keyword">private</span> String name;  </span><br><span class="line">&#125;  </span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">        Kryo kryo = <span class="keyword">new</span> Kryo();</span><br><span class="line">        Output output = <span class="keyword">new</span> Output(<span class="keyword">new</span> FileOutputStream(<span class="string">"student.db"</span>));</span><br><span class="line">        Student kirito = <span class="keyword">new</span> Student(<span class="string">"kirito"</span>);</span><br><span class="line">        kryo.writeObject(output, kirito);</span><br><span class="line">        output.close();</span><br><span class="line">        Input input = <span class="keyword">new</span> Input(<span class="keyword">new</span> FileInputStream(<span class="string">"student.db"</span>));</span><br><span class="line">        Student kiritoBak = kryo.readObject(input, Student.class);</span><br><span class="line">        input.close();</span><br><span class="line">        <span class="keyword">assert</span> <span class="string">"kirito"</span>.equals(kiritoBak.getName());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>不需要注释也能理解它的执行流程，和jdk序列化差距并不是很大。</p>
-<h3 id="三种读写方式"><a href="#三种读写方式" class="headerlink" title="三种读写方式"></a>三种读写方式</h3><p>Kryo共支持三种读写方式</p>
-<ol>
-<li>如果知道class字节码，并且对象不为空</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kryo.writeObject(output, someObject);</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">SomeClass someObject = kryo.readObject(input, SomeClass.class);</span><br></pre></td></tr></table></figure>
-<p>快速入门中的序列化/反序列化的方式便是这一种。而Kryo考虑到someObject可能为null，也会导致返回的结果为null，所以提供了第二套读写方式。</p>
-<ol>
-<li>如果知道class字节码，并且对象可能为空</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kryo.writeObjectOrNull(output, someObject);</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">SomeClass someObject = kryo.readObjectOrNull(input, SomeClass.class);</span><br></pre></td></tr></table></figure>
-<p>但这两种方法似乎都不能满足我们的需求，在RPC调用中，序列化和反序列化分布在不同的端点，对象的类型确定，我们不想依赖于手动指定参数，最好是…emmmmm…将字节码的信息直接存放到序列化结果中，在反序列化时自行读取字节码信息。Kryo考虑到了这一点，于是提供了第三种方式。</p>
-<ol>
-<li>如果实现类的字节码未知，并且对象可能为null</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">kryo.writeClassAndObject(output, object);</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">Object object = kryo.readClassAndObject(input);</span><br><span class="line"><span class="keyword">if</span> (object <span class="keyword">instanceof</span> SomeClass) &#123;</span><br><span class="line">   <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>我们牺牲了一些空间一些性能去存放字节码信息，但这种方式是我们在RPC中应当使用的方式。</p>
-<h3 id="我们关心的问题"><a href="#我们关心的问题" class="headerlink" title="我们关心的问题"></a>我们关心的问题</h3><p>继续介绍Kryo特性之前，不妨让我们先思考一下，一个序列化工具或者一个序列化协议，应当需要考虑哪些问题。比如，支持哪些类型的序列化？循环引用会不会出现问题？在某个类增删字段之后反序列化会报错吗？等等等等….</p>
-<p>带着我们考虑到的这些疑惑，以及我们暂时没考虑到的，但Kryo帮我们考虑到的，来看看Kryo到底支持哪些特性。</p>
-<h3 id="支持的序列化类型"><a href="#支持的序列化类型" class="headerlink" title="支持的序列化类型"></a>支持的序列化类型</h3><table>
-<thead>
-<tr>
-<th>boolean</th>
-<th>Boolean</th>
-<th>byte</th>
-<th>Byte</th>
-<th>char</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Character</td>
-<td>short</td>
-<td>Short</td>
-<td>int</td>
-<td>Integer</td>
-</tr>
-<tr>
-<td>long</td>
-<td>Long</td>
-<td>float</td>
-<td>Float</td>
-<td>double</td>
-</tr>
-<tr>
-<td>Double</td>
-<td>byte[]</td>
-<td>String</td>
-<td>BigInteger</td>
-<td>BigDecimal</td>
-</tr>
-<tr>
-<td>Collection</td>
-<td>Date</td>
-<td>Collections.emptyList</td>
-<td>Collections.singleton</td>
-<td>Map</td>
-</tr>
-<tr>
-<td>StringBuilder</td>
-<td>TreeMap</td>
-<td>Collections.emptyMap</td>
-<td>Collections.emptySet</td>
-<td>KryoSerializable</td>
-</tr>
-<tr>
-<td>StringBuffer</td>
-<td>Class</td>
-<td>Collections.singletonList</td>
-<td>Collections.singletonMap</td>
-<td>Currency</td>
-</tr>
-<tr>
-<td>Calendar</td>
-<td>TimeZone</td>
-<td>Enum</td>
-<td>EnumSet</td>
-</tr>
-</tbody>
-</table>
-<p>表格中支持的类型一览无余，这都是其默认支持的。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Kryo kryo = <span class="keyword">new</span> Kryo();</span><br><span class="line">kryo.addDefaultSerializer(SomeClass.class, SomeSerializer.class);</span><br></pre></td></tr></table></figure>
-<p>这样的方式，也可以为一个Kryo实例扩展序列化器。</p>
-<p>总体而言，Kryo支持以下的类型：</p>
-<ul>
-<li>枚举</li>
-<li>集合、数组</li>
-<li>子类/多态</li>
-<li>循环引用</li>
-<li>内部类</li>
-<li>泛型</li>
-</ul>
-<p>但需要注意的是，<strong>Kryo不支持Bean中增删字段</strong>。如果使用Kryo序列化了一个类，存入了Redis，对类进行了修改，会导致反序列化的异常。</p>
-<p>另外需要注意的一点是使用反射创建的一些类序列化的支持。如使用Arrays.asList();创建的List对象，会引起序列化异常。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; com.esotericsoftware.kryo.KryoException: Class cannot be created (missing no-arg constructor): java.util.Arrays$ArrayList</span><br></pre></td></tr></table></figure>
-<p>但new ArrayList()创建的List对象则不会，使用时需要注意，可以使用第三方库对Kryo进行序列化类型的扩展。如<a href="https://github.com/magro/kryo-serializers所提供的。" target="_blank" rel="noopener">https://github.com/magro/kryo-serializers所提供的。</a></p>
-<p><strong>不支持包含无参构造器类的反序列化</strong>，尝试反序列化一个不包含无参构造器的类将会得到以下的异常：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; com.esotericsoftware.kryo.KryoException: Class cannot be created (missing no-arg constructor): moe.cnkirito.Xxx</span><br></pre></td></tr></table></figure>
-<p>保证每个类具有无参构造器是应当遵守的编程规范，但实际开发中一些第三库的相关类不包含无参构造，的确是有点麻烦。</p>
-<h3 id="线程安全"><a href="#线程安全" class="headerlink" title="线程安全"></a>线程安全</h3><p>Kryo是线程不安全的，意味着每当需要序列化和反序列化时都需要实例化一次，或者借助ThreadLocal来维护以保证其线程安全。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ThreadLocal&lt;Kryo&gt; kryos = <span class="keyword">new</span> ThreadLocal&lt;Kryo&gt;() &#123;</span><br><span class="line">	<span class="function"><span class="keyword">protected</span> Kryo <span class="title">initialValue</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		Kryo kryo = <span class="keyword">new</span> Kryo();</span><br><span class="line">		<span class="comment">// configure kryo instance, customize settings</span></span><br><span class="line">		<span class="keyword">return</span> kryo;</span><br><span class="line">	&#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Somewhere else, use Kryo</span></span><br><span class="line">Kryo k = kryos.get();</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-<h3 id="Kryo相关配置参数详解"><a href="#Kryo相关配置参数详解" class="headerlink" title="Kryo相关配置参数详解"></a>Kryo相关配置参数详解</h3><p>每个Kryo实例都可以拥有两个配置参数，这值得被拉出来单独聊一聊。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kryo.setRegistrationRequired(<span class="keyword">false</span>);<span class="comment">//关闭注册行为</span></span><br><span class="line">kryo.setReferences(<span class="keyword">true</span>);<span class="comment">//支持循环引用</span></span><br></pre></td></tr></table></figure>
-<p>Kryo支持对注册行为，如<code>kryo.register(SomeClazz.class);</code>,这会赋予该Class一个从0开始的编号，但Kryo使用注册行为最大的问题在于，其不保证同一个Class每一次注册的号码想用，这与注册的顺序有关，也就意味着在不同的机器、同一个机器重启前后都有可能拥有不同的编号，这会导致序列化产生问题，所以在分布式项目中，一般关闭注册行为。</p>
-<p>第二个注意点在于循环引用，Kryo为了追求高性能，可以关闭循环引用的支持。不过我并不认为关闭它是一件好的选择，大多数情况下，请保持<code>kryo.setReferences(true)</code>。</p>
-<h3 id="常用Kryo工具类"><a href="#常用Kryo工具类" class="headerlink" title="常用Kryo工具类"></a>常用Kryo工具类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">KryoSerializer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">byte</span>[] serialize(Object obj) &#123;</span><br><span class="line">        Kryo kryo = kryoLocal.get();</span><br><span class="line">        ByteArrayOutputStream byteArrayOutputStream = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">        Output output = <span class="keyword">new</span> Output(byteArrayOutputStream);<span class="comment">//&lt;1&gt;</span></span><br><span class="line">        kryo.writeClassAndObject(output, obj);<span class="comment">//&lt;2&gt;</span></span><br><span class="line">        output.close();</span><br><span class="line">        <span class="keyword">return</span> byteArrayOutputStream.toByteArray();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">deserialize</span><span class="params">(<span class="keyword">byte</span>[] bytes)</span> </span>&#123;</span><br><span class="line">        Kryo kryo = kryoLocal.get();</span><br><span class="line">        ByteArrayInputStream byteArrayInputStream = <span class="keyword">new</span> ByteArrayInputStream(bytes);</span><br><span class="line">        Input input = <span class="keyword">new</span> Input(byteArrayInputStream);<span class="comment">// &lt;1&gt;</span></span><br><span class="line">        input.close();</span><br><span class="line">        <span class="keyword">return</span> (T) kryo.readClassAndObject(input);<span class="comment">//&lt;2&gt;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ThreadLocal&lt;Kryo&gt; kryoLocal = <span class="keyword">new</span> ThreadLocal&lt;Kryo&gt;() &#123;<span class="comment">//&lt;3&gt;</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">protected</span> Kryo <span class="title">initialValue</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            Kryo kryo = <span class="keyword">new</span> Kryo();</span><br><span class="line">            kryo.setReferences(<span class="keyword">true</span>);<span class="comment">//默认值为true,强调作用</span></span><br><span class="line">            kryo.setRegistrationRequired(<span class="keyword">false</span>);<span class="comment">//默认值为false,强调作用</span></span><br><span class="line">            <span class="keyword">return</span> kryo;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><1> Kryo的Input和Output接收一个InputStream和OutputStream，Kryo通常完成字节数组和对象的转换，所以常用的输入输出流实现为ByteArrayInputStream/ByteArrayOutputStream。</1></p>
-<p><2> writeClassAndObject和readClassAndObject配对使用在分布式场景下是最常见的，序列化时将字节码存入序列化结果中，便可以在反序列化时不必要传入字节码信息。</2></p>
-<p><3> 使用ThreadLocal维护Kryo实例，这样减少了每次使用都实例化一次Kryo的开销又可以保证其线程安全。</3></p>
-<h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><p><a href="https://github.com/EsotericSoftware/kryo" target="_blank" rel="noopener">https://github.com/EsotericSoftware/kryo</a></p>
-<p><a href="http://www.cnblogs.com/hntyzgn/p/7122709.html" target="_blank" rel="noopener">Kryo 使用指南</a></p>
-<p><a href="https://kb.cnblogs.com/page/515982/" target="_blank" rel="noopener">序列化与反序列化</a></p>
-<hr>
-<p>更多的序列化方案，和RPC其他层次中会涉及到的技术，在后续的文章中进行逐步介绍。</p>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
-</div>
-
-    <a data-url="http://lexburner.github.io/rpc-serialize-1/" data-id="cjozxskwr0086069ewwhsbx5j" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/NJIAS2017/" data-id="cjpig6em200584r9ex90ardbu" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -2789,6 +2720,25 @@ ga('send', 'pageview');
                     <li>
                         
                         <!-- <div class="item-thumbnail">
+                            <a href="/polardb-race/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/数据库/">数据库</a></p>
+                            <p class="item-title"><a href="/polardb-race/" class="title">PolarDB数据库性能大赛Java选手分享</a></p>
+                            <p class="item-date"><time datetime="2018-12-10T10:43:56.000Z" itemprop="datePublished">2018-12-10</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
                             <a href="/file-io-best-practise/" class="thumbnail">
     
     
@@ -2862,25 +2812,6 @@ ga('send', 'pageview');
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <!-- <div class="item-thumbnail">
-                            <a href="/contribute-to-opensource/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div> -->
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/技术杂谈/">技术杂谈</a></p>
-                            <p class="item-title"><a href="/contribute-to-opensource/" class="title">如何向开源项目做贡献(以incubator-dubbo为例)</a></p>
-                            <p class="item-date"><time datetime="2018-08-22T11:47:28.000Z" itemprop="datePublished">2018-08-22</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -2890,7 +2821,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
         </div>
     </div>
 
@@ -2899,7 +2830,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
         </div>
     </div>
 
@@ -2908,7 +2839,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/DevOps/" style="font-size: 11.25px;">DevOps</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 10px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JWT/" style="font-size: 12.5px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12.5px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 10px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 18.75px;">RPC</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18.75px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12.5px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11.25px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11.25px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 17.5px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12.5px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13.75px;">Spring Session</a> <a href="/tags/Validation/" style="font-size: 11.25px;">Validation</a> <a href="/tags/XML/" style="font-size: 11.25px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13.75px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11.25px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 15px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/技术杂谈/" style="font-size: 16.25px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 10px;">数据库</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13.75px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11.25px;">网关</a> <a href="/tags/规则引擎/" style="font-size: 13.75px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11.25px;">领域驱动设计</a>
+            <a href="/tags/DevOps/" style="font-size: 11.25px;">DevOps</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 10px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JWT/" style="font-size: 12.5px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12.5px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 11.25px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 18.75px;">RPC</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18.75px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12.5px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11.25px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11.25px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 17.5px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12.5px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13.75px;">Spring Session</a> <a href="/tags/Validation/" style="font-size: 11.25px;">Validation</a> <a href="/tags/XML/" style="font-size: 11.25px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13.75px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11.25px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 15px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/技术杂谈/" style="font-size: 16.25px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 10px;">数据库</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13.75px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11.25px;">网关</a> <a href="/tags/规则引擎/" style="font-size: 13.75px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11.25px;">领域驱动设计</a>
         </div>
     </div>
 
