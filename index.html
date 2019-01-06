@@ -269,7 +269,7 @@ ga('send', 'pageview');
 <p>长连接还常常被用来做数据的推送，我们大多数时候对通信的认知还是 request/response 模型，但 TCP 双工通信的性质决定了它还可以被用来做双向通信。在长连接之下，可以很方便的实现 push 模型。</p>
 <p>短连接没有太多东西可以讲，所以下文我们将目光聚焦在长连接的一些问题上。纯讲理论未免有些过于单调，所以下文我借助 Dubbo 这个 RPC 框架的一些实践来展开 TCP 的相关讨论。</p>
 <h3 id="服务治理框架中的长连接"><a href="#服务治理框架中的长连接" class="headerlink" title="服务治理框架中的长连接"></a>服务治理框架中的长连接</h3><p>前面已经提到过，追求性能的时候，必然会选择使用长连接，所以借助 Dubbo 可以很好的来理解 TCP。我们开启两个 Dubbo 应用，一个 server 负责监听本地 20880（众所周知，这是 Dubbo 协议默认的端口），一个 client 负责循环发送请求。执行 <code>lsof -i:20880</code> 命令可以查看端口的相关使用情况：</p>
-<p><img src="/Users/xujingfeng/Library/Application Support/typora-user-images/image-20190106203341694.png" alt="image-20190106203341694"></p>
+<p><img src="http://kirito.iocoder.cn/image-20190106203341694.png" alt="image-20190106203341694"></p>
 <ul>
 <li><code>*:20880 (LISTEN)</code> 说明了 Dubbo 正在监听本地的 20880 端口，处理发送到本地 20880 端口的请求</li>
 <li>后两条信息说明请求的发送情况，验证了 TCP 是一个双向的通信过程，由于我是在同一个机器开启了两个 Dubbo 应用，所以你能够看到是本地的 53078 端口与 20880 端口在通信。我们并没有手动设置 53078 这个客户端端口，他是随机的，但也阐释了一个道理：即使是发送请求的一方，也需要占用一个端口。</li>
@@ -298,10 +298,10 @@ ga('send', 'pageview');
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// HeartBeatTask</span></span><br><span class="line"><span class="keyword">if</span> (channel <span class="keyword">instanceof</span> Client) &#123;</span><br><span class="line">    ((Client) channel).reconnect();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    channel.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>熟悉其他 RPC 框架的同学会发现，不同框架的心跳机制真的是差距非常大。心跳设计还跟连接创建，重连机制，黑名单连接相关，还需要具体框架具体分析。</p>
 <p>除了定时任务的设计，还需要在协议层面支持心跳。最简单的例子可以参考 nginx 的健康检查，而针对 Dubbo 协议，自然也需要做心跳的支持，如果将心跳请求识别为正常流量，会造成服务端的压力问题，干扰限流等诸多问题。</p>
-<p><img src="http://dl2.iteye.com/upload/attachment/0127/0402/359310b9-b980-3254-aed6-78aa6c482e53.png" alt="img"></p>
+<p><img src="http://kirito.iocoder.cn/359310b9-b980-3254-aed6-78aa6c482e53.png" alt="dubbo protocol"></p>
 <p>其中 Flag 代表了 Dubbo 协议的标志位，一共 8 个地址位。低四位用来表示消息体数据用的序列化工具的类型（默认 hessian），高四位中，第一位为1表示是 request 请求，第二位为 1 表示双向传输（即有返回response），<strong>第三位为 1 表示是心跳事件</strong>。</p>
 <blockquote>
-<p>心跳请求应当和普通调用区别对待。</p>
+<p>心跳请求应当和普通请求区别对待。</p>
 </blockquote>
 <h3 id="注意和-HTTP-的-KeepAlive-区别对待"><a href="#注意和-HTTP-的-KeepAlive-区别对待" class="headerlink" title="注意和 HTTP 的 KeepAlive 区别对待"></a>注意和 HTTP 的 KeepAlive 区别对待</h3><ul>
 <li>HTTP 协议的 KeepAlive 意图在于连接复用，同一个连接上串行方式传递请求-响应数据</li>
@@ -322,19 +322,15 @@ ga('send', 'pageview');
 </ol>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>有三种使用 KeepAlive 的实践方案：</p>
 <ol>
-<li>默认情况下使用 KeepAlive 周期为 2 个小时，如不选择更改，属于误用范畴，造成资源浪费：内核会为每一个连接都打开一个保活计时器，N 个连接会打开 N 个保活计时器。 优势很明显：</li>
-</ol>
-<ul>
+<li>默认情况下使用 KeepAlive 周期为 2 个小时，如不选择更改，属于误用范畴，造成资源浪费：内核会为每一个连接都打开一个保活计时器，N 个连接会打开 N 个保活计时器。 优势很明显：<ul>
 <li>TCP 协议层面保活探测机制，系统内核完全替上层应用自动给做好了</li>
 <li>内核层面计时器相比上层应用，更为高效</li>
 <li>上层应用只需要处理数据收发、连接异常通知即可</li>
 <li>数据包将更为紧凑</li>
 </ul>
-<ol>
-<li><p>关闭 TCP 的 KeepAlive，完全使用应用层心跳保活机制。由应用掌管心跳，更灵活可控，比如可以在应用级别设置心跳周期，适配私有协议。</p>
 </li>
-<li><p>业务心跳 + TCP KeepAlive 一起使用，互相作为补充，但 TCP 保活探测周期和应用的心跳周期要协调，以互补方可，不能够差距过大，否则将达不到设想的效果。</p>
-</li>
+<li>关闭 TCP 的 KeepAlive，完全使用应用层心跳保活机制。由应用掌管心跳，更灵活可控，比如可以在应用级别设置心跳周期，适配私有协议。</li>
+<li>业务心跳 + TCP KeepAlive 一起使用，互相作为补充，但 TCP 保活探测周期和应用的心跳周期要协调，以互补方可，不能够差距过大，否则将达不到设想的效果。</li>
 </ol>
 <p>各个框架的设计都有所不同，例如 Dubbo 使用的是方案三，但阿里内部的 HSF 框架则没有设置 TCP 的 KeepAlive，仅仅由应用心跳保活。和心跳策略一样，这和框架整体的设计相关。</p>
 
@@ -347,7 +343,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="cjql0qyh6009abj9ey4z5yrww" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="cjql1kl80009hfd9em2jdsrmg" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -496,7 +492,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubbo-url/" data-id="cjql0qyg1005ubj9eohmei5xj" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/dubbo-url/" data-id="cjql1kl6k005rfd9eqo828dkx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -641,7 +637,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/polardb-race/" data-id="cjql0qyit00b1bj9enip3x84h" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/polardb-race/" data-id="cjql1kl9a00b0fd9enco65spb" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -897,7 +893,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/file-io-best-practise/" data-id="cjql0qyio00apbj9et65me9ne" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/file-io-best-practise/" data-id="cjql1kl9600aofd9ea63kjty4" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1099,7 +1095,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/java-random/" data-id="cjql0qygh006ybj9eanpaq25p" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/java-random/" data-id="cjql1kl73006vfd9e7c6bkkyg" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1244,7 +1240,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-xsd/" data-id="cjql0qyh9009dbj9eh1kknksd" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/spring-xsd/" data-id="cjql1kl7x009bfd9e01xeggrx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1389,7 +1385,151 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/high-performance-queue/" data-id="cjql0qydj000gbj9enqtn7wwr" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/high-performance-queue/" data-id="cjql1kl3s000dfd9ee7atyli6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
+    <article id="post-contribute-to-opensource" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/contribute-to-opensource/">如何向开源项目做贡献(以incubator-dubbo为例)</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        <!-- 增加文章类型 -->
+                        
+	
+		<div class="article-type">
+		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
+		</div>
+	
+	
+	
+		
+	
+
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/contribute-to-opensource/">
+            <time datetime="2018-08-22T11:47:28.000Z" itemprop="datePublished">2018-08-22</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/技术杂谈/">技术杂谈</a>
+    </div>
+
+                        <!-- 不显示标签 -->
+                        <!-- 
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/Dubbo/">Dubbo</a>, <a class="tag-link" href="/tags/开源/">开源</a>
+    </div>
+ -->
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            <p></p><p>Github 上有众多优秀的开源项目，大多数 IT 从业者将其当做了予取予求的工具库，遇到什么需求，先去 Github 搜一把，但有没有想过有一天自己也可以给开源事业做一些贡献呢？本文将会以 incubator-dubbo 项目为例，向你阐释，给开源项目做贡献并不是一件难事。<br></p>
+            <p class="article-more-link">
+                <a href="/contribute-to-opensource/#more">查看更多</a>
+            </p>
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="http://lexburner.github.io/contribute-to-opensource/" data-id="cjql1kl6f005kfd9ee0oprhyw" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1537,151 +1677,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/java-concurrent-counter/" data-id="cjql0qyge006rbj9e0jnctsrk" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
-    <article id="post-contribute-to-opensource" class="article article-type-post" itemscope="" itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/contribute-to-opensource/">如何向开源项目做贡献(以incubator-dubbo为例)</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        <!-- 增加文章类型 -->
-                        
-	
-		<div class="article-type">
-		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
-		</div>
-	
-	
-	
-		
-	
-
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/contribute-to-opensource/">
-            <time datetime="2018-08-22T11:47:28.000Z" itemprop="datePublished">2018-08-22</time>
-        </a>
-    </div>
-
-
-                        
-    <div class="article-category">
-    	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/技术杂谈/">技术杂谈</a>
-    </div>
-
-                        <!-- 不显示标签 -->
-                        <!-- 
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Dubbo/">Dubbo</a>, <a class="tag-link" href="/tags/开源/">开源</a>
-    </div>
- -->
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            <p></p><p>Github 上有众多优秀的开源项目，大多数 IT 从业者将其当做了予取予求的工具库，遇到什么需求，先去 Github 搜一把，但有没有想过有一天自己也可以给开源事业做一些贡献呢？本文将会以 incubator-dubbo 项目为例，向你阐释，给开源项目做贡献并不是一件难事。<br></p>
-            <p class="article-more-link">
-                <a href="/contribute-to-opensource/#more">查看更多</a>
-            </p>
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
-</div>
-
-    <a data-url="http://lexburner.github.io/contribute-to-opensource/" data-id="cjql0qyjg00bobj9e8rjzowap" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/java-concurrent-counter/" data-id="cjql1kl71006ofd9ee77brkxk" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1825,7 +1821,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/java-jmh/" data-id="cjql0qyji00btbj9e2ycuwrxz" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/java-jmh/" data-id="cjql1klaa00bqfd9eeksvwoas" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
