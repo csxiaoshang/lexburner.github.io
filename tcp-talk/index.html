@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>聊聊 TCP 长连接和心跳那些事 | 徐靖峰|个人博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="前言可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳的问题，做一个统一的整理。  在 Java 中，使用 TCP 通信，大概">
+<meta name="keywords" content="TCP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="聊聊 TCP 长连接和心跳那些事">
+<meta property="og:url" content="http://lexburner.github.io/tcp-talk/index.html">
+<meta property="og:site_name" content="徐靖峰|个人博客">
+<meta property="og:description" content="前言可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳的问题，做一个统一的整理。  在 Java 中，使用 TCP 通信，大概">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://lexburner.github.io/Users/xujingfeng/Library/Application%20Support/typora-user-images/image-20190106203341694.png">
+<meta property="og:image" content="http://dl2.iteye.com/upload/attachment/0127/0402/359310b9-b980-3254-aed6-78aa6c482e53.png">
+<meta property="og:updated_time" content="2019-01-06T14:54:13.389Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="聊聊 TCP 长连接和心跳那些事">
+<meta name="twitter:description" content="前言可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳的问题，做一个统一的整理。  在 Java 中，使用 TCP 通信，大概">
+<meta name="twitter:image" content="http://lexburner.github.io/Users/xujingfeng/Library/Application%20Support/typora-user-images/image-20190106203341694.png">
+    
+
+    
+        <link rel="alternate" href="/atom.xml" title="徐靖峰|个人博客" type="application/atom+xml">
+    
+
+    
+        <link rel="icon" href="/css/images/avatar.png">
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-118574570-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">徐靖峰|个人博客</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/categories">分类</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/about">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">分类</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/about">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile" class="profile-fixed">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png">
+            <h2 id="name">徐靖峰</h2>
+            <h3 id="title">software engineer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Nanking, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lexburner">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                102
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                45
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lexburner" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/css/images/kirito_wechat.jpg" target="_blank" title="wechat" class="tooltip">
+                            <i class="fa fa-wechat"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/atom.xml" target="_blank" title="rss" class="tooltip">
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-tcp-talk" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            聊聊 TCP 长连接和心跳那些事
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        <!-- 增加文章类型 -->
+                        
+	
+		<div class="article-type">
+		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
+		</div>
+	
+	
+	
+		
+	
+
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/tcp-talk/">
+            <time datetime="2019-01-06T10:24:09.000Z" itemprop="datePublished">2019-01-06</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/RPC/">RPC</a>
+    </div>
+
+                        <!-- 不显示标签 -->
+                        <!-- 
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/TCP/">TCP</a>
+    </div>
+ -->
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳的问题，做一个统一的整理。 </p>
+<p>在 Java 中，使用 TCP 通信，大概率会涉及到 Socket、Netty，本文会借用它们的一些 API 和设置参数来辅助介绍。</p>
+<h3 id="长连接与短连接"><a href="#长连接与短连接" class="headerlink" title="长连接与短连接"></a>长连接与短连接</h3><p><strong>TCP 本身并没有长短连接的区别</strong>，长短与否，完全取决于我们怎么用它。</p>
+<ul>
+<li>短连接：每次通信时，创建 Socket；一次通信结束，调用 socket.close()。这就是一般意义上的短连接，短连接的好处是管理起来比较简单，存在的连接都是可用的连接，不需要额外的控制手段。</li>
+<li>长连接：每次通信完毕后，不会关闭连接，这样就可以做到连接的复用。<strong>长连接的好处便是省去了创建连接的耗时。</strong></li>
+</ul>
+<p>短连接和长连接的优势，分别是对方的劣势。想要图简单，不追求高性能，使用短连接合适，这样我们就不需要操心连接状态的管理；想要追求性能，使用长连接，我们就需要担心各种问题：比如<strong>端对端连接的维护，连接的保活</strong>。</p>
+<p>长连接还常常被用来做数据的推送，我们大多数时候对通信的认知还是 request/response 模型，但 TCP 双工通信的性质决定了它还可以被用来做双向通信。在长连接之下，可以很方便的实现 push 模型。</p>
+<p>短连接没有太多东西可以讲，所以下文我们将目光聚焦在长连接的一些问题上。纯讲理论未免有些过于单调，所以下文我借助 Dubbo 这个 RPC 框架的一些实践来展开 TCP 的相关讨论。</p>
+<h3 id="服务治理框架中的长连接"><a href="#服务治理框架中的长连接" class="headerlink" title="服务治理框架中的长连接"></a>服务治理框架中的长连接</h3><p>前面已经提到过，追求性能的时候，必然会选择使用长连接，所以借助 Dubbo 可以很好的来理解 TCP。我们开启两个 Dubbo 应用，一个 server 负责监听本地 20880（众所周知，这是 Dubbo 协议默认的端口），一个 client 负责循环发送请求。执行 <code>lsof -i:20880</code> 命令可以查看端口的相关使用情况：</p>
+<p><img src="/Users/xujingfeng/Library/Application Support/typora-user-images/image-20190106203341694.png" alt="image-20190106203341694"></p>
+<ul>
+<li><code>*:20880 (LISTEN)</code> 说明了 Dubbo 正在监听本地的 20880 端口，处理发送到本地 20880 端口的请求</li>
+<li>后两条信息说明请求的发送情况，验证了 TCP 是一个双向的通信过程，由于我是在同一个机器开启了两个 Dubbo 应用，所以你能够看到是本地的 53078 端口与 20880 端口在通信。我们并没有手动设置 53078 这个客户端端口，他是随机的，但也阐释了一个道理：即使是发送请求的一方，也需要占用一个端口。</li>
+<li>稍微说一下 FD 这个参数，他代表了文件句柄，每新增一条连接都会占用新的文件句柄，如果你在使用 TCP 通信的过程中出现了 <code>open too many files</code> 的异常，那就应该检查一下，你是不是创建了太多的连接，而没有关闭。细心的读者也会联想到长连接的另一个好处，那就是会占用较少的文件句柄。</li>
+</ul>
+<h3 id="长连接的维护"><a href="#长连接的维护" class="headerlink" title="长连接的维护"></a>长连接的维护</h3><p>因为客户端请求的服务可能分布在多个服务器上，客户端端自然需要跟对端创建多条长连接，使用长连接，我们遇到的第一个问题就是要如何维护长连接。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Sharable</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NettyHandler</span> <span class="keyword">extends</span> <span class="title">SimpleChannelHandler</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, Channel&gt; channels = <span class="keyword">new</span> ConcurrentHashMap&lt;String, Channel&gt;(); <span class="comment">// &lt;ip:port, channel&gt;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NettyServer</span> <span class="keyword">extends</span> <span class="title">AbstractServer</span> <span class="keyword">implements</span> <span class="title">Server</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, Channel&gt; channels; <span class="comment">// &lt;ip:port, channel&gt;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在 Dubbo 中，客户端和服务端都使用 <code>ip:port</code> 维护了端对端的长连接，Channel 便是对连接的抽象。我们主要关注 NettyHandler 中的长连接，服务端同时维护一个长连接的集合是 Dubbo 的设计，我们将在后面提到。</p>
+<h3 id="连接的保活"><a href="#连接的保活" class="headerlink" title="连接的保活"></a>连接的保活</h3><p>这个话题就有的聊了，会牵扯到比较多的知识点。首先需要明确一点，为什么需要连接的报活？当双方已经建立了连接，但因为网络问题，链路不通，这样长连接就不能使用了。需要明确的一点是，通过 netstat，lsof 等指令查看到连接的状态处于 <code>ESTABLISHED</code> 状态并不是一件非常靠谱的事，因为连接可能已死，但没有被系统感知到，更不用提假死这种疑难杂症了。如果保证长连接可用是一件技术活。</p>
+<h3 id="连接的保活：KeepAlive"><a href="#连接的保活：KeepAlive" class="headerlink" title="连接的保活：KeepAlive"></a>连接的保活：KeepAlive</h3><p>首先想到的是 TCP 中的 KeepAlive 机制。KeepAlive 并不是 TCP 协议的一部分，但是大多数操作系统都实现了这个机制。KeepAlive 机制开启后，在一定时间内（一般时间为 7200s，参数 <code>tcp_keepalive_time</code>）在链路上没有数据传送的情况下，TCP 层将发送相应的KeepAlive探针以确定连接可用性，探测失败后重试 10（参数 <code>tcp_keepalive_probes</code>）次，每次间隔时间 75s（参数 <code>tcp_keepalive_intvl</code>），所有探测失败后，才认为当前连接已经不可用。</p>
+<p>在 Netty 中开启 KeepAlive：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bootstrap.option(ChannelOption.TCP_NODELAY, <span class="keyword">true</span>)</span><br></pre></td></tr></table></figure>
+<p>Linux 操作系统中设置 KeepAlive 相关参数，修改 <code>/etc/sysctl.conf</code> 文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">net.ipv4.tcp_keepalive_time=90</span><br><span class="line">net.ipv4.tcp_keepalive_intvl=15</span><br><span class="line">net.ipv4.tcp_keepalive_probes=2</span><br></pre></td></tr></table></figure>
+<p><strong>KeepAlive 机制是在网络层面保证了连接的可用性</strong>，但站在应用框架层面我们认为这还不够。主要体现在两个方面：</p>
+<ul>
+<li>KeepAlive 的开关是在应用层开启的，但是具体参数（如重试测试，重试间隔时间）的设置却是操作系统级别的，位于操作系统的 <code>/etc/sysctl.conf</code> 配置中，这对于应用来说不够灵活。</li>
+<li>KeepAlive 的保活机制只在链路空闲的情况下才会起到作用，假如此时有数据发送，且物理链路已经不通，操作系统这边的链路状态还是 ESTABLISHED，这时会发生什么？自然会走 TCP 重传机制，要知道默认的 TCP 超时重传，指数退避算法也是一个相当长的过程。</li>
+<li>KeepAlive 本身是面向网络的，并不是面向于应用的，当连接不可用时，可能是由于应用本身 GC 问题，系统 load 高等情况，但网络仍然是通的，此时，应用已经失去了活性，所以连接自然应该认为是不可用的。</li>
+</ul>
+<p>看来，应用层面的连接保活还是必须要做的。</p>
+<h3 id="连接的保活：应用层心跳"><a href="#连接的保活：应用层心跳" class="headerlink" title="连接的保活：应用层心跳"></a>连接的保活：应用层心跳</h3><p>终于点题了，文题中提到的<strong>心跳</strong>便是一个本文想要重点强调的另一个 TCP 相关的知识点。上一节我们已经解释过了，网络层面的 KeepAlive 不足以支撑应用级别的连接可用性，本节就来聊聊应用层的心跳机制是实现连接保活的。</p>
+<p>如何理解应用层的心跳？简单来说，就是客户端会开启一个定时任务，定时对已经建立连接的对端应用发送请求（这里的请求是特殊的心跳请求），服务端则需要特殊处理该请求，返回响应。如果心跳持续多次没有收到响应，客户端会认为连接不可用，主动断开连接。不同的服务治理框架对心跳，建连，断连，拉黑的机制有不同的策略，但大多数的服务治理框架都会在应用层做心跳，Dubbo 也不例外。</p>
+<h3 id="应用层心跳的设计细节"><a href="#应用层心跳的设计细节" class="headerlink" title="应用层心跳的设计细节"></a>应用层心跳的设计细节</h3><p>以 Dubbo 为例，支持应用层的心跳，客户端和服务端都会开启一个 <code>HeartBeatTask</code>，客户端在 <code>HeaderExchangeClient</code> 中开启，服务端将在 <code>HeaderExchangeServer</code> 开启。文章开头埋了一个坑：Dubbo 为什么在服务端同时维护 <code>Map&lt;String , Channel&gt;</code> 呢？主要就是为了给心跳做贡献，心跳定时任务在发现连接不可用时，会根据当前是客户端还是服务端走不同的分支，客户端发现不可用，是重连；服务端发现不可用，是直接 close。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// HeartBeatTask</span></span><br><span class="line"><span class="keyword">if</span> (channel <span class="keyword">instanceof</span> Client) &#123;</span><br><span class="line">    ((Client) channel).reconnect();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    channel.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>熟悉其他 RPC 框架的同学会发现，不同框架的心跳机制真的是差距非常大。心跳设计还跟连接创建，重连机制，黑名单连接相关，还需要具体框架具体分析。</p>
+<p>除了定时任务的设计，还需要在协议层面支持心跳。最简单的例子可以参考 nginx 的健康检查，而针对 Dubbo 协议，自然也需要做心跳的支持，如果将心跳请求识别为正常流量，会造成服务端的压力问题，干扰限流等诸多问题。</p>
+<p><img src="http://dl2.iteye.com/upload/attachment/0127/0402/359310b9-b980-3254-aed6-78aa6c482e53.png" alt="img"></p>
+<p>其中 Flag 代表了 Dubbo 协议的标志位，一共 8 个地址位。低四位用来表示消息体数据用的序列化工具的类型（默认 hessian），高四位中，第一位为1表示是 request 请求，第二位为 1 表示双向传输（即有返回response），<strong>第三位为 1 表示是心跳事件</strong>。</p>
+<blockquote>
+<p>心跳请求应当和普通调用区别对待。</p>
+</blockquote>
+<h3 id="注意和-HTTP-的-KeepAlive-区别对待"><a href="#注意和-HTTP-的-KeepAlive-区别对待" class="headerlink" title="注意和 HTTP 的 KeepAlive 区别对待"></a>注意和 HTTP 的 KeepAlive 区别对待</h3><ul>
+<li>HTTP 协议的 KeepAlive 意图在于连接复用，同一个连接上串行方式传递请求-响应数据</li>
+<li>TCP 的 KeepAlive 机制意图在于保活、心跳，检测连接错误。</li>
+</ul>
+<p>这压根是两个概念。</p>
+<h3 id="KeepAlive-常见错误"><a href="#KeepAlive-常见错误" class="headerlink" title="KeepAlive 常见错误"></a>KeepAlive 常见错误</h3><p>启用 TCP KeepAlive 的应用程序，一般可以捕获到下面几种类型错误</p>
+<ol>
+<li><p>ETIMEOUT 超时错误，在发送一个探测保护包经过 (tcp_keepalive_time + tcp_keepalive_intvl * tcp_keepalive_probes)时间后仍然没有接收到 ACK 确认情况下触发的异常，套接字被关闭</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java.io.IOException: Connection timed out</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>EHOSTUNREACH host unreachable(主机不可达)错误，这个应该是 ICMP 汇报给上层应用的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java.io.IOException: No route to host</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>链接被重置，终端可能崩溃死机重启之后，接收到来自服务器的报文，然物是人非，前朝往事，只能报以无奈重置宣告之。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java.io.IOException: Connection reset by peer</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>有三种使用 KeepAlive 的实践方案：</p>
+<ol>
+<li>默认情况下使用 KeepAlive 周期为 2 个小时，如不选择更改，属于误用范畴，造成资源浪费：内核会为每一个连接都打开一个保活计时器，N 个连接会打开 N 个保活计时器。 优势很明显：</li>
+</ol>
+<ul>
+<li>TCP 协议层面保活探测机制，系统内核完全替上层应用自动给做好了</li>
+<li>内核层面计时器相比上层应用，更为高效</li>
+<li>上层应用只需要处理数据收发、连接异常通知即可</li>
+<li>数据包将更为紧凑</li>
+</ul>
+<ol>
+<li><p>关闭 TCP 的 KeepAlive，完全使用应用层心跳保活机制。由应用掌管心跳，更灵活可控，比如可以在应用级别设置心跳周期，适配私有协议。</p>
+</li>
+<li><p>业务心跳 + TCP KeepAlive 一起使用，互相作为补充，但 TCP 保活探测周期和应用的心跳周期要协调，以互补方可，不能够差距过大，否则将达不到设想的效果。</p>
+</li>
+</ol>
+<p>各个框架的设计都有所不同，例如 Dubbo 使用的是方案三，但阿里内部的 HSF 框架则没有设置 TCP 的 KeepAlive，仅仅由应用心跳保活。和心跳策略一样，这和框架整体的设计相关。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="cjql0qyh6009abj9ey4z5yrww" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+    
+        <a href="/dubbo-url/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Dubbo 中的 URL 统一模型</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+	<div id="commentContainer"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/tcp-talk/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
+                            <p class="item-title"><a href="/tcp-talk/" class="title">聊聊 TCP 长连接和心跳那些事</a></p>
+                            <p class="item-date"><time datetime="2019-01-06T10:24:09.000Z" itemprop="datePublished">2019-01-06</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/dubbo-url/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
+                            <p class="item-title"><a href="/dubbo-url/" class="title">Dubbo 中的 URL 统一模型</a></p>
+                            <p class="item-date"><time datetime="2018-12-25T02:24:09.000Z" itemprop="datePublished">2018-12-25</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/polardb-race/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/数据库/">数据库</a></p>
+                            <p class="item-title"><a href="/polardb-race/" class="title">PolarDB数据库性能大赛Java选手分享</a></p>
+                            <p class="item-date"><time datetime="2018-12-10T10:43:56.000Z" itemprop="datePublished">2018-12-10</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/file-io-best-practise/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/数据库/">数据库</a></p>
+                            <p class="item-title"><a href="/file-io-best-practise/" class="title">文件IO操作的一些最佳实践</a></p>
+                            <p class="item-date"><time datetime="2018-11-27T15:22:22.000Z" itemprop="datePublished">2018-11-27</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/java-random/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/JAVA并发合集/">JAVA并发合集</a></p>
+                            <p class="item-title"><a href="/java-random/" class="title">Java随机数探秘</a></p>
+                            <p class="item-date"><time datetime="2018-09-12T11:47:28.000Z" itemprop="datePublished">2018-09-12</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">一月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/DUBBO/" style="font-size: 10px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11.25px;">DevOps</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 10px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JWT/" style="font-size: 12.5px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12.5px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 11.25px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 18.75px;">RPC</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18.75px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12.5px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11.25px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11.25px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 17.5px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12.5px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13.75px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 10px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11.25px;">Validation</a> <a href="/tags/XML/" style="font-size: 11.25px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13.75px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11.25px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 15px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/技术杂谈/" style="font-size: 16.25px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 10px;">数据库</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13.75px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11.25px;">网关</a> <a href="/tags/规则引擎/" style="font-size: 13.75px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11.25px;">领域驱动设计</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="https://ntzyz.io/">namespace_ntzyz</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://blog.didispace.com/">程序猿DD|博客</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://vip.iocoder.cn/">芋道源码</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.jiangxinlingdu.com/">匠心零度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2019 徐靖峰<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+	<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+	<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+	<script>
+		var gitment = new Gitment({
+			owner: 'lexburner',
+			repo: 'lexburner.github.io',
+			oauth: {
+				client_id: 'd5fc3e1150477a0d433d',
+				client_secret: 'aa94acd5f130281051b9e703c19b4c6d878e90c4',
+			},
+		})
+		gitment.render('commentContainer')
+	</script>
+	
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>
