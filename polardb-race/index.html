@@ -17,7 +17,8 @@
 <meta property="og:image" content="http://kirito.iocoder.cn/KiritoDB.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20181210204156199.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20181210215200345.png">
-<meta property="og:updated_time" content="2018-12-25T02:25:33.749Z">
+<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-01-07T02:32:36.746Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="PolarDB数据库性能大赛Java选手分享">
 <meta name="twitter:description" content="1 前言 国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大(当然，主要还是前者 QA">
@@ -353,6 +354,8 @@ ga('send', 'pageview');
 <p>另外需要注意的一点，在跟@96年的亚普长谈的一个夜晚，发现 FileChannel 中出人意料的一个实现，在分配对内内存时，它仍然会拷贝一份堆外内存，这对于实际使用 FileChannel 的场景需要额外注意，这部分意料之外分配的内存很容易导致线上的问题（实际上已经遇到了，和 glibc 的 malloc 相关，当 buffer 大于 128k 时，会使用 mmap 分配一块内存作为缓存）</p>
 <p>说回 FileChannel，MMAP，最容易想到的是 RocketMQ 之中对两者灵活的运用，不知道在其他 Java 实现的存储引擎之中，是不是可以考虑使用 Direct IO 来提升存储引擎的性能呢？我们可以设想一下，利用有限并且少量的 PageCache 来保证一致性，在主流程中使用 Direct IO 配合顺序读写是不是一种可以配套使用的方案，不仅仅 PolarDB，算作是参加本次比赛给予我的一个启发。</p>
 <p>虽然无缘决赛，但使用 Java 取得这样的成绩还算不是特别难过，在 6400w 数据随机写，随机读，顺序读的场景下，Java 可以做到仅仅相差 C++ 不到 10s 的 overhead，我倒是觉得完全是可以接受的，哈哈。还有一些小的优化点就不在此赘述了，欢迎留言与我交流优化点和比赛感悟。</p>
+<p><strong>欢迎关注我的微信公众号：「Kirito的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
+<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -363,7 +366,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/polardb-race/" data-id="cjqlpl0rr00b0r89eeiou8hos" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/polardb-race/" data-id="cjqlprxj900b6wf9e68y72xg6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

@@ -15,7 +15,8 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20190106203341694.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/359310b9-b980-3254-aed6-78aa6c482e53.png">
-<meta property="og:updated_time" content="2019-01-07T02:29:03.558Z">
+<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-01-07T02:32:44.066Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="聊聊 TCP 长连接和心跳那些事">
 <meta name="twitter:description" content="前言可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳的问题，做一个统一的整理。  在 Java 中，使用 TCP 通信，大概">
@@ -267,6 +268,7 @@ ga('send', 'pageview');
             
             <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳的问题，做一个统一的整理。 </p>
 <p>在 Java 中，使用 TCP 通信，大概率会涉及到 Socket、Netty，本文会借用它们的一些 API 和设置参数来辅助介绍。</p>
+<a id="more"></a>
 <h3 id="长连接与短连接"><a href="#长连接与短连接" class="headerlink" title="长连接与短连接"></a>长连接与短连接</h3><p><strong>TCP 本身并没有长短连接的区别</strong>，长短与否，完全取决于我们怎么用它。</p>
 <ul>
 <li>短连接：每次通信时，创建 Socket；一次通信结束，调用 socket.close()。这就是一般意义上的短连接，短连接的好处是管理起来比较简单，存在的连接都是可用的连接，不需要额外的控制手段。</li>
@@ -340,6 +342,8 @@ ga('send', 'pageview');
 <li>业务心跳 + TCP KeepAlive 一起使用，互相作为补充，但 TCP 保活探测周期和应用的心跳周期要协调，以互补方可，不能够差距过大，否则将达不到设想的效果。</li>
 </ol>
 <p>各个框架的设计都有所不同，例如 Dubbo 使用的是方案三，但阿里内部的 HSF 框架则没有设置 TCP 的 KeepAlive，仅仅由应用心跳保活。和心跳策略一样，这和框架整体的设计相关。</p>
+<p><strong>欢迎关注我的微信公众号：「Kirito的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
+<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -350,7 +354,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="cjqlpl0qc009er89e9l7s0iy2" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="cjqlprxhy009nwf9efnrrrc5d" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

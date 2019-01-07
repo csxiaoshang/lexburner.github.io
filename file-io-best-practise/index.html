@@ -16,7 +16,8 @@
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20180714180739936.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/1364556742_9652.gif">
 <meta property="og:image" content="http://kirito.iocoder.cn/linux-io.png">
-<meta property="og:updated_time" content="2018-11-27T16:07:24.888Z">
+<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-01-07T02:32:28.140Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="文件IO操作的一些最佳实践">
 <meta name="twitter:description" content="背景已经过去的中间件性能挑战赛，和正在进行中的 第一届 PolarDB 数据性能大赛 都涉及到了文件操作，合理地设计架构以及正确地压榨机器的读写性能成了比赛中获取较好成绩的关键。正在参赛的我收到了几位公众号读者朋友的反馈，他们大多表达出了这样的烦恼：“对比赛很感兴趣，但不知道怎么入门”，“能跑出成绩，但相比前排的选手，成绩相差10倍有余”…为了能让更多的读者参与到之后相类似的比赛中来，我简单整理一">
@@ -267,6 +268,7 @@ ga('send', 'pageview');
         
             
             <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>已经过去的中间件性能挑战赛，和正在进行中的 <a href="https://tianchi.aliyun.com/programming/introduction.htm?spm=5176.11165320.5678.1.483b4682l8fBSf&amp;raceId=231689" target="_blank" rel="noopener">第一届 PolarDB 数据性能大赛</a> 都涉及到了文件操作，合理地设计架构以及正确地压榨机器的读写性能成了比赛中获取较好成绩的关键。正在参赛的我收到了几位公众号读者朋友的反馈，他们大多表达出了这样的烦恼：“对比赛很感兴趣，但不知道怎么入门”，“能跑出成绩，但相比前排的选手，成绩相差10倍有余”…为了能让更多的读者参与到之后相类似的比赛中来，我简单整理一些文件IO操作的最佳实践，而不涉及整体系统的架构设计，希望通过这篇文章的介绍，让你能够欢快地参与到之后类似的性能挑战赛之中来。</p>
+<a id="more"></a>
 <h3 id="知识点梳理"><a href="#知识点梳理" class="headerlink" title="知识点梳理"></a>知识点梳理</h3><p>本文主要关注的 Java 相关的文件操作，理解它们需要一些前置条件，比如 PageCache，Mmap(内存映射)，DirectByteBuffer(堆外缓存)，顺序读写，随机读写…不一定需要完全理解，但至少知道它们是个啥，因为本文将会主要围绕这些知识点来展开描述。</p>
 <h3 id="初识-FileChannel-和-MMAP"><a href="#初识-FileChannel-和-MMAP" class="headerlink" title="初识 FileChannel 和 MMAP"></a>初识 FileChannel 和 MMAP</h3><p>首先，文件IO类型的比赛最重要的一点，就是选择好读写文件的方式，那 JAVA 中文件IO有多少种呢？原生的读写方式大概可以被分为三种：普通IO，FileChannel(文件通道)，MMAP(内存映射)。区分他们也很简单，例如 FileWriter,FileReader 存在于 java.io 包中，他们属于普通IO；FileChannel 存在于 java.nio 包中，属于 NIO 的一种，但是注意 NIO 并不一定意味着非阻塞，这里的 FileChannel 就是阻塞的；较为特殊的是后者 MMAP，它是由 FileChannel 调用 map 方法衍生出来的一种特殊读写文件的方式，被称之为内存映射。</p>
 <p>使用 FIleChannel 的方式：</p>
@@ -380,6 +382,8 @@ ga('send', 'pageview');
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> bufferSize = <span class="number">20</span> * <span class="number">1024</span> * <span class="number">1024</span>;</span><br><span class="line">DirectRandomAccessFile directFile = <span class="keyword">new</span> DirectRandomAccessFile(<span class="keyword">new</span> File(<span class="string">"dio.data"</span>), <span class="string">"rw"</span>, bufferSize);</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i= <span class="number">0</span>;i&lt; bufferSize / <span class="number">4096</span>;i++)&#123;</span><br><span class="line">    <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * <span class="number">1024</span>];</span><br><span class="line">    directFile.read(buffer);</span><br><span class="line">    directFile.readFully(buffer);</span><br><span class="line">&#125;</span><br><span class="line">directFile.close();</span><br></pre></td></tr></table></figure>
 <p>但需要注意的是，<strong>只有 Linux 系统才支持 DIO</strong>! 所以，少年，是时候上手装一台 linux 了。值得一提的是，据说在 Jdk10 发布之后，Direct IO 将会得到原生的支持，让我们拭目以待吧！</p>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>以上均是个人的实践积累而来的经验，有部分结论没有找到文献的支撑，所以如有错误，欢迎指正。关于 PolarDB 数据性能大赛的比赛分析，等复赛结束后我会专门另起一篇文章，分析下具体如何使用这些优化点，当然这些小技巧其实很多人都知道，决定最后成绩的还是整体设计的架构，以及对文件IO，操作系统，文件系统，CPU 和语言特性的理解。虽然 JAVA 搞这种性能挑战赛并不吃香，但依旧是乐趣无穷，希望这些文件 IO 的知识能够帮助你，等下次比赛时看到你的身影~</p>
+<p><strong>欢迎关注我的微信公众号：「Kirito的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
+<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -390,7 +394,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/file-io-best-practise/" data-id="cjqlpl0rq00axr89e5eb3uutt" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/file-io-best-practise/" data-id="cjqlprxj500auwf9e31q2gvpx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
