@@ -282,7 +282,7 @@ ga('send', 'pageview');
 <h3 id="连接的保活"><a href="#连接的保活" class="headerlink" title="连接的保活"></a>连接的保活</h3><p>这个话题就有的聊了，会牵扯到比较多的知识点。首先需要明确一点，为什么需要连接的报活？当双方已经建立了连接，但因为网络问题，链路不通，这样长连接就不能使用了。需要明确的一点是，通过 netstat，lsof 等指令查看到连接的状态处于 <code>ESTABLISHED</code> 状态并不是一件非常靠谱的事，因为连接可能已死，但没有被系统感知到，更不用提假死这种疑难杂症了。如果保证长连接可用是一件技术活。</p>
 <h3 id="连接的保活：KeepAlive"><a href="#连接的保活：KeepAlive" class="headerlink" title="连接的保活：KeepAlive"></a>连接的保活：KeepAlive</h3><p>首先想到的是 TCP 中的 KeepAlive 机制。KeepAlive 并不是 TCP 协议的一部分，但是大多数操作系统都实现了这个机制。KeepAlive 机制开启后，在一定时间内（一般时间为 7200s，参数 <code>tcp_keepalive_time</code>）在链路上没有数据传送的情况下，TCP 层将发送相应的KeepAlive探针以确定连接可用性，探测失败后重试 10（参数 <code>tcp_keepalive_probes</code>）次，每次间隔时间 75s（参数 <code>tcp_keepalive_intvl</code>），所有探测失败后，才认为当前连接已经不可用。</p>
 <p>在 Netty 中开启 KeepAlive：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bootstrap.option(ChannelOption.TCP_NODELAY, <span class="keyword">true</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bootstrap.option(ChannelOption.SO_KEEPALIVE, <span class="keyword">true</span>)</span><br></pre></td></tr></table></figure>
 <p>Linux 操作系统中设置 KeepAlive 相关参数，修改 <code>/etc/sysctl.conf</code> 文件：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">net.ipv4.tcp_keepalive_time=90</span><br><span class="line">net.ipv4.tcp_keepalive_intvl=15</span><br><span class="line">net.ipv4.tcp_keepalive_probes=2</span><br></pre></td></tr></table></figure>
 <p><strong>KeepAlive 机制是在网络层面保证了连接的可用性</strong>，但站在应用框架层面我们认为这还不够。主要体现在两个方面：</p>
@@ -343,7 +343,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="cjql1kl80009hfd9em2jdsrmg" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="cjqlpl0qc009er89e9l7s0iy2" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -492,7 +492,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubbo-url/" data-id="cjql1kl6k005rfd9eqo828dkx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/dubbo-url/" data-id="cjqlpl0om005sr89eoe2fm5ch" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -637,7 +637,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/polardb-race/" data-id="cjql1kl9a00b0fd9enco65spb" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/polardb-race/" data-id="cjqlpl0rr00b0r89eeiou8hos" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -893,7 +893,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/file-io-best-practise/" data-id="cjql1kl9600aofd9ea63kjty4" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/file-io-best-practise/" data-id="cjqlpl0rq00axr89e5eb3uutt" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1095,7 +1095,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/java-random/" data-id="cjql1kl73006vfd9e7c6bkkyg" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/java-random/" data-id="cjqlpl0p4006wr89etpg481t6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1240,7 +1240,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-xsd/" data-id="cjql1kl7x009bfd9e01xeggrx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/spring-xsd/" data-id="cjqlpl0qa009br89eycwtcgdx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1385,7 +1385,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/high-performance-queue/" data-id="cjql1kl3s000dfd9ee7atyli6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/high-performance-queue/" data-id="cjqlpl0k3000dr89ejryiyb5g" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1529,7 +1529,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/contribute-to-opensource/" data-id="cjql1kl6f005kfd9ee0oprhyw" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/contribute-to-opensource/" data-id="cjqlpl0og005kr89e837tmaa1" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1677,7 +1677,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/java-concurrent-counter/" data-id="cjql1kl71006ofd9ee77brkxk" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/java-concurrent-counter/" data-id="cjqlpl0p0006pr89ed7zblwz1" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1821,7 +1821,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/java-jmh/" data-id="cjql1klaa00bqfd9eeksvwoas" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/java-jmh/" data-id="cjqlpl0sx00bpr89egif3zpub" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
