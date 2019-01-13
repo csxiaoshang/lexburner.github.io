@@ -5,21 +5,21 @@
     
     <title>聊聊 TCP 长连接和心跳那些事 | 徐靖峰|个人博客</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="前言可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳的问题，做一个统一的整理。  在 Java 中，使用 TCP 通信，大概">
+    <meta name="description" content="前言可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳问题，做一个统一的整理。  在 Java 中，使用 TCP 通信，大概率">
 <meta name="keywords" content="TCP">
 <meta property="og:type" content="article">
 <meta property="og:title" content="聊聊 TCP 长连接和心跳那些事">
 <meta property="og:url" content="http://lexburner.github.io/tcp-talk/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
-<meta property="og:description" content="前言可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳的问题，做一个统一的整理。  在 Java 中，使用 TCP 通信，大概">
+<meta property="og:description" content="前言可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳问题，做一个统一的整理。  在 Java 中，使用 TCP 通信，大概率">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20190106203341694.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/359310b9-b980-3254-aed6-78aa6c482e53.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-01-07T02:32:44.066Z">
+<meta property="og:updated_time" content="2019-01-08T12:58:34.953Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="聊聊 TCP 长连接和心跳那些事">
-<meta name="twitter:description" content="前言可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳的问题，做一个统一的整理。  在 Java 中，使用 TCP 通信，大概">
+<meta name="twitter:description" content="前言可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳问题，做一个统一的整理。  在 Java 中，使用 TCP 通信，大概率">
 <meta name="twitter:image" content="http://kirito.iocoder.cn/image-20190106203341694.png">
     
 
@@ -170,11 +170,11 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                102
+                105
                 <span>文章</span>
             </div>
             <div class="article-info-block">
-                45
+                48
                 <span>标签</span>
             </div>
         </div>
@@ -266,45 +266,53 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳的问题，做一个统一的整理。 </p>
-<p>在 Java 中，使用 TCP 通信，大概率会涉及到 Socket、Netty，本文会借用它们的一些 API 和设置参数来辅助介绍。</p>
+            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳问题，做一个统一的整理。 </p>
+<p>在 Java 中，使用 TCP 通信，大概率会涉及到 Socket、Netty，本文将借用它们的一些 API 和设置参数来辅助介绍。</p>
 <a id="more"></a>
 <h3 id="长连接与短连接"><a href="#长连接与短连接" class="headerlink" title="长连接与短连接"></a>长连接与短连接</h3><p><strong>TCP 本身并没有长短连接的区别</strong>，长短与否，完全取决于我们怎么用它。</p>
 <ul>
 <li>短连接：每次通信时，创建 Socket；一次通信结束，调用 socket.close()。这就是一般意义上的短连接，短连接的好处是管理起来比较简单，存在的连接都是可用的连接，不需要额外的控制手段。</li>
-<li>长连接：每次通信完毕后，不会关闭连接，这样就可以做到连接的复用。<strong>长连接的好处便是省去了创建连接的耗时。</strong></li>
+<li>长连接：每次通信完毕后，不会关闭连接，这样可以做到连接的复用。<strong>长连接的好处是省去了创建连接的耗时。</strong></li>
 </ul>
 <p>短连接和长连接的优势，分别是对方的劣势。想要图简单，不追求高性能，使用短连接合适，这样我们就不需要操心连接状态的管理；想要追求性能，使用长连接，我们就需要担心各种问题：比如<strong>端对端连接的维护，连接的保活</strong>。</p>
-<p>长连接还常常被用来做数据的推送，我们大多数时候对通信的认知还是 request/response 模型，但 TCP 双工通信的性质决定了它还可以被用来做双向通信。在长连接之下，可以很方便的实现 push 模型。</p>
-<p>短连接没有太多东西可以讲，所以下文我们将目光聚焦在长连接的一些问题上。纯讲理论未免有些过于单调，所以下文我借助 Dubbo 这个 RPC 框架的一些实践来展开 TCP 的相关讨论。</p>
-<h3 id="服务治理框架中的长连接"><a href="#服务治理框架中的长连接" class="headerlink" title="服务治理框架中的长连接"></a>服务治理框架中的长连接</h3><p>前面已经提到过，追求性能的时候，必然会选择使用长连接，所以借助 Dubbo 可以很好的来理解 TCP。我们开启两个 Dubbo 应用，一个 server 负责监听本地 20880（众所周知，这是 Dubbo 协议默认的端口），一个 client 负责循环发送请求。执行 <code>lsof -i:20880</code> 命令可以查看端口的相关使用情况：</p>
+<p>长连接还常常被用来做数据的推送，我们大多数时候对通信的认知还是 request/response 模型，但 TCP 双工通信的性质决定了它还可以被用来做双向通信。在长连接之下，可以很方便的实现 push 模型，长连接的这一特性在本文并不会进行探讨，有兴趣的同学可以专门去搜索相关的文章。</p>
+<p>短连接没有太多东西可以讲，所以下文我们将目光聚焦在长连接的一些问题上。纯讲理论未免有些过于单调，所以下文我借助一些 RPC 框架的实践来展开 TCP 的相关讨论。</p>
+<h3 id="服务治理框架中的长连接"><a href="#服务治理框架中的长连接" class="headerlink" title="服务治理框架中的长连接"></a>服务治理框架中的长连接</h3><p>前面已经提到过，追求性能时，必然会选择使用长连接，所以借助 Dubbo 可以很好的来理解 TCP。我们开启两个 Dubbo 应用，一个 server 负责监听本地 20880 端口（众所周知，这是 Dubbo 协议默认的端口），一个 client 负责循环发送请求。执行 <code>lsof -i:20880</code> 命令可以查看端口的相关使用情况：</p>
 <p><img src="http://kirito.iocoder.cn/image-20190106203341694.png" alt="image-20190106203341694"></p>
 <ul>
 <li><code>*:20880 (LISTEN)</code> 说明了 Dubbo 正在监听本地的 20880 端口，处理发送到本地 20880 端口的请求</li>
-<li>后两条信息说明请求的发送情况，验证了 TCP 是一个双向的通信过程，由于我是在同一个机器开启了两个 Dubbo 应用，所以你能够看到是本地的 53078 端口与 20880 端口在通信。我们并没有手动设置 53078 这个客户端端口，他是随机的，但也阐释了一个道理：即使是发送请求的一方，也需要占用一个端口。</li>
-<li>稍微说一下 FD 这个参数，他代表了文件句柄，每新增一条连接都会占用新的文件句柄，如果你在使用 TCP 通信的过程中出现了 <code>open too many files</code> 的异常，那就应该检查一下，你是不是创建了太多的连接，而没有关闭。细心的读者也会联想到长连接的另一个好处，那就是会占用较少的文件句柄。</li>
+<li>后两条信息说明请求的发送情况，验证了 TCP 是一个双向的通信过程，由于我是在同一个机器开启了两个 Dubbo 应用，所以你能够看到是本地的 53078 端口与 20880 端口在通信。我们并没有手动设置 53078 这个客户端端口，它是随机的。通过这两条信息，阐释了一个事实：<strong>即使是发送请求的一方，也需要占用一个端口</strong>。</li>
+<li>稍微说一下 FD 这个参数，他代表了<strong>文件句柄</strong>，每新增一条连接都会占用新的文件句柄，如果你在使用 TCP 通信的过程中出现了 <code>open too many files</code> 的异常，那就应该检查一下，你是不是创建了太多连接，而没有关闭。细心的读者也会联想到长连接的另一个好处，那就是会占用较少的文件句柄。</li>
 </ul>
-<h3 id="长连接的维护"><a href="#长连接的维护" class="headerlink" title="长连接的维护"></a>长连接的维护</h3><p>因为客户端请求的服务可能分布在多个服务器上，客户端端自然需要跟对端创建多条长连接，使用长连接，我们遇到的第一个问题就是要如何维护长连接。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Sharable</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NettyHandler</span> <span class="keyword">extends</span> <span class="title">SimpleChannelHandler</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, Channel&gt; channels = <span class="keyword">new</span> ConcurrentHashMap&lt;String, Channel&gt;(); <span class="comment">// &lt;ip:port, channel&gt;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NettyServer</span> <span class="keyword">extends</span> <span class="title">AbstractServer</span> <span class="keyword">implements</span> <span class="title">Server</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, Channel&gt; channels; <span class="comment">// &lt;ip:port, channel&gt;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在 Dubbo 中，客户端和服务端都使用 <code>ip:port</code> 维护了端对端的长连接，Channel 便是对连接的抽象。我们主要关注 NettyHandler 中的长连接，服务端同时维护一个长连接的集合是 Dubbo 的设计，我们将在后面提到。</p>
-<h3 id="连接的保活"><a href="#连接的保活" class="headerlink" title="连接的保活"></a>连接的保活</h3><p>这个话题就有的聊了，会牵扯到比较多的知识点。首先需要明确一点，为什么需要连接的报活？当双方已经建立了连接，但因为网络问题，链路不通，这样长连接就不能使用了。需要明确的一点是，通过 netstat，lsof 等指令查看到连接的状态处于 <code>ESTABLISHED</code> 状态并不是一件非常靠谱的事，因为连接可能已死，但没有被系统感知到，更不用提假死这种疑难杂症了。如果保证长连接可用是一件技术活。</p>
-<h3 id="连接的保活：KeepAlive"><a href="#连接的保活：KeepAlive" class="headerlink" title="连接的保活：KeepAlive"></a>连接的保活：KeepAlive</h3><p>首先想到的是 TCP 中的 KeepAlive 机制。KeepAlive 并不是 TCP 协议的一部分，但是大多数操作系统都实现了这个机制。KeepAlive 机制开启后，在一定时间内（一般时间为 7200s，参数 <code>tcp_keepalive_time</code>）在链路上没有数据传送的情况下，TCP 层将发送相应的KeepAlive探针以确定连接可用性，探测失败后重试 10（参数 <code>tcp_keepalive_probes</code>）次，每次间隔时间 75s（参数 <code>tcp_keepalive_intvl</code>），所有探测失败后，才认为当前连接已经不可用。</p>
+<h3 id="长连接的维护"><a href="#长连接的维护" class="headerlink" title="长连接的维护"></a>长连接的维护</h3><p>因为客户端请求的服务可能分布在多个服务器上，客户端自然需要跟对端创建多条长连接，我们遇到的第一个问题就是如何维护长连接。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 客户端</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NettyHandler</span> <span class="keyword">extends</span> <span class="title">SimpleChannelHandler</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, Channel&gt; channels = <span class="keyword">new</span> ConcurrentHashMap&lt;String, Channel&gt;(); <span class="comment">// &lt;ip:port, channel&gt;</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 服务端</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NettyServer</span> <span class="keyword">extends</span> <span class="title">AbstractServer</span> <span class="keyword">implements</span> <span class="title">Server</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, Channel&gt; channels; <span class="comment">// &lt;ip:port, channel&gt;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在 Dubbo 中，客户端和服务端都使用 <code>ip:port</code> 维护了端对端的长连接，Channel 便是对连接的抽象。我们主要关注 NettyHandler 中的长连接，服务端同时维护一个长连接的集合是 Dubbo 的额外设计，我们将在后面提到。</p>
+<p>这里插一句，解释下为什么我认为客户端的连接集合要重要一点。TCP 是一个双向通信的协议，任一方都可以是发送者，接受者，那为什么还抽象了 Client 和 Server 呢？因为<strong>建立连接这件事就跟谈念爱一样，必须要有主动的一方，你主动我们就会有故事</strong>。Client 可以理解为主动建立连接的一方，实际上两端的地位可以理解为是对等的。</p>
+<h3 id="连接的保活"><a href="#连接的保活" class="headerlink" title="连接的保活"></a>连接的保活</h3><p>这个话题就有的聊了，会牵扯到比较多的知识点。首先需要明确一点，为什么需要连接的保活？当双方已经建立了连接，但因为网络问题，链路不通，这样长连接就不能使用了。需要明确的一点是，通过 netstat，lsof 等指令查看到连接的状态处于 <code>ESTABLISHED</code> 状态并不是一件非常靠谱的事，因为连接可能已死，但没有被系统感知到，更不用提假死这种疑难杂症了。如果保证长连接可用是一件技术活。</p>
+<h3 id="连接的保活：KeepAlive"><a href="#连接的保活：KeepAlive" class="headerlink" title="连接的保活：KeepAlive"></a>连接的保活：KeepAlive</h3><p>首先想到的是 TCP 中的 KeepAlive 机制。KeepAlive 并不是 TCP 协议的一部分，但是大多数操作系统都实现了这个机制（所以需要在操作系统层面设置 KeepAlive 的相关参数）。KeepAlive 机制开启后，在一定时间内（一般时间为 7200s，参数 <code>tcp_keepalive_time</code>）在链路上没有数据传送的情况下，TCP 层将发送相应的 KeepAlive 探针以确定连接可用性，探测失败后重试 10（参数 <code>tcp_keepalive_probes</code>）次，每次间隔时间 75s（参数 <code>tcp_keepalive_intvl</code>），所有探测失败后，才认为当前连接已经不可用。</p>
 <p>在 Netty 中开启 KeepAlive：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bootstrap.option(ChannelOption.SO_KEEPALIVE, <span class="keyword">true</span>)</span><br></pre></td></tr></table></figure>
 <p>Linux 操作系统中设置 KeepAlive 相关参数，修改 <code>/etc/sysctl.conf</code> 文件：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">net.ipv4.tcp_keepalive_time=90</span><br><span class="line">net.ipv4.tcp_keepalive_intvl=15</span><br><span class="line">net.ipv4.tcp_keepalive_probes=2</span><br></pre></td></tr></table></figure>
-<p><strong>KeepAlive 机制是在网络层面保证了连接的可用性</strong>，但站在应用框架层面我们认为这还不够。主要体现在两个方面：</p>
+<p><strong>KeepAlive 机制是在网络层面保证了连接的可用性</strong>，但站在应用框架层面我们认为这还不够。主要体现在三个方面：</p>
 <ul>
 <li>KeepAlive 的开关是在应用层开启的，但是具体参数（如重试测试，重试间隔时间）的设置却是操作系统级别的，位于操作系统的 <code>/etc/sysctl.conf</code> 配置中，这对于应用来说不够灵活。</li>
-<li>KeepAlive 的保活机制只在链路空闲的情况下才会起到作用，假如此时有数据发送，且物理链路已经不通，操作系统这边的链路状态还是 ESTABLISHED，这时会发生什么？自然会走 TCP 重传机制，要知道默认的 TCP 超时重传，指数退避算法也是一个相当长的过程。</li>
-<li>KeepAlive 本身是面向网络的，并不是面向于应用的，当连接不可用时，可能是由于应用本身 GC 问题，系统 load 高等情况，但网络仍然是通的，此时，应用已经失去了活性，所以连接自然应该认为是不可用的。</li>
+<li>KeepAlive 的保活机制只在链路空闲的情况下才会起到作用，假如此时有数据发送，且物理链路已经不通，操作系统这边的链路状态还是 <code>ESTABLISHED</code>，这时会发生什么？自然会走 TCP 重传机制，要知道默认的 TCP 超时重传，指数退避算法也是一个相当长的过程。</li>
+<li>KeepAlive 本身是面向网络的，并不面向于应用，当连接不可用，可能是由于应用本身的 GC 频繁，系统 load 高等情况，但网络仍然是通的，此时，应用已经失去了活性，连接应该被认为是不可用的。</li>
 </ul>
-<p>看来，应用层面的连接保活还是必须要做的。</p>
-<h3 id="连接的保活：应用层心跳"><a href="#连接的保活：应用层心跳" class="headerlink" title="连接的保活：应用层心跳"></a>连接的保活：应用层心跳</h3><p>终于点题了，文题中提到的<strong>心跳</strong>便是一个本文想要重点强调的另一个 TCP 相关的知识点。上一节我们已经解释过了，网络层面的 KeepAlive 不足以支撑应用级别的连接可用性，本节就来聊聊应用层的心跳机制是实现连接保活的。</p>
-<p>如何理解应用层的心跳？简单来说，就是客户端会开启一个定时任务，定时对已经建立连接的对端应用发送请求（这里的请求是特殊的心跳请求），服务端则需要特殊处理该请求，返回响应。如果心跳持续多次没有收到响应，客户端会认为连接不可用，主动断开连接。不同的服务治理框架对心跳，建连，断连，拉黑的机制有不同的策略，但大多数的服务治理框架都会在应用层做心跳，Dubbo 也不例外。</p>
-<h3 id="应用层心跳的设计细节"><a href="#应用层心跳的设计细节" class="headerlink" title="应用层心跳的设计细节"></a>应用层心跳的设计细节</h3><p>以 Dubbo 为例，支持应用层的心跳，客户端和服务端都会开启一个 <code>HeartBeatTask</code>，客户端在 <code>HeaderExchangeClient</code> 中开启，服务端将在 <code>HeaderExchangeServer</code> 开启。文章开头埋了一个坑：Dubbo 为什么在服务端同时维护 <code>Map&lt;String , Channel&gt;</code> 呢？主要就是为了给心跳做贡献，心跳定时任务在发现连接不可用时，会根据当前是客户端还是服务端走不同的分支，客户端发现不可用，是重连；服务端发现不可用，是直接 close。</p>
+<p>我们已经为应用层面的连接保活做了足够的铺垫，下面就来一起看看，怎么在应用层做连接保活。</p>
+<h3 id="连接的保活：应用层心跳"><a href="#连接的保活：应用层心跳" class="headerlink" title="连接的保活：应用层心跳"></a>连接的保活：应用层心跳</h3><p>终于点题了，文题中提到的<strong>心跳</strong>便是一个本文想要重点强调的另一个重要的知识点。上一节我们已经解释过了，网络层面的 KeepAlive 不足以支撑应用级别的连接可用性，本节就来聊聊应用层的心跳机制是实现连接保活的。</p>
+<p>如何理解应用层的心跳？简单来说，就是客户端会开启一个定时任务，定时对已经建立连接的对端应用发送请求（这里的请求是特殊的心跳请求），服务端则需要特殊处理该请求，返回响应。如果心跳持续多次没有收到响应，客户端会认为连接不可用，主动断开连接。不同的服务治理框架对心跳，建连，断连，拉黑的机制有不同的策略，但大多数的服务治理框架都会在应用层做心跳，Dubbo/HSF 也不例外。</p>
+<h3 id="应用层心跳的设计细节"><a href="#应用层心跳的设计细节" class="headerlink" title="应用层心跳的设计细节"></a>应用层心跳的设计细节</h3><p>以 Dubbo 为例，支持应用层的心跳，客户端和服务端都会开启一个 <code>HeartBeatTask</code>，客户端在 <code>HeaderExchangeClient</code> 中开启，服务端将在 <code>HeaderExchangeServer</code> 开启。文章开头埋了一个坑：Dubbo 为什么在服务端同时维护 <code>Map&lt;String,Channel&gt;</code> 呢？主要就是为了给心跳做贡献，心跳定时任务在发现连接不可用时，会根据当前是客户端还是服务端走不同的分支，客户端发现不可用，是重连；服务端发现不可用，是直接 close。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// HeartBeatTask</span></span><br><span class="line"><span class="keyword">if</span> (channel <span class="keyword">instanceof</span> Client) &#123;</span><br><span class="line">    ((Client) channel).reconnect();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    channel.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Dubbo 2.7.x 相比 2.6.x 做了定时心跳的优化，使用 <code>HashedWheelTimer</code> 更加精准的控制了只在连接闲置时发送心跳。</p>
+</blockquote>
+<p>再看看 HSF 的实现，并没有设置应用层的心跳，准确的说，是在 HSF2.2 之后，使用 Netty 提供的 <code>IdleStateHandler</code> 更加优雅的实现了应用的心跳。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ch.pipeline()</span><br><span class="line">        .addLast(<span class="string">"clientIdleHandler"</span>, <span class="keyword">new</span> IdleStateHandler(getHbSentInterval(), <span class="number">0</span>, <span class="number">0</span>));</span><br></pre></td></tr></table></figure>
+<p>处理 <code>userEventTriggered</code> 中的 <code>IdleStateEvent</code> 事件</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">userEventTriggered</span><span class="params">(ChannelHandlerContext ctx, Object evt)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (evt <span class="keyword">instanceof</span> IdleStateEvent) &#123;</span><br><span class="line">        callConnectionIdleListeners(client, (ClientStream) StreamUtils.streamOfChannel(ctx.channel()));</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">super</span>.userEventTriggered(ctx, evt);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于客户端，HSF 使用 <code>SendHeartbeat</code> 来进行心跳，每次失败累加心跳失败的耗时，当超过最大限制时断开乱接；对于服务端 HSF 使用 <code>CloseIdle</code> 来处理闲置连接，直接关闭连接。一般来说，服务端的闲置时间会设置的稍长。</p>
 <p>熟悉其他 RPC 框架的同学会发现，不同框架的心跳机制真的是差距非常大。心跳设计还跟连接创建，重连机制，黑名单连接相关，还需要具体框架具体分析。</p>
 <p>除了定时任务的设计，还需要在协议层面支持心跳。最简单的例子可以参考 nginx 的健康检查，而针对 Dubbo 协议，自然也需要做心跳的支持，如果将心跳请求识别为正常流量，会造成服务端的压力问题，干扰限流等诸多问题。</p>
 <p><img src="http://kirito.iocoder.cn/359310b9-b980-3254-aed6-78aa6c482e53.png" alt="dubbo protocol"></p>
@@ -342,7 +350,7 @@ ga('send', 'pageview');
 <li>业务心跳 + TCP KeepAlive 一起使用，互相作为补充，但 TCP 保活探测周期和应用的心跳周期要协调，以互补方可，不能够差距过大，否则将达不到设想的效果。</li>
 </ol>
 <p>各个框架的设计都有所不同，例如 Dubbo 使用的是方案三，但阿里内部的 HSF 框架则没有设置 TCP 的 KeepAlive，仅仅由应用心跳保活。和心跳策略一样，这和框架整体的设计相关。</p>
-<p><strong>欢迎关注我的微信公众号：「Kirito的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
+<p><strong>欢迎关注我的微信公众号：「Kirito的技术分享」</strong></p>
 <p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
@@ -354,7 +362,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="cjqlprxhy009nwf9efnrrrc5d" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="cjqulwsao009miq9e6g09zw64" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -429,6 +437,15 @@ ga('send', 'pageview');
         
 <nav id="article-nav">
     
+        <a href="/heartbeat-design/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    一种心跳，两种设计
+                
+            </div>
+        </a>
+    
     
         <a href="/dubbo-url/" id="article-nav-older" class="article-nav-link-wrap">
             <strong class="article-nav-caption">下一篇</strong>
@@ -459,6 +476,25 @@ ga('send', 'pageview');
         <h3 class="widget-title">最新文章</h3>
         <div class="widget">
             <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/heartbeat-design/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
+                            <p class="item-title"><a href="/heartbeat-design/" class="title">一种心跳，两种设计</a></p>
+                            <p class="item-date"><time datetime="2019-01-11T22:24:09.000Z" itemprop="datePublished">2019-01-12</time></p>
+                        </div>
+                    </li>
                 
                     <li>
                         
@@ -536,25 +572,6 @@ ga('send', 'pageview');
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <!-- <div class="item-thumbnail">
-                            <a href="/java-random/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div> -->
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/JAVA并发合集/">JAVA并发合集</a></p>
-                            <p class="item-title"><a href="/java-random/" class="title">Java随机数探秘</a></p>
-                            <p class="item-date"><time datetime="2018-09-12T11:47:28.000Z" itemprop="datePublished">2018-09-12</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -564,7 +581,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
         </div>
     </div>
 
@@ -573,7 +590,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">一月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">一月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
         </div>
     </div>
 
@@ -582,7 +599,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/DUBBO/" style="font-size: 10px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11.25px;">DevOps</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 10px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JWT/" style="font-size: 12.5px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12.5px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 11.25px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 18.75px;">RPC</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18.75px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12.5px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11.25px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11.25px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 17.5px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12.5px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13.75px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 10px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11.25px;">Validation</a> <a href="/tags/XML/" style="font-size: 11.25px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13.75px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11.25px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 15px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/技术杂谈/" style="font-size: 16.25px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 10px;">数据库</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13.75px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11.25px;">网关</a> <a href="/tags/规则引擎/" style="font-size: 13.75px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11.25px;">领域驱动设计</a>
+            <a href="/tags/DUBBO/" style="font-size: 10px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11.43px;">DevOps</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 10px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JWT/" style="font-size: 12.86px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12.86px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 11.43px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 18.57px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18.57px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12.86px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11.43px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11.43px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 17.14px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12.86px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 14.29px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11.43px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11.43px;">Validation</a> <a href="/tags/XML/" style="font-size: 11.43px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 14.29px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11.43px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 15.71px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17.14px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 10px;">数据库</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 14.29px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11.43px;">网关</a> <a href="/tags/规则引擎/" style="font-size: 14.29px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11.43px;">领域驱动设计</a>
         </div>
     </div>
 
