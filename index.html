@@ -257,7 +257,7 @@ ga('send', 'pageview');
         
         <div class="article-entry" itemprop="articleBody">
         
-            <p></p><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在前一篇文章《<strong>聊聊 TCP 长连接和心跳那些事</strong>》中，我们已经聊过了 TCP 中的 KeepAlive，以及在应用层设计心跳的意义，但却对长连接心跳的设计方案没有做详细地介绍。事实上，设计一个好的心跳机制并不是一件容易的事，就我所熟知的几个 RPC 框架：Dubbo，Motan，HSF（阿里内部的 RPC 框架），它们的心跳机制可以说大相径庭，这篇文章我将跟大家探讨一下<strong>如何设计一个优雅的心跳机制，主要从 Dubbo 和 HSF 的实现来做分析</strong>。</p><p></p>
+            <p></p><h3 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h3><p>在前一篇文章<strong>《聊聊 TCP 长连接和心跳那些事》</strong>中，我们已经聊过了 TCP 中的 KeepAlive，以及在应用层设计心跳的意义，但却对长连接心跳的设计方案没有做详细地介绍。事实上，设计一个好的心跳机制并不是一件容易的事，就我所熟知的几个 RPC 框架，它们的心跳机制可以说大相径庭，这篇文章我将探讨一下<strong>如何设计一个优雅的心跳机制，主要从 Dubbo 的现有方案以及一个改进方案来做分析</strong>。</p><p></p>
             <p class="article-more-link">
                 <a href="/heartbeat-design/#more">查看更多</a>
             </p>
@@ -270,7 +270,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/heartbeat-design/" data-id="cjqulwsbg00b4iq9eeaj7x7yp" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/heartbeat-design/" data-id="cjqvp7yzk0083i69e6uyxq5gk" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -415,7 +415,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="cjqulwsao009miq9e6g09zw64" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="cjqvp7z0k00ani69es9qxqxbo" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -564,7 +564,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubbo-url/" data-id="cjqulws9p0064iq9e7viqg2z6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/dubbo-url/" data-id="cjqvp7yx5003zi69enorq1bp9" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -709,7 +709,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/polardb-race/" data-id="cjqulwsbm00bciq9esntd34g7" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/polardb-race/" data-id="cjqvp7z1h00bsi69eggw045nj" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -853,7 +853,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/file-io-best-practise/" data-id="cjqulwsbd00axiq9e7xtcygph" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/file-io-best-practise/" data-id="cjqvp7yzp008ci69e6bzio2ib" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1003,7 +1003,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/comparing-rxjava/" data-id="cjqulws9k005qiq9eal02qela" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/comparing-rxjava/" data-id="cjqvp7yws0030i69eea0iq1c9" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1147,7 +1147,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/thinking-2/" data-id="cjqulwsar009tiq9e1zemawrt" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/thinking-2/" data-id="cjqvp7z0g00ahi69e7g92zt6d" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1349,7 +1349,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/java-random/" data-id="cjqulwsa10078iq9extxg1s6y" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/java-random/" data-id="cjqvp7yxi004si69e5ab0qilt" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1494,7 +1494,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-xsd/" data-id="cjqulwsam009giq9eunbqjy6f" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/spring-xsd/" data-id="cjqvp7z0c00a8i69emjpbmw1t" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1639,7 +1639,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/high-performance-queue/" data-id="cjqulws6q000diq9eizk13c48" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/high-performance-queue/" data-id="cjqvp7yup000ai69e587fvn6x" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
