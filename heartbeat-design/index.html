@@ -14,7 +14,7 @@
 <meta property="og:description" content="1 前言在前一篇文章《聊聊 TCP 长连接和心跳那些事》中，我们已经聊过了 TCP 中的 KeepAlive，以及在应用层设计心跳的意义，但却对长连接心跳的设计方案没有做详细地介绍。事实上，设计一个好的心跳机制并不是一件容易的事，就我所熟知的几个 RPC 框架，它们的心跳机制可以说大相径庭，这篇文章我将探讨一下如何设计一个优雅的心跳机制，主要从 Dubbo 的现有方案以及一个改进方案来做分析。">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-01-24T11:08:22.784Z">
+<meta property="og:updated_time" content="2019-01-27T05:03:53.927Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="一种心跳，两种设计">
 <meta name="twitter:description" content="1 前言在前一篇文章《聊聊 TCP 长连接和心跳那些事》中，我们已经聊过了 TCP 中的 KeepAlive，以及在应用层设计心跳的意义，但却对长连接心跳的设计方案没有做详细地介绍。事实上，设计一个好的心跳机制并不是一件容易的事，就我所熟知的几个 RPC 框架，它们的心跳机制可以说大相径庭，这篇文章我将探讨一下如何设计一个优雅的心跳机制，主要从 Dubbo 的现有方案以及一个改进方案来做分析。">
@@ -289,7 +289,7 @@ ga('send', 'pageview');
 <p>介绍完了一些基础的概念，我们再来看看 Dubbo 是如何设计应用层心跳的。Dubbo 的心跳是双向心跳，客户端会给服务端发送心跳，反之，服务端也会向客户端发送心跳。</p>
 <h4 id="3-1-连接建立时创建定时器"><a href="#3-1-连接建立时创建定时器" class="headerlink" title="3.1 连接建立时创建定时器"></a>3.1 连接建立时创建定时器</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HeaderExchangeClient</span> <span class="keyword">implements</span> <span class="title">ExchangeClient</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> heartbeat;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> heartbeatTimeout;</span><br><span class="line">    <span class="keyword">private</span> HashedWheelTimer heartbeatTimer;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">HeaderExchangeClient</span><span class="params">(Client client, <span class="keyword">boolean</span> needHeartbeat)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.client = client;</span><br><span class="line">        <span class="keyword">this</span>.channel = <span class="keyword">new</span> HeaderExchangeChannel(client);</span><br><span class="line">        <span class="keyword">this</span>.heartbeat = client.getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != <span class="keyword">null</span> &amp;&amp; dubbo.startsWith(<span class="string">"1.0."</span>) ? Constants.DEFAULT_HEARTBEAT : <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">this</span>.heartbeatTimeout = client.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * <span class="number">3</span>);</span><br><span class="line">        <span class="keyword">if</span> (needHeartbeat) &#123; &lt;<span class="number">1</span>&gt;</span><br><span class="line">            <span class="keyword">long</span> tickDuration = calculateLeastDuration(heartbeat);</span><br><span class="line">            heartbeatTimer = <span class="keyword">new</span> HashedWheelTimer(<span class="keyword">new</span> NamedThreadFactory(<span class="string">"dubbo-client-heartbeat"</span>, <span class="keyword">true</span>), tickDuration,</span><br><span class="line">                    TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL); &lt;<span class="number">2</span>&gt;</span><br><span class="line">            startHeartbeatTimer();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
 <p><1> <strong>默认开启心跳检测的定时器</strong></1></p>
-<p><2> <strong>创建了一个 <code>HashedWheelTimer</code> 开启心跳检测</strong>，这是 Netty 所提供的一个经典的时间轮定时器实现，至于它和 jdk 的实现有何不同，不了解的同学也可以关注下，我就拓展了。</2></p>
+<p><2> <strong>创建了一个 <code>HashedWheelTimer</code> 开启心跳检测</strong>，这是 Netty 所提供的一个经典的时间轮定时器实现，至于它和 jdk 的实现有何不同，不了解的同学也可以关注下，我就不拓展了。</2></p>
 <p>不仅 <code>HeaderExchangeClient</code> 客户端开起了定时器，<code>HeaderExchangeServer</code> 服务端同样开起了定时器，由于服务端的逻辑和客户端几乎一致，所以后续我并不会重复粘贴服务端的代码。</p>
 <blockquote>
 <p>Dubbo 在早期版本版本中使用的是 schedule 方案，在 2.7.x 中替换成了 HashWheelTimer。</p>
@@ -438,7 +438,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/heartbeat-design/" data-id="cjrdgpc9f00ba2g9epkd721yj" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/heartbeat-design/" data-id="cjrefwlxu00b7ra9e9odporia" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
