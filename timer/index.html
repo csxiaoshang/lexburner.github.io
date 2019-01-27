@@ -16,7 +16,7 @@
 <meta property="og:image" content="http://kirito.iocoder.cn/201807171109599678a80c-075a-40ee-b25f-10fd82c1025c.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/7f03c027b1de345a0b1e57239d73de74.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-01-27T05:02:25.589Z">
+<meta property="og:updated_time" content="2019-01-27T05:08:44.577Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="定时器的几种实现方式">
 <meta name="twitter:description" content="1 前言在开始正题之前，先闲聊几句。有人说，计算机科学这个学科，软件方向研究到头就是数学，硬件方向研究到头就是物理，最轻松的是中间这批使用者，可以不太懂物理，不太懂数学，依旧可以使用计算机作为自己谋生的工具。这个规律具有普适应，看看“定时器”这个例子，往应用层研究，有 Quartz，Spring Schedule 等框架；往分布式研究，又有 SchedulerX，ElasticJob 等分布式任务">
@@ -273,6 +273,7 @@ ga('send', 'pageview');
 <li>站在设计者的角度，如果从零开始设计一个轮子，怎么利用合适的算法、数据结构，去实现它。</li>
 </ol>
 <p>回到这篇文章的主题，我首先会围绕第三个话题讨论：设计实现一个定时器，可以使用什么算法，采用什么数据结构。接着再聊聊第一个话题：探讨一些优秀的定时器实现方案。</p>
+<a id="more"></a>
 <h3 id="2-理解定时器"><a href="#2-理解定时器" class="headerlink" title="2 理解定时器"></a>2 理解定时器</h3><p>很多场景会用到定时器，例如</p>
 <ol>
 <li>使用 TCP 长连接时，客户端需要定时向服务端发送心跳请求。</li>
@@ -381,7 +382,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/timer/" data-id="cjrefwlx300a3ra9e5v32wr33" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/timer/" data-id="cjreg25y500a4ti9ebgh1wn5g" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
