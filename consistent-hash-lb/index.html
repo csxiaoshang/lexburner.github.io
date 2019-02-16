@@ -13,13 +13,14 @@
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="前言一致性哈希算法在很多领域有应用，例如分布式缓存领域的 MemCache，Redis，负载均衡领域的 Nginx，各类 RPC 框架。不同领域场景不同，需要顾及的因素也有所差异，本文主要讨论在负载均衡中一致性哈希算法的设计。 在介绍一致性哈希算法之前，我将会介绍一些哈希算法，讨论它们的区别和使用场景。也会给出一致性哈希算法的 Java 通用实现，可以直接引用，文末会给出 github 地址。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://lexburner.github.io/Users/xujingfeng/Downloads/一致性hash环.png">
-<meta property="og:image" content="http://lexburner.github.io/Users/xujingfeng/Downloads/一致性hash环-虚拟节点.png">
-<meta property="og:updated_time" content="2019-02-16T13:50:13.177Z">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/2/16/168f69205ef99590?w=861&h=635&f=png&s=59703">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/2/16/168f6921775875f4?w=934&h=639&f=png&s=67921">
+<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-02-16T14:08:44.709Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="一致性哈希负载均衡算法的探讨">
 <meta name="twitter:description" content="前言一致性哈希算法在很多领域有应用，例如分布式缓存领域的 MemCache，Redis，负载均衡领域的 Nginx，各类 RPC 框架。不同领域场景不同，需要顾及的因素也有所差异，本文主要讨论在负载均衡中一致性哈希算法的设计。 在介绍一致性哈希算法之前，我将会介绍一些哈希算法，讨论它们的区别和使用场景。也会给出一致性哈希算法的 Java 通用实现，可以直接引用，文末会给出 github 地址。">
-<meta name="twitter:image" content="http://lexburner.github.io/Users/xujingfeng/Downloads/一致性hash环.png">
+<meta name="twitter:image" content="https://user-gold-cdn.xitu.io/2019/2/16/168f69205ef99590?w=861&h=635&f=png&s=59703">
     
 
     
@@ -313,10 +314,10 @@ ga('send', 'pageview');
 </li>
 </ol>
 <p>以上三者都是最合适的一致性哈希算法的强力争夺者。</p>
-<h3 id="一致性哈希算法实现"><a href="#一致性哈希算法实现" class="headerlink" title="一致性哈希算法实现"></a>一致性哈希算法实现</h3><p><img src="/Users/xujingfeng/Downloads/一致性hash环.png" alt="一致性hash"></p>
+<h3 id="一致性哈希算法实现"><a href="#一致性哈希算法实现" class="headerlink" title="一致性哈希算法实现"></a>一致性哈希算法实现</h3><p><img src="https://user-gold-cdn.xitu.io/2019/2/16/168f69205ef99590?w=861&amp;h=635&amp;f=png&amp;s=59703" alt="一致性hash"></p>
 <p>一致性哈希的概念我不做赘述，简单介绍下这个负载均衡中的一致性哈希环。首先将服务器（ip+端口号）进行哈希，映射成环上的一个节点，在请求到来时，根据指定的 hash key 同样映射到环上，并顺时针选取最近的一个服务器节点进行请求（在本图中，使用的是 userId 作为 hash key）。</p>
 <p>当环上的服务器较少时，即使哈希算法选择得当，依旧会遇到大量请求落到同一个节点的问题，为避免这样的问题，大多数一致性哈希算法的实现度引入了虚拟节点的概念。</p>
-<p><img src="/Users/xujingfeng/Downloads/一致性hash环-虚拟节点.png" alt="一致性hash虚拟节点"></p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/2/16/168f6921775875f4?w=934&amp;h=639&amp;f=png&amp;s=67921" alt="一致性hash虚拟节点"></p>
 <p>在上图中，只有两台物理服务器节点：11.1.121.1 和 11.1.121.2，我们通过添加后缀的方式，克隆出了另外三份节点，使得环上的节点分布的均匀。一般来说，物理节点越多，所需的虚拟节点就越少。</p>
 <p>介绍完了一致性哈希换，我们便可以对负载均衡进行建模了：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">LoadBalancer</span> </span>&#123;</span><br><span class="line">    <span class="function">Server <span class="title">select</span><span class="params">(List&lt;Server&gt; servers, Invocation invocation)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -433,6 +434,8 @@ MurmurHash 2.0 - 2056.885653 mb/sec
 <p><a href="https://www.cnkirito.moe/spring-security-6/" target="_blank" rel="noopener">《该如何设计你的 PasswordEncoder?》</a> </p>
 <h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><p><a href="https://sites.google.com/site/murmurhash/" target="_blank" rel="noopener">MurmurHash</a></p>
 <p><a href="https://colobu.com/2015/04/13/consistent-hash-algorithm-in-java-memcached-client/" target="_blank" rel="noopener">memcached Java客户端spymemcached的一致性Hash算法</a></p>
+<p><strong>欢迎关注我的微信公众号：「Kirito的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
+<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -443,7 +446,7 @@ MurmurHash 2.0 - 2056.885653 mb/sec
 
 </div>
 
-    <a data-url="http://lexburner.github.io/consistent-hash-lb/" data-id="cjs7jhu0f00b6ea9e2aqohnx1" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/consistent-hash-lb/" data-id="cjs7k5ihv00b7ja9ej6ip5gxy" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
