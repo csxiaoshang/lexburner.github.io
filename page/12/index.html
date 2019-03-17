@@ -156,7 +156,7 @@ ga('send', 'pageview');
             <img id="avatar" src="/css/images/avatar.png">
             <h2 id="name">徐靖峰</h2>
             <h3 id="title">software engineer</h3>
-            <span id="location"><i class="fa fa-map-marker"></i>Nanking, China</span>
+            <span id="location"><i class="fa fa-map-marker"></i>中国，杭州</span>
             <a id="follow" target="_blank" href="https://github.com/lexburner">关注我</a>
         </div>
         <div class="article-info profile-block">
@@ -202,7 +202,7 @@ ga('send', 'pageview');
 
             
             <section id="main">
-    <article id="post-zkclient-learning" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <article id="post-hello-world" class="article article-type-post" itemscope="" itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -210,7 +210,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/zkclient-learning/">使用zkclient操作zookeeper的学习过程记录</a>
+            <a class="article-title" href="/hello-world/">Hello World</a>
         </h1>
     
 
@@ -231,7 +231,7 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/zkclient-learning/">
+        <a href="/hello-world/">
             <time datetime="2016-08-16T07:52:52.000Z" itemprop="datePublished">2016-08-16</time>
         </a>
     </div>
@@ -240,14 +240,14 @@ ga('send', 'pageview');
                         
     <div class="article-category">
     	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/JAVA/">JAVA</a>
+        <a class="article-category-link" href="/categories/Spring/">Spring</a>
     </div>
 
                         <!-- 不显示标签 -->
                         <!-- 
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/zookeeper/">zookeeper</a>
+        <a class="tag-link" href="/tags/Spring/">Spring</a>, <a class="tag-link" href="/tags/Validation/">Validation</a>
     </div>
  -->
                     </div>
@@ -257,19 +257,8 @@ ga('send', 'pageview');
         
         <div class="article-entry" itemprop="articleBody">
         
-            <p></p><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近开发的分布式(使用motan)项目中使用zookeeper作为服务中心来提供注册服务(<code>@MotanService</code>)和发现服务(<code>@MotanRefer)</code>,虽然motan这个rpc框架对服务模块进行了很好的封装，但是以防以后会出现定制化的需求，以及对服务更好的监控，所以有必要了解一下zookeeper的基本知识和使用方法。关于zookeeper的知识点，网上很多的博客都已经介绍的很详尽了，我写这篇的博客的用意其实也就是将一些零散的却很精妙的博客整理出来，方便以后查阅。短篇以cp的方式，长篇的以url的方式。</p>
-<h2 id="zookeeper是什么？"><a href="#zookeeper是什么？" class="headerlink" title="zookeeper是什么？"></a>zookeeper是什么？</h2><blockquote>
-<p>ZooKeeper是一个分布式的，开放源码的分布式应用程序协调服务，是Google的Chubby一个开源的实现，是Hadoop和Hbase的重要组件。它是一个为分布式应用提供一致性服务的软件，提供的功能包括：配置维护、域名服务、分布式同步、组服务等。<br>ZooKeeper的目标就是封装好复杂易出错的关键服务，将简单易用的接口和性能高效、功能稳定的系统提供给用户。<br>ZooKeeper包含一个简单的原语集，提供Java和C的接口。 ZooKeeper代码版本中，提供了分布式独享锁、选举、队列的接口。</p>
-<p>—-百度百科</p>
-</blockquote>
-<p>一开始看的云里雾里的，幸好我之前搞过一点hadoop，对他的生态体系有所了解，这才大概知道他想说什么。提炼几个关键词，并且加入我后面学习的理解，总结一下就是–</p>
-<blockquote>
-<p>zookeeper是一个组件，需要安装客户端和服务端，一般用于解决分布式开发下的一些问题。化抽象为具体，你可以把整个zookeeper理解成一个树形数据结构，也可以理解为一个文件系统的结构，每个叶子节点都会携带一些信息(data)，并且也可能会携带一些操作(op)。分布式场景中，每一个客户端都可以访问到这些叶子节点，并且进行一些操作。我们所有使用zookeeper的场景几乎都是在CRUD某一个或者某些叶子节点，然后会触发对应的操作…即zookeeper本身可以理解为一个shareData。<br>—-来自于博主的口胡</p>
-</blockquote>
-<h2 id="zookeeper怎么学？"><a href="#zookeeper怎么学？" class="headerlink" title="zookeeper怎么学？"></a>zookeeper怎么学？</h2><p>学一个新的中间件的最好方法是先在脑子里面有一个想法：我为什么要学他，是想解决什么问题，他大概是个什么东西，我觉得打开思路的最好方式是看几篇博客(大多数情况你一开始看不懂，但是混个眼熟)，然后看视频，这里我自己是了解过了zookeeper原生的api之后看了<a href="http://www.jikexueyuan.com/course/zookeeper/" target="_blank" rel="noopener">极客学院</a>的视频</p><p></p>
-            <p class="article-more-link">
-                <a href="/zkclient-learning/#more">查看更多</a>
-            </p>
+            
+            
         
         </div>
         <footer class="article-footer">
@@ -279,7 +268,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/zkclient-learning/" data-id="cjtck7tly002igb9e9atdacur" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/hello-world/" data-id="cjtckbeby00c5mz9ed7t4iaxg" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
