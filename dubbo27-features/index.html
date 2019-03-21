@@ -20,7 +20,7 @@
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20190321191620078.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20190321192540774.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-03-21T11:45:39.991Z">
+<meta property="og:updated_time" content="2019-03-21T11:55:08.962Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Dubbo2.7 三大新特性详解">
 <meta name="twitter:description" content="背景介绍自 2017 年 7 月阿里重启 Dubbo 开源，到目前为止 github star 数，contributor 数都有了非常大的提升。2018 年 2 月 9 日阿里决定将 Dubbo 项目贡献给 Apache，经过一周的投票，顺利成为了 Apache 的孵化项目，也就是大家现在看到的 Incubator Dubbo。预计在 2019 年 4 月，Dubbo 可以达成毕业，成为 Apa">
@@ -324,8 +324,7 @@ ga('send', 'pageview');
 <hr>
 <p>Q：Dubbo 分为了客户端异步和服务端异步，刚刚你介绍的是客户端异步，为什么不提服务端异步呢？</p>
 <p>A：Dubbo 2.7 新增了服务端异步的支持，但实际上，Dubbo 的业务线程池模型，本身就可以理解为异步调用，个人认为服务端异步的特性较为鸡肋。</p>
-<p>##三大中心改造</p>
-<p>三大中心指的：注册中心，元数据中心，配置中心。</p>
+<h2 id="三大中心改造"><a href="#三大中心改造" class="headerlink" title="三大中心改造"></a>三大中心改造</h2><p>三大中心指的：注册中心，元数据中心，配置中心。</p>
 <p>在 2.7 之前的版本，Dubbo 只配备了注册中心，主流使用的注册中心为 zookeeper。新增加了元数据中心和配置中心，自然是为了解决对应的痛点，下面我们来详细阐释三大中心改造的原因。</p>
 <h3 id="元数据改造"><a href="#元数据改造" class="headerlink" title="元数据改造"></a>元数据改造</h3><p>元数据是什么？元数据定义为描述数据的数据，在服务治理中，例如服务接口名，重试次数，版本号等等都可以理解为元数据。在 2.7 之前，元数据一股脑丢在了注册中心之中，这造成了一系列的问题：</p>
 <p><strong>推送量大 -&gt; 存储数据量大 -&gt; 网络传输量大 -&gt; 延迟严重</strong></p>
@@ -389,7 +388,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubbo27-features/" data-id="cjtikkv0u002mg19ey43zqk68" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/dubbo27-features/" data-id="cjtikwtfd006c4e9e4ne3q61k" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
