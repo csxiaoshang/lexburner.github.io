@@ -161,7 +161,7 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                112
+                113
                 <span>文章</span>
             </div>
             <div class="article-info-block">
@@ -202,6 +202,174 @@ ga('send', 'pageview');
 
             
             <section id="main">
+    <article id="post-java-skill-1" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/java-skill-1/">java小技巧(一)--远程debug</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        <!-- 增加文章类型 -->
+                        
+	
+		<div class="article-type">
+		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
+		</div>
+	
+	
+	
+		
+	
+
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/java-skill-1/">
+            <time datetime="2017-10-25T09:24:48.000Z" itemprop="datePublished">2017-10-25</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/JAVA/">JAVA</a>
+    </div>
+
+                        <!-- 不显示标签 -->
+                        <!-- 
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/JAVA/">JAVA</a>
+    </div>
+ -->
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>该系列介绍一些java开发中常用的一些小技巧，多小呢，从不会到会只需要一篇文章这么小。这一篇介绍如何使用jdk自带的扩展包配合Intellij IDEA实现远程debug。</p>
+<p>项目中经常会有出现这样的问题，会令程序员抓狂：关键代码段没有打印日志，本地环境正常生产环境却又问题…这时候，远程debug可能会启动作用。</p>
+<h2 id="1-准备用于debug的代码"><a href="#1-准备用于debug的代码" class="headerlink" title="1 准备用于debug的代码"></a>1 准备用于debug的代码</h2><p>准备一个RestController用于接收请求，最后可以通过本地断点验证是否成功开启了远程debug</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(<span class="string">"/test"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Integer <span class="title">test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">        i++;</span><br><span class="line">        i++;</span><br><span class="line">        i++;</span><br><span class="line">        i++;</span><br><span class="line">        i++;</span><br><span class="line">        <span class="keyword">return</span> i;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>项目使用springboot和maven构建，依赖就省略了，使用springboot提供的maven打包插件，方便我们打包成可运行的jar。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">executable</span>&gt;</span>true<span class="tag">&lt;/<span class="name">executable</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-compiler-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">source</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">target</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="2-使用maven插件打包成jar"><a href="#2-使用maven插件打包成jar" class="headerlink" title="2 使用maven插件打包成jar"></a>2 使用maven插件打包成jar</h2><p><img src="http://kirito.iocoder.cn/maven_install.png" alt="maven插件"></p>
+<h2 id="3-准备启动脚本"><a href="#3-准备启动脚本" class="headerlink" title="3 准备启动脚本"></a>3 准备启动脚本</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=64057 remote-debug-1.0-SNAPSHOT.jar</span><br></pre></td></tr></table></figure>
+<ol>
+<li>使用java -jar的方式启动程序，并且添加了一串特殊的参数，这是我们能够开启远程debug的关键，以<code>-</code>开头的参数是jvm的标准启动参数，关于jvm启动参数相关的知识可以先去其他博客了解。</li>
+<li>-agentlib:libname[=options], 用于装载本地lib包。在这条指令中便是加载了jdwp(Java Debug Wire Protocol)这个用于远程调试java的扩展包。而<code>transport=dt_socket,server=y,suspend=n,address=64057</code>这些便是jdwp装载时的定制参数，详细的参数作用可以搜索jdwp进行了解。我们需要关心的只有address=64057这个参数选项，本地调试程序使用64057端口与其通信，从而远程调试。</li>
+</ol>
+<h2 id="4-配置IDEA"><a href="#4-配置IDEA" class="headerlink" title="4 配置IDEA"></a>4 配置IDEA</h2><p><img src="http://kirito.iocoder.cn/%E8%BF%9C%E7%A8%8Bdebug_idea%E9%85%8D%E7%BD%AE.png" alt="IDEA配置"></p>
+<ol>
+<li>与脚本中的指令完全一致</li>
+<li>远程jar包运行的host，由于我的jar运行在本地，所以使用的是localhost，一般线上环境自然是修改为线上的地址</li>
+<li>与远程jar包进行交互的端口号，idea会根据指令自动帮我们输入</li>
+<li>选择与远程jar包一致的本地代码</li>
+</ol>
+<p><strong>请务必保证远程jar包的代码与本地代码一致！！！</strong></p>
+<h2 id="5-验证"><a href="#5-验证" class="headerlink" title="5 验证"></a>5 验证</h2><p>保存第4步的配置后，先执行脚本让远程的jar包跑起来，再在IDEA中运行remote-debug</p>
+<p><img src="http://kirito.iocoder.cn/%E8%BF%90%E8%A1%8Cremote.png" alt="运行remote-jar"></p>
+<p>如上便代表连接运行成功了</p>
+<p>在本地打上断点，访问<code>localhost:8080/test</code></p>
+<p><img src="http://kirito.iocoder.cn/debug%E4%BF%A1%E6%81%AF%E5%B1%95%E7%A4%BA.png" alt="远程debug信息展示"></p>
+<p>可以在本地看到堆栈信息，大功告成。一行指令便完成了远程调试。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="http://lexburner.github.io/java-skill-1/" data-id="cjugs89o7001o9z9eesx56zb5" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
     <article id="post-concurrent-2" class="article article-type-post" itemscope="" itemprop="blogPost">
     <div class="article-inner">
         
@@ -312,7 +480,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/concurrent-2/" data-id="cjtikwtf7005t4e9eroptqqnw" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/concurrent-2/" data-id="cjugs89qt005q9z9ev0ka5vpa" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -503,7 +671,7 @@ public String test(){
 
 </div>
 
-    <a data-url="http://lexburner.github.io/concurrent-1/" data-id="cjtikwtf8005x4e9evs7joy08" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/concurrent-1/" data-id="cjugs89r7006g9z9es22l8q9m" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -653,7 +821,7 @@ public String test(){
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-security-5/" data-id="cjtikwtgi009h4e9ehb0azfww" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/spring-security-5/" data-id="cjugs89s6009i9z9e5kclaq7m" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -855,7 +1023,7 @@ public String test(){
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-security-4/" data-id="cjtikwtk200d44e9e4fksk0ev" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/spring-security-4/" data-id="cjugs89uz00d19z9ehr458w7d" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1038,7 +1206,7 @@ public String test(){
 
 </div>
 
-    <a data-url="http://lexburner.github.io/project-rules-2/" data-id="cjtikwtch001q4e9e7id0qm2p" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/project-rules-2/" data-id="cjugs89o5001l9z9ejcjfjad3" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1185,7 +1353,7 @@ public String test(){
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-security-2/" data-id="cjtikwtci001t4e9e1bzejvvh" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/spring-security-2/" data-id="cjugs89o9001q9z9ewbequrp7" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1398,7 +1566,7 @@ public String test(){
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-security-3/" data-id="cjtikwtgf00994e9e0yoi1g71" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/spring-security-3/" data-id="cjugs89s4009f9z9ecqm9ozv6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1549,7 +1717,7 @@ public String test(){
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-security-1/" data-id="cjtikwtja00ch4e9eckbd498e" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/spring-security-1/" data-id="cjugs89ty00c09z9ei39rr497" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1704,179 +1872,7 @@ public String test(){
 
 </div>
 
-    <a data-url="http://lexburner.github.io/event-2/" data-id="cjtikwtgv00aa4e9et29wl9il" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
-    <article id="post-rethink-1" class="article article-type-post" itemscope="" itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/rethink-1/">上一个电商项目的反思</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        <!-- 增加文章类型 -->
-                        
-	
-		<div class="article-type">
-		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
-		</div>
-	
-	
-	
-		
-	
-
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/rethink-1/">
-            <time datetime="2017-09-11T13:02:43.000Z" itemprop="datePublished">2017-09-11</time>
-        </a>
-    </div>
-
-
-                        
-    <div class="article-category">
-    	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/技术杂谈/">技术杂谈</a>
-    </div>
-
-                        <!-- 不显示标签 -->
-                        <!-- 
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/技术杂谈/">技术杂谈</a>
-    </div>
- -->
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p>加入中科软已经有了一个年头，从去年实习到今年转正，陆陆续续接触了大概四个项目。有电商类，互联网保险类，也经历过管理系统。幸运的是，这些项目都是从零开始，避免了让我去维护不堪入目的老旧系统。而这么多项目中令我印象最深刻的，就要属上一个电商项目了。这也是我接触到的真正意义的第一个微服务项目，到今天回首去看曾经的这个项目，有很多突破性地尝试，同时不可避免地也踩入了一些坑点，毕竟摸着石头过河。今天想聊聊我对上一个电商项目的反思。</p>
-<h2 id="项目简介"><a href="#项目简介" class="headerlink" title="项目简介"></a>项目简介</h2><p>准确的说是一个第三方的电商项目，商品来源是由主流电商的http接口提供（目前接入了京东，苏宁），打造我们自己的商城体系。使用的技术包括springboot，jpa，rpc框架使用的是motan，数据库使用的是oracle，基本都还算是主流的技术。</p>
-<h2 id="盲目地拆分微服务"><a href="#盲目地拆分微服务" class="headerlink" title="盲目地拆分微服务"></a>盲目地拆分微服务</h2><p>使用了springboot就是微服务了吗？使用rpc通信就是微服务了吗？刚接触到所谓的微服务架构时，无疑是让人兴奋的，但也没有太多的经验，以至于每提出一个新的需求，几乎就会新建一个服务。没有从宏观去思考如何拆分服务，那时还没有项目组成员尝试去使用领域驱动设计的思想去划分服务的边界，会议室中讨论最多的话题也是：我们的数据库该如何设计，而不是我们的领域该如何划分。项目初期，使用单体式的思想开发着分布式项目，新技术的引入还只是使人有点稍微的不顺手，但是项目越做越大后，越来越大的不适感逐渐侵蚀着我们的开发速度。</p>
-<p>说道微服务的拆分，有很多个维度，这里主要谈两个维度：</p>
-<ul>
-<li>系统维度：业务功能不同的需求，交给不同的系统完成，如订单，商品，地址，用户等系统需要拆分。</li>
-<li>模块维度：基础架构层（如公用util），领域层，接口层，服务层，表现层的拆分。</li>
-</ul>
-<p>在项目的初期，我们错误地认为微服务的拆分仅仅是系统维度的拆分，如商品系统和订单系统，而在模块维度上，缺少拆分的意识，如订单模块的表现层和服务层，我们虽然做了隔离（两个独立的tomcat）。但在后来，业务添加了一个新的需求：商城增加积分支持，让用户可以使用积分购买商品。我们突然发现，所谓的服务层和表现层严重的耦合，仅仅是在物理上进行了隔离，逻辑层面并没有拆分，这导致新的积分服务模块从原先的订单服务层拷贝了大量的代码。吸取了这个教训后，我们新的项目中采取了如下的分层方式：</p>
-<p><img src="http://kirito.iocoder.cn/52029421305_2.gif" alt="新的架构分层"></p>
-<p>其中比较关键的一点便是表现层与应用层的完全分离，交互完全使用DTO对象。不少同事产生了困惑，抱怨在表现层不能访问数据库，这让他们获取数据变得十分“麻烦”，应用层和表现层还多了一次数据拷贝的工作，用于将DO持久化对象转换成DTO对象。但这样的好处从长远来看，是不言而喻的。总结为以下几点：</p>
-<p>1 应用层高度重用，没有表现形式的阻碍，PC端，移动端，外部服务都可以同时接入，需要组装什么样的数据，请自行组装。</p>
-<p>2 应用层和领域层可以交由经验较为丰富的程序员负责，避免了一些低性能的数据操作，错误的并发控制等等。</p>
-<p>3 解决远程调用数据懒加载的问题。从前的设计中，表现层拿到了领域层的对象，而领域层会使用懒加载技术，当表现层想要获取懒加载属性时，或得到一个no session的异常。在没有这个分层之前，如何方便地解决这个问题一度困扰了我们很长的一段时间。</p>
-<h2 id="数据库的滥用"><a href="#数据库的滥用" class="headerlink" title="数据库的滥用"></a>数据库的滥用</h2><p>项目使用了oracle，我们所有的数据都存在于同一个oracle实例中，各个系统模块并没有做到物理层面的数据库隔离。这并不符合设计，一方面这给那些想要跨模块执行join操作的人留了后门，如执行订单模块和用户模块的级联查询；另一方面，还困扰了一部分对微服务架构不甚了解的程序员，在他们的想法中，同一个数据库实例反而方便了他们的数据操作。</p>
-<p>严格意义上，不仅仅是不同系统之间的数据库不能互相访问。同一个系统维度的不同模块也应当限制，正如前面一节的分层架构中，表现层（web层）是不应该出现DAO的，pom文件中也不应该出现任何JPA，Hibernate，Mybatis一类的依赖，它所有的数据来源，必须是应用层。</p>
-<p>另外一方面，由于历史遗留问题，需要对接一个老系统，他们的表和这个电商的oracle实例是同一个，而我竟然在他们的表上发现了触发器这种操作…在新的项目中，我们已经禁止使用数据库层面的触发器和物理约束。</p>
-<p>在新的项目中，我们采用了阿里云的RDS(mysql)作为oracle的替代品，核心业务数据则放到了分布式数据库DRDS中，严格做到了数据库层面的拆分。</p>
-<h2 id="并发的控制"><a href="#并发的控制" class="headerlink" title="并发的控制"></a>并发的控制</h2><p>电商系统不同于OA系统，CMS系统，余额，订单等等操作都是敏感操作，实实在在跟钱打交道的东西容不得半点马虎，然而即使是一些有经验的程序员，也写出了这样的扣减余额操作：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">reduce</span><span class="params">(String accountId,BigDecimal cost)</span></span>&#123;</span><br><span class="line">    Account account = accountService.findOne(accountId);</span><br><span class="line">    BigDecimal balance = account.getBalance();</span><br><span class="line">    <span class="keyword">if</span>(balance &gt; cost)</span><br><span class="line">      balance = balance - cost;<span class="comment">//用四则运算代替BigDecimal的api，方便表达</span></span><br><span class="line">    account.setBalance(balance);</span><br><span class="line">    accountService.save(account);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>很多人没有控制并发的意识，即使意识到了，也不知道如何根据业务场景采取合适的手段控制并发，是使用JPA中的乐观锁，还是使用数据库的行级自旋锁完成简单并发控制，还是for update悲观锁（这不建议被使用），还是基于redis或zookeeper一类的分布式锁？</p>
-<p>这种错误甚至都不容许等到code revivew时才被发现，而应该是尽力地杜绝。</p>
-<h2 id="代码规范"><a href="#代码规范" class="headerlink" title="代码规范"></a>代码规范</h2><p>小到java的变量的驼峰命名法，数据库中用‘_’分割单词，到业务代码该如何规范的书写，再到并发规范，性能调优。准确的说，没有人管理这些事，这样的工作落到了每个有悟性的开发者身上。模块公用的常量，系统公用的常量应当区分放置，禁止使用魔鬼数字，bool变量名不能以is开头等等细小的但是重要的规范，大量的条件查询findByxxx污染了DAO层，完全可以被predicates，criteria替代，RESTFUL规范指导设计web接口等等…</p>
-<p>在新的项目中，一条条规范被逐渐添加到了项目单独的模块READ.me中。作为公司的一个junior developer，在建议其他成员使用规范开发项目时，得到的回应通常是：我的功能都已经实现了，干嘛要改；不符合规范又怎么样，要改你改时。有时候也是挺无力的，算是个人的一点牢骚吧。</p>
-<h2 id="软件设计的一点不足"><a href="#软件设计的一点不足" class="headerlink" title="软件设计的一点不足"></a>软件设计的一点不足</h2><p>还是拿订单系统和商品系统来说事，虽然两个系统在物理上被拆分开了，但如果需要展示订单列表，订单详情，如今系统的设计会发起多次的远程调用，用于查询订单的归属商品，这是违背领域驱动设计的。订单中的商品就应当是归属于订单模块，正确的设计应该是使用冗余，代替频繁的跨网络节点远程调用。</p>
-<p>另外一点便是高可用，由于机器内存的限制，所有的系统都只部署了单个实例，这其实并不是微服务的最佳实践。从系统应用，到zookeeper，redis，mq等中间件，都应当保证高可用，避免单点问题。没有真正实现做到横向扩展（知识理论上实现了），实在是有点遗憾。</p>
-<p>系统没有熔断，降级处理，在新的项目中，由于我们引入了Spring Cloud，很多地方都可以out of box式使用框架提供的fallback处理，而这上一个电商项目由于框架的限制以及接口设计之初就没有预想到要做这样的操作，使得可靠性再减了几分。</p>
-<h2 id="自动化运维的缺失"><a href="#自动化运维的缺失" class="headerlink" title="自动化运维的缺失"></a>自动化运维的缺失</h2><p>单体式应用的美好时代，只需要发布同一份war包。而微服务项目中，一切都变得不同，在我们这个不算特别庞大的电商系统中，需要被运行的服务模块也到达了30-40个。由于这个电商系统是部署在甲方自己的服务器中，一方面是业务部门的业务审批流程，一方面是如此众多的jar包运行，没有自动发布，没有持续集成。令我比较难忘的是初期发布版本，始终有一两个服务莫名奇妙的挂掉，对着终端中的服务列表，一个个排查，这种痛苦的经历。至今，这个系统仍然依靠运维人员，手动管理版本。</p>
-<p>上一个项目有一些不可控的项目因素，而新的项目中，系统服务全部在阿里云上部署，也引入了Jenkins，一切都在逐渐变好，其他的devops工具仍然需要完善，以及docker一类的容器技术还未在计划日程之内，这些都是我们今年努力的目标。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>原本积累了很多自己的想法，可惜落笔之后能够捕捉到一些点，便只汇聚成了上述这些，而这上一个电商项目在逐渐的迭代开发之后也变得越来越好了（我去了新的项目组后，其他同事负责了后续的开发）。这个经历，于我是非常珍贵的，它比那些大牛直接告诉我微服务设计的要素要更加有意义。知道了不足之处，经历了自己解决问题的过程，才会了解到好的方案的优势，了解到开源方案到底是为了解决什么样的问题而设计的。</p>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
-</div>
-
-    <a data-url="http://lexburner.github.io/rethink-1/" data-id="cjtikwtg2008b4e9ejjrdmsyq" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/event-2/" data-id="cjugs89rd006z9z9e89u8ttv5" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1969,6 +1965,25 @@ public String test(){
                     <li>
                         
                         <!-- <div class="item-thumbnail">
+                            <a href="/dubbo-rsocket/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
+                            <p class="item-title"><a href="/dubbo-rsocket/" class="title">【Dubbo3.0新特性】集成RSocket,新增响应式支持</a></p>
+                            <p class="item-date"><time datetime="2019-04-11T11:19:41.000Z" itemprop="datePublished">2019-04-11</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
                             <a href="/dubbo27-features/" class="thumbnail">
     
     
@@ -2042,25 +2057,6 @@ public String test(){
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <!-- <div class="item-thumbnail">
-                            <a href="/consistent-hash-lb/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div> -->
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
-                            <p class="item-title"><a href="/consistent-hash-lb/" class="title">一致性哈希负载均衡算法的探讨</a></p>
-                            <p class="item-date"><time datetime="2019-02-15T07:45:13.000Z" itemprop="datePublished">2019-02-15</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -2070,7 +2066,7 @@ public String test(){
     <div class="widget-wrap">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
         </div>
     </div>
 
@@ -2079,7 +2075,7 @@ public String test(){
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">一月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">一月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
         </div>
     </div>
 
@@ -2088,7 +2084,7 @@ public String test(){
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/DUBBO/" style="font-size: 10px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11.11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 12.22px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12.22px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12.22px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 11.11px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 18.89px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 17.78px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12.22px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11.11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11.11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 15.56px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12.22px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13.33px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11.11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11.11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11.11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13.33px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11.11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14.44px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 16.67px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 10px;">数据库</a> <a href="/tags/文件IO/" style="font-size: 10px;">文件IO</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13.33px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11.11px;">网关</a> <a href="/tags/规则引擎/" style="font-size: 13.33px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11.11px;">领域驱动设计</a>
+            <a href="/tags/DUBBO/" style="font-size: 10px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11.11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 13.33px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12.22px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12.22px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 11.11px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 18.89px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 17.78px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12.22px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11.11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11.11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 15.56px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12.22px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13.33px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11.11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11.11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11.11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13.33px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11.11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14.44px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 16.67px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 10px;">数据库</a> <a href="/tags/文件IO/" style="font-size: 10px;">文件IO</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13.33px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11.11px;">网关</a> <a href="/tags/规则引擎/" style="font-size: 13.33px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11.11px;">领域驱动设计</a>
         </div>
     </div>
 
