@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="响应式编程响应式编程现在是现在一个很热的话题。响应式编程让开发者更方便地编写高性能的异步代码，关于响应式编程更详细的信息可以参考 http://reactivex.io/ 。很可惜，在之前很长一段时间里，Dubbo 并不支持响应式编程，简单来说，Dubbo 不支持在 rpc 调用时，使用 Mono/Flux 这种流对象（reactive-stream 中流的概念)，给用户使用带来了不便。 RSoc">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-04-14T10:23:46.953Z">
+<meta property="og:updated_time" content="2019-04-30T03:01:30.434Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="【Dubbo3.0新特性】集成RSocket,新增响应式支持">
 <meta name="twitter:description" content="响应式编程响应式编程现在是现在一个很热的话题。响应式编程让开发者更方便地编写高性能的异步代码，关于响应式编程更详细的信息可以参考 http://reactivex.io/ 。很可惜，在之前很长一段时间里，Dubbo 并不支持响应式编程，简单来说，Dubbo 不支持在 rpc 调用时，使用 Mono/Flux 这种流对象（reactive-stream 中流的概念)，给用户使用带来了不便。 RSoc">
@@ -265,6 +265,7 @@ ga('send', 'pageview');
             <h2 id="响应式编程"><a href="#响应式编程" class="headerlink" title="响应式编程"></a>响应式编程</h2><p>响应式编程现在是现在一个很热的话题。响应式编程让开发者更方便地编写高性能的异步代码，关于响应式编程更详细的信息可以参考 <a href="http://reactivex.io/" target="_blank" rel="noopener">http://reactivex.io/</a> 。很可惜，在之前很长一段时间里，Dubbo 并不支持响应式编程，简单来说，Dubbo 不支持在 rpc 调用时，使用 Mono/Flux 这种流对象（reactive-stream 中流的概念)，给用户使用带来了不便。</p>
 <p>RSocket 是一个支持 reactive-stream 语义的开源网络通信协议，它将 reactive 语义的复杂逻辑封装了起来，使得上层可以方便实现网络程序。RSocket 详细资料：<a href="http://rsocket.io/。" target="_blank" rel="noopener">http://rsocket.io/。</a></p>
 <p>Dubbo 在 <a href="https://github.com/apache/incubator-Dubbo/tree/3.x-dev" target="_blank" rel="noopener">3.0.0-SNAPSHOT</a> 版本里基于 RSocket 对响应式编程提供了支持，用户可以在请求参数和返回值里使用 Mono 和 Flux 类型的对象。下面我们给出使用范例，源码可以在文末获取。</p>
+<a id="more"></a>
 <h2 id="Dubbo-RSocket-初体验"><a href="#Dubbo-RSocket-初体验" class="headerlink" title="Dubbo RSocket 初体验"></a>Dubbo RSocket 初体验</h2><h3 id="服务接口"><a href="#服务接口" class="headerlink" title="服务接口"></a>服务接口</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">DemoService</span> </span>&#123;</span><br><span class="line">    <span class="function">Mono&lt;String&gt; <span class="title">requestMonoWithMonoArg</span><span class="params">(Mono&lt;String&gt; m1, Mono&lt;String&gt; m2)</span></span>;</span><br><span class="line">    <span class="function">Flux&lt;String&gt; <span class="title">requestFluxWithFluxArg</span><span class="params">(Flux&lt;String&gt; f1, Flux&lt;String&gt; f2)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.projectreactor<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>reactor-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.2.3-RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
 <p>在服务定义层，引入了 Mono，Flux 等 reactor 的概念，所以需要添加 reactor-core 的依赖。</p>
@@ -301,7 +302,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubbo-rsocket/" data-id="cjv37cci0006lkm9elyu8q0gk" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/dubbo-rsocket/" data-id="cjv37gtpw006eol9etld8xz2p" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
