@@ -17,7 +17,7 @@
 <meta property="og:image" content="http://kirito.iocoder.cn/1364556742_9652.gif">
 <meta property="og:image" content="http://kirito.iocoder.cn/linux-io.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-01-07T02:32:28.140Z">
+<meta property="og:updated_time" content="2019-07-24T02:45:34.277Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="文件IO操作的一些最佳实践">
 <meta name="twitter:description" content="背景已经过去的中间件性能挑战赛，和正在进行中的 第一届 PolarDB 数据性能大赛 都涉及到了文件操作，合理地设计架构以及正确地压榨机器的读写性能成了比赛中获取较好成绩的关键。正在参赛的我收到了几位公众号读者朋友的反馈，他们大多表达出了这样的烦恼：“对比赛很感兴趣，但不知道怎么入门”，“能跑出成绩，但相比前排的选手，成绩相差10倍有余”…为了能让更多的读者参与到之后相类似的比赛中来，我简单整理一">
@@ -298,7 +298,7 @@ ga('send', 'pageview');
 </ol>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">clean</span><span class="params">(MappedByteBuffer mappedByteBuffer)</span> </span>&#123;</span><br><span class="line">    ByteBuffer buffer = mappedByteBuffer;</span><br><span class="line">    <span class="keyword">if</span> (buffer == <span class="keyword">null</span> || !buffer.isDirect() || buffer.capacity() == <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    invoke(invoke(viewed(buffer), <span class="string">"cleaner"</span>), <span class="string">"clean"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> Object <span class="title">invoke</span><span class="params">(<span class="keyword">final</span> Object target, <span class="keyword">final</span> String methodName, <span class="keyword">final</span> Class&lt;?&gt;... args)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> AccessController.doPrivileged(<span class="keyword">new</span> PrivilegedAction&lt;Object&gt;() &#123;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> Object <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Method method = method(target, methodName, args);</span><br><span class="line">                method.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">                <span class="keyword">return</span> method.invoke(target);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> Method <span class="title">method</span><span class="params">(Object target, String methodName, Class&lt;?&gt;[] args)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> NoSuchMethodException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> target.getClass().getMethod(methodName, args);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (NoSuchMethodException e) &#123;</span><br><span class="line">        <span class="keyword">return</span> target.getClass().getDeclaredMethod(methodName, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> ByteBuffer <span class="title">viewed</span><span class="params">(ByteBuffer buffer)</span> </span>&#123;</span><br><span class="line">    String methodName = <span class="string">"viewedBuffer"</span>;</span><br><span class="line">    Method[] methods = buffer.getClass().getMethods();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; methods.length; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (methods[i].getName().equals(<span class="string">"attachment"</span>)) &#123;</span><br><span class="line">            methodName = <span class="string">"attachment"</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ByteBuffer viewedBuffer = (ByteBuffer) invoke(buffer, methodName);</span><br><span class="line">    <span class="keyword">if</span> (viewedBuffer == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">return</span> buffer;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> viewed(viewedBuffer);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>对的，你没看错，这么长的代码仅仅是为了干回收 MappedByteBuffer 这一件事。</p>
-<p>所以我建议，优先使用 FileChannel 去完成初始代码的提交，在必须使用小数据量(例如几个字节)刷盘的场景下，再换成 MMAP 的实现，其他场景 FileChannel 完全可以 cover(前提是你理解怎么合理使用 FileChannel)。至于 MMAP 为什么在一次写入少量数据的场景下表现的比 FileChannel 优异，我还没有查到理论根据，如果你有相关的线索，欢迎留言。理论分析下，FileChannel 同样是写入内存，但比 MMAP 多了一次内核缓冲区与用户空间互相复制的过程，所以在极端场景下，MMAP 表现的更加优秀。至于 MMAP 分配的虚拟内存是否就是真正的 PageCache 这一点，我觉得可以近似理解成 PageCache。</p>
+<p>所以我建议，优先使用 FileChannel 去完成初始代码的提交，在必须使用小数据量(例如几个字节)刷盘的场景下，再换成 MMAP 的实现，其他场景 FileChannel 完全可以 cover(前提是你理解怎么合理使用 FileChannel)。至于 MMAP 为什么在一次写入少量数据的场景下表现的比 FileChannel 优异，我还没有查到理论根据，如果你有相关的线索，欢迎留言。理论分析下，FileChannel 同样是写入内存，但是在写入小数据量时，MMAP 表现的更加优秀，所以在索引数据落盘时，大多数情况应该选择使用 MMAP。至于 MMAP 分配的虚拟内存是否就是真正的 PageCache 这一点，我觉得可以近似理解成 PageCache。</p>
 <h3 id="顺序读比随机读快，顺序写比随机写快"><a href="#顺序读比随机读快，顺序写比随机写快" class="headerlink" title="顺序读比随机读快，顺序写比随机写快"></a>顺序读比随机读快，顺序写比随机写快</h3><p>无论你是机械硬盘还是 SSD，这个结论都是一定成立的，虽然背后的原因不太一样，我们今天不讨论机械硬盘这种古老的存储介质，重点 foucs 在 SSD 上，来看看在它之上进行的随机读写为什么比顺序读写要慢。即使各个 SSD 和文件系统的构成具有差异性，但我们今天的分析同样具备参考价值。</p>
 <p>首先，什么是顺序读，什么是随机读，什么是顺序写，什么是随机写？可能我们刚接触文件 IO 操作时并不会有这样的疑惑，但写着写着，自己都开始怀疑自己的理解了，不知道你有没有经历过这样类似的阶段，反正我有一段时间的确怀疑过。那么，先来看看两段代码：</p>
 <p>写入方式一：64个线程，用户自己使用一个 atomic 变量记录写入指针的位置，并发写入</p>
@@ -308,7 +308,7 @@ ga('send', 'pageview');
 <p>答案是方式二才算顺序写，顺序读也是同理。对于文件操作，加锁并不是一件非常可怕的事，不敢同步 write/read 才可怕！有人会问：FileChannel 内部不是已经有 positionLock 保证写入的线程安全了吗，为什么还要自己加同步？为什么这样会快？我用大白话来回答的话就是多线程并发 write 并且不加同步，会导致文件空洞，它的执行次序可能是 </p>
 <p>时序1：thread1 write position[0~4096)</p>
 <p>时序2：thread3 write position[8194~12288)</p>
-<p>时序2：thread2 write position[4096~8194)</p>
+<p>时序3：thread2 write position[4096~8194)</p>
 <p>所以并不是完全的“顺序写”。不过你也别担心加锁会导致性能下降，我们会在下面的小结介绍一个优化：通过文件分片来减少多线程读写时锁的冲突。</p>
 <p>在来分析原理，顺序读为什么会比随机读要快？顺序写为什么比随机写要快？这两个对比其实都是一个东西在起作用：PageCache，前面我们已经提到了，它是位于 application buffer(用户内存)和 disk file(磁盘)之间的一层缓存。</p>
 <p><img src="http://kirito.iocoder.cn/1364556742_9652.gif" alt="PageCache"></p>
@@ -354,9 +354,9 @@ ga('send', 'pageview');
 <td style="text-align:center">当 DirectByteBuffer 不再被使用时，会出发内部 cleaner 的钩子，保险起见，可以考虑手动回收：((DirectBuffer) buffer).cleaner().clean();</td>
 </tr>
 <tr>
-<td style="text-align:center"><strong>拷贝方式</strong></td>
-<td style="text-align:center">用户态<->内核态</-></td>
-<td style="text-align:center">内核态</td>
+<td style="text-align:center"><strong>内存复制</strong></td>
+<td style="text-align:center">堆内内存 -&gt; 堆外内存 -&gt; pageCache</td>
+<td style="text-align:center">堆外内存 -&gt; pageCache</td>
 </tr>
 </tbody>
 </table>
@@ -364,7 +364,7 @@ ga('send', 'pageview');
 <ol>
 <li>当需要申请大块的内存时，堆内内存会受到限制，只能分配堆外内存。</li>
 <li>堆外内存适用于生命周期中等或较长的对象。( 如果是生命周期较短的对象，在 YGC 的时候就被回收了，就不存在大内存且生命周期较长的对象在 FGC 对应用造成的性能影响 )。</li>
-<li>直接的文件拷贝操作，或者 I/O 操作。直接使用堆外内存就能少去内存从用户内存拷贝到系统内存的消耗</li>
+<li>堆内内存刷盘的过程中，还需要复制一份到堆外内存，这部分内容可以在 FileChannel 的实现源码中看到细节，至于 Jdk 为什么需要这么做，可以参考我的另外一篇文章：<a href="https://www.cnkirito.moe/nio-buffer-recycle/" target="_blank" rel="noopener">《一文探讨堆外内存的监控与回收》</a></li>
 <li>同时，还可以使用池+堆外内存 的组合方式，来对生命周期较短，但涉及到 I/O 操作的对象进行堆外内存的再使用( Netty中就使用了该方式 )。在比赛中，尽量不要出现在频繁 <code>new byte[]</code> ，创建内存区域再回收也是一笔不小的开销，使用 <code>ThreadLocal&lt;ByteBuffer&gt;</code>  和 <code>ThreadLocal&lt;byte[]&gt;</code> 往往会给你带来意外的惊喜~</li>
 <li>创建堆外内存的消耗要大于创建堆内内存的消耗，所以当分配了堆外内存之后，尽可能复用它。</li>
 </ol>
@@ -394,7 +394,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/file-io-best-practise/" data-id="cjy78r67x00bf759elrflt5w2" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/file-io-best-practise/" data-id="cjygnbt1w00bruh9etvidtpuz" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
