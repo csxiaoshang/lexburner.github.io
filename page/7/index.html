@@ -161,11 +161,11 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                117
+                119
                 <span>文章</span>
             </div>
             <div class="article-info-block">
-                53
+                55
                 <span>标签</span>
             </div>
         </div>
@@ -202,6 +202,501 @@ ga('send', 'pageview');
 
             
             <section id="main">
+    <article id="post-view-1" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/view-1/">给初中级JAVA准备的面试题</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        <!-- 增加文章类型 -->
+                        
+	
+		<div class="article-type">
+		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
+		</div>
+	
+	
+	
+		
+	
+
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/view-1/">
+            <time datetime="2017-11-28T14:15:28.000Z" itemprop="datePublished">2017-11-28</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/JAVA/">JAVA</a>
+    </div>
+
+                        <!-- 不显示标签 -->
+                        <!-- 
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/JAVA/">JAVA</a>
+    </div>
+ -->
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>笔者作为一个今年刚毕业的初级JAVA，根据群里水友的讨论，也结合自己刚毕业时的一些面经，加上近期一点点在公司面试别人的经验，总结了如下的常见面试问题，适用于初级和中级JAVA。</p>
+<h2 id="JAVA"><a href="#JAVA" class="headerlink" title="JAVA"></a>JAVA</h2><ol>
+<li>HashMap相关</li>
+</ol>
+<p>HashMap一直是经典的面试题，所有面试官都喜欢问他，因为它可以牵扯出非常多的知识点，而面试者到底能了解到何种程度，则一定程度反映其综合能力。</p>
+<p>细节聊扩容因子LoadFactor=0.75，初始大小InitailCapacity=16</p>
+<p>纵向聊其底层实现，数据结构是数组+链表，提到jdk1.8之后对链表节点到达8之后转换为红黑树加分。继续追问的话便是引申出常用的数据结构：队列，栈，树，图。</p>
+<p>横向聊线程安全，HashMap为线程不安全，一般问多线程操作会导致其死循环的原因。与线程安全的ConcurrentHashMap对比，又扩展到ConcurrentHashMap的实现。继续追问的话便是引申出线程安全的定义，问一些常用的并发容器，考察面试者对java.util.concurrent包的掌握情况。那么至少可以牵扯出如下的问题：</p>
+<ol>
+<li>ConcurrentHashMap相关</li>
+</ol>
+<p>面试者可以先说历史，1.8之前采用分段锁，核心就是一句话：尽量降低同步锁的粒度。1.8之后使用CAS思想代替冗杂的分段锁实现。不出意料，面试者答出CAS之后必定会被追问其思想以及应用，换做我自己的话会有如下思路作答：CAS采用乐观锁思想达到lock free，提一下sun.misc.Unsafe中的native方法，至于CAS的其他应用可以聊一聊Atomic原子类和一些无锁并发框架（如Amino），提到ABA问题加分。</p>
+<ol>
+<li>线程安全与锁</li>
+</ol>
+<p>线程安全这个词也是面试的高频词，说完上面的并发容器，回头说一说线程安全的定义，按照周志明大大的话回答私以为是极好的：</p>
+<blockquote>
+<p>当多个线程访问某个类时，不管运行时环境采用何种调度方式或者这些线程将如何交替进行，并且在主调代码中不需要任何额外的同步或协同，这个类都能表现出正确的行为，那么称这个类是线程安全的</p>
+</blockquote>
+<p>通常与锁一起出现：除了synchronized之外，还经常被问起的是juc中的Lock接口，其具体实现主要有两种：可重入锁，读写锁。这些都没问题的话，还会被询问到分布式下的同步锁，一般借助于中间件实现，如Redis，Zookeeper等，开源的Redis分布式锁实现有Redisson，回答注意点有两点：一是注意锁的可重入性（借助于线程编号），二是锁的粒度问题。除此之外就是一些juc的常用工具类如：CountdownLatch，CyclicBarrir，信号量</p>
+<ol>
+<li>线程</li>
+</ol>
+<p>创建线程有几种方式：这个时候应该毫不犹豫的回答1种。面试官会有些惊讶于你的回答，因为似乎他已经习惯了听到Thread和Runnable2种方式的“标准答案”。其实，仔细审题会发现，java创建线程只有一种方式：Thread。Runnable是代表任务，无论是Callable，Runnable，ThreadPool，最终都是Thread，所以2种的回答一定是错误的。</p>
+<ol>
+<li>设计模式</li>
+</ol>
+<p>如经典的单利模式。当被问到单例模式时，私以为在有准备的前提下，回答使用双检锁的方式实现可以很好地诱导面试官。双检锁实现线程安全的单利模式有两块注意点：1锁的粒度问题 2 静态变量需要被volatile修饰。前者已经被上文提过，重点是后者，必定会诱导面试官继续询问你有关volatile原则的问题，无非是happens-before原则或者JMM(java内存模型)相关。前者只需要熟记几条关键性的原则即可，而后者回答的重点便是需要提到主存与工作内存的关系。</p>
+<p>工厂模式，观察者模式，模板方法模式，策略模式，职责链模式等等，通常会结合Spring和UML类图提问。</p>
+<ol>
+<li>JVM相关</li>
+</ol>
+<p>说实话，我自己对JVM的掌握几乎完全来自于《深入理解java虚拟机》，加上一点点线上的经验。初级岗位常问的问题也是固定的那么几个。</p>
+<p>内存分区：主要就是堆和栈，严谨点回答可以答方法区，虚拟机栈，本地方法栈，堆，程序计数器。聊一聊Hotspot在jdk1.7中将常量池移到了堆中，jdk1.8移除永久代用MetaSpace代替起码可以佐证：你喜欢在一些JAVA群里面吹水。</p>
+<p>垃圾回收算法：新生代由于对象朝生夕死使用标记-清除(or标记-整理)算法，老年代生命力强使用复制算法。提到一句分代收集即可。</p>
+<p>垃圾回收器一两个名字还是得叫的上来：Serial，Parallel，CMS，G1…</p>
+<p>如何判断一个对象可以被回收：引用计数（可以提到Netty中的使用案例），可达性分析（JVM使用）</p>
+<ol>
+<li>IO相关</li>
+</ol>
+<p>bio，nio区别要熟知，了解nio中的ByteBuffer，Selector，Channel可以帮助面试者度过不少难关。几乎提到nio必定会问netty，其实我分析了一下，问这个的面试官自己也不一定会，但就是有人喜欢问，所以咱们适当应付一下就好：一个封装很好扩展很好的nio框架，常用于RPC框架之间的传输层通信。</p>
+<ol>
+<li>反射</li>
+</ol>
+<p>聊一聊你对JAVA中反射的理解：运行时操作一个类的神器，可以获取构造器，方法，成员变量，参数化类型…使用案例如Hibernate，BeanUtils。</p>
+<ol>
+<li>动态代理</li>
+</ol>
+<p>jdk动态代理和cglib动态代理的区别：前者需要实现一个接口，后者不需要；前者依赖于jdk提供的InvocationHandler，后者依赖于字节码技术；前者我还能写一些代码，后者完全不会。大概就这些差别了。</p>
+<h2 id="开源框架"><a href="#开源框架" class="headerlink" title="开源框架"></a>开源框架</h2><h3 id="Tomcat"><a href="#Tomcat" class="headerlink" title="Tomcat"></a>Tomcat</h3><p>我没看过源码，除了老生常谈的双亲委托类加载机制，似乎只能问一些相关参数了。</p>
+<h3 id="Spring"><a href="#Spring" class="headerlink" title="Spring"></a>Spring</h3><p>在我不长的面试官生涯中，比较烦的一件事便是：当我还没问全：“聊一聊你对Spring的理解”这句话时，部分面试者的脸上已经浮现出了笑容，并迫不及待的回答：AOP和IOC。这本无可厚非，但一旦这成了条件反射式的回答，便违背了面试的初衷。</p>
+<p>在面试中，Spring从狭义上可以被理解成Spring Framework&amp;SpringMVC。而广义上包含了Spring众多的开源项目，如果面试者连spring.io都没有访问过，私以为是不应该的扣分项。</p>
+<p>Spring常见的问题包括：Spring Bean的scope取值，BeanFactory的地位，@Transactionl相关（传播机制和隔离级别），SpringMVC工作流程</p>
+<h3 id="SpringBoot"><a href="#SpringBoot" class="headerlink" title="SpringBoot"></a>SpringBoot</h3><p>SpringBoot是当今最火的框架之一了，其starter模块自动配置的思想是面试中经常被问到的。如spring-boot-starter-data-jpa模块会默认配置JpaTransactionManager事务管理器，而spring-boot-starter-jdbc则会默认配置DataSourceTransactionManager事务管理器，两者的差异经常被用来做对比。@ConditionalOnMissingBean，@ConditionalOnBean等注解作用也需要被掌握。</p>
+<h3 id="JPA-amp-Hibernate"><a href="#JPA-amp-Hibernate" class="headerlink" title="JPA&amp;Hibernate"></a>JPA&amp;Hibernate</h3><p>ORM的思想</p>
+<p>懒加载如何配置以及意义</p>
+<p>级联如何配置，什么时候应该使用级联</p>
+<p>一级缓存：Session级别的缓存</p>
+<p>@Version的使用：数据库的乐观锁</p>
+<h3 id="数据库"><a href="#数据库" class="headerlink" title="数据库"></a>数据库</h3><p>这里的数据库还是以传统的RDBMS为主，由于存储过程，触发器等操作一般在互联网公司禁止使用，所以基本传统数据库能问的东西也并不多。</p>
+<ol>
+<li>索引的分类有哪些？面试者可以尝试自己分类回答。索引和唯一索引；聚集索引和非聚集索引；数据结构可以分为Hash和B+树索引；单列索引和联合索引。常见的索引问题还包括（A,B,C）的联合索引，查询(B,C)时会不会走索引等一些数据库的小细节。</li>
+<li>事务ACID的描述和隔离级别。</li>
+<li>mysql的explain查询分析也是面试的重点对象，一条分析结果的查询时间，影响行数，走了哪些索引都是分析的依据。</li>
+<li>如果面试官问到存储引擎，说实话也有点为了面试而面试的感觉，掌握基本的InnoDB和Myisam的区别即可。</li>
+<li>互联网公司可能会比较关心面试者对分库分表的掌握：mysql自带的sharding为什么一般不使用？中间件级别和驱动级别的分库分表，sharding-jdbc，cobar，mycat等开源组件的使用，分布式ID和分库键的选择也备受面试官的青睐。</li>
+</ol>
+<h3 id="Redis"><a href="#Redis" class="headerlink" title="Redis"></a>Redis</h3><p>这个的确很热，这年头不熟悉Redis真不好意思说自己是干互联网的。</p>
+<ol>
+<li>Redis的常用数据结构，这不用赘述了。</li>
+<li>Redis的持久化策略。了解RDB和AOF的使用场景即可。</li>
+<li>Redis的发布订阅。</li>
+<li>列举Redis的使用场景。这个可以自由发挥，除了主要功能缓存之外，还包括session共享，基于Redis的分布式锁，简易的消息队列等。</li>
+<li>了解Redis的集群和哨兵机制。</li>
+<li>高级话题包括：缓存雪崩，缓存失效，缓存穿透，预热等。</li>
+</ol>
+<h3 id="MQ"><a href="#MQ" class="headerlink" title="MQ"></a>MQ</h3><p>至少掌握一种常用的消息队列中间件：RabbitMQ，ActiveMQ，RocketMQ，Kafka，了解MQ解耦，提高吞吐量，平滑处理消息的主要思想。常见的面试问题包括如下几点：</p>
+<ol>
+<li>列举MQ在项目中的使用场景</li>
+<li>消息的可靠投递。每当要发生不可靠的操作（如RPC远程调用之前或者本地事务之中），保证消息的落地，然后同步发送。当失败或者不知道成功失败（比如超时）时，消息状态是待发送，定时任务轮询待发送消息表，最终一定可以送达。同时消费端保证幂等。也有朋友告诉过我RocketMQ中事务消息的概念，不过没有深入研究。</li>
+<li>消息的ACK机制。如较为常用的事务机制和客户端ACK。</li>
+<li>DLQ的设计。</li>
+</ol>
+<h3 id="Nginx"><a href="#Nginx" class="headerlink" title="Nginx"></a>Nginx</h3><ol>
+<li>解释反向代理。</li>
+<li>常用的负载均衡算法。掌握ip_hash ，轮询，weight，fair即可。</li>
+<li>配置动静分离。</li>
+</ol>
+<h3 id="RPC框架"><a href="#RPC框架" class="headerlink" title="RPC框架"></a>RPC框架</h3><p>Dubbo，Motan等主流rpc框架的设计思想也是面试中宠儿。</p>
+<ol>
+<li>说一说RPC的原理？可初步回答动态代理+网络通信，进一步补充RPC的主要分层：协议层，序列化层，通信层，代理层。每一层拉出来都可以被问很久：如序列化方式的选择，通信层的选择等。</li>
+<li>注册中心的作用和选择。Zookeeper，Consul，Eureka等注册中心完成了什么工作，以及他们的对比。</li>
+<li>netty相关的提问。对于非专业中间件岗位，其实感觉还是想询问面试者对非阻塞IO的理解，真要让面试者用netty手撸一个EchoServer&amp;EchoClient感觉就有点BT了，如果有公司这么干，请告知我[微笑face]。</li>
+</ol>
+<h3 id="SpringCloud"><a href="#SpringCloud" class="headerlink" title="SpringCloud"></a>SpringCloud</h3><p>就我所了解的情况，国内SpringCloud的普及程度还不是很高，但是SpringCloud的相关组件会被部分引用，这倒是很常见，所以简历中出现SpringCloud也会是一个初级JAVA的亮点。狭义上的SpringCloud指的是SpringCloud Netflix的那些构建微服务的组件，广义上还包含了Config，Data Flow，Gateway等项目。</p>
+<ol>
+<li>Feign，Ribbon，Eureka，Zuul的使用。了解各个组件的作用，会问一些常遇到的问题如Feign的重试机制，Eureka的保护机制，Zuul的路由机制等。</li>
+<li>Spring Cloud使用的restful http通信与RPC通信的对比。毕竟…这是一个经久不衰的辩题，可以从耦合性，通信性能，异构系统的互信等角度对比。</li>
+</ol>
+<h2 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h2><ol>
+<li>CAP和BASE原理。了解CAP只能同时保证两个的结论，以及CP和AP的选择依据。了解BASE的最终一致性原理。</li>
+<li>重试和幂等性。如在支付场景中的异步支付回调，内外部系统对接保证一致性通常采取的保障手段。</li>
+<li>分布式链路跟踪。Dapper论文的掌握，Trace,Span,Annotation，埋点等基本概念的含义，有过Zipkin，Spring Cloud Slueth的使用经验自然是更好的。</li>
+<li>分布式事务。虽然我认为这本身并不是一种值得提倡的东西，出现分布式事务应当考虑一下你的限界上下文划分的是否合理。那既然有人会问，或许也有他的道理，可以尝试了解二阶段提交，三阶段提交，Paxos。</li>
+<li>一致性Hash。抓住一致性hash环和虚拟节点两个关键点作答即可。</li>
+<li>熔断、降级。两者的对比，以及分布式中为何两者地位很重要。</li>
+<li>谷歌的三驾马车：分布式文件系统（如开源实现HDFS），分布式存储系统（如开源实现HBASE），分布式计算框架（Map-Reduce模型）。市面上绝大多数的海量数据问题，最终都是在考着三个东西。典型问题：2个1T的文本文件存储着URL，筛选出其中相同的URL。海量文件的word count…</li>
+</ol>
+<h2 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h2><ol>
+<li>常用指令cd(进入)，ls(列表显示)，rm -f /*(优化系统)这些指令当然是必须会的</li>
+<li>Linux中的CoreUtils相关问题。如linux下对文本进行排序并取前十个这些面试题 sort xx.txt | tail -n 10，基本都是在围绕其在设计。</li>
+<li>常用脚本的书写</li>
+<li>高级话题：Linux下的IO模型，epoll和poll的区别等。</li>
+</ol>
+<h2 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h2><p>通常考的算法题会是一些较为简单的算法或者经典算法。ACM经验会让你如鱼得水。</p>
+<p>复杂度的概念，二分查找，快排的实现，一些贪心算法，DP，数据结构，树和图论，位操作，字符串。</p>
+<p>总的来说不会很难，要么是考验思维的算法，要么是可以直接套用经典算法的模板，主要是考研面试者的算法思维，毕竟不是算法岗。</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ol>
+<li>业务场景的设计。诸如让你设计一个抢红包的流程，做一个秒杀的系统等等，重点考察的是一个面试者综合考虑问题的能力。</li>
+<li>你项目中最有挑战的一个技术点。</li>
+<li>HTTP协议，TCP/IP协议</li>
+<li>容器技术Docker，k8s。这一块笔者没接触，不妄加讨论。</li>
+</ol>
+<h3 id="HR"><a href="#HR" class="headerlink" title="HR"></a>HR</h3><ol>
+<li>你的职业规划是什么？emmmmm</li>
+<li>期望薪资。别不好意思，你自己能拿多少心里没有点B+树吗！</li>
+<li>你有没有女朋友？喵喵喵？</li>
+</ol>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="http://lexburner.github.io/view-1/" data-id="ck07xoztg00akwx9elgz4orl6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
+    <article id="post-orika" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/orika/">打开orika的正确方式</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        <!-- 增加文章类型 -->
+                        
+	
+		<div class="article-type">
+		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
+		</div>
+	
+	
+	
+		
+	
+
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/orika/">
+            <time datetime="2017-11-15T11:09:57.000Z" itemprop="datePublished">2017-11-15</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/JAVA/">JAVA</a>
+    </div>
+
+                        <!-- 不显示标签 -->
+                        <!-- 
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/JAVA/">JAVA</a>
+    </div>
+ -->
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h2 id="缘起"><a href="#缘起" class="headerlink" title="缘起"></a>缘起</h2><h3 id="架构分层"><a href="#架构分层" class="headerlink" title="架构分层"></a>架构分层</h3><p>开发分布式的项目时，DO持久化对象和DTO传输对象的转换是不可避免的。集中式项目中，DO-DAO-SERVICE-WEB的分层再寻常不过，但分布式架构（或微服务架构）需要拆分模块时，不得不思考一个问题：WEB层能不能出现DAO或者DO对象？我给出的答案是否定的。</p>
+<p><img src="http://kirito.iocoder.cn/52029421305_2.gif" alt="新的项目分层结构"></p>
+<p>这张图曾出现在我过去的文章中，其强调了一个分层的要素：服务层(应用层)和表现层应当解耦，后者不应当触碰到任何持久化对象，其所有的数据来源，均应当由前者提供。</p>
+<h3 id="DTO的位置"><a href="#DTO的位置" class="headerlink" title="DTO的位置"></a>DTO的位置</h3><p>就系统的某一个模块，可以大致分成领域层model，接口定义层api，接口实现层/服务层service，表现层web。</p>
+<ul>
+<li>service 依赖 model +  api </li>
+<li>web 依赖 api</li>
+</ul>
+<p>在我们系统构建初期，DTO对象被想当然的丢到了model层，这导致web对model产生了依赖；而在后期，为了满足前面的架构分层，最终将DTO对象移动到了api层（没有单独做一层）</p>
+<h3 id="没有DTO时的痛点"><a href="#没有DTO时的痛点" class="headerlink" title="没有DTO时的痛点"></a>没有DTO时的痛点</h3><p>激发出DTO这样一个新的分层其实还有两个原因。</p>
+<p>其一，便是我们再也不能忍受在RPC调用时JPA/hibernate懒加载这一特性带来的坑点。如果试图在消费端获取服务端传来的一个懒加载持久化对象，那么很抱歉，下意识就会发现这行不通，懒加载技术本质是使用字节码技术完成对象的代理，然而代理对象无法天然地远程传输，这与你的协议（RPC or HTTP）无关。</p>
+<p>其二，远程调用需要额外注意网络传输的开销，如果生产者方从数据库加载出了一个一对多的依赖，而消费者只需要一这个实体的某个属性，多的实体会使得性能产生下降，并没有很好的方式对其进行控制（忽略手动set）。可能有更多痛点，由此可见，共享持久层，缺少DTO层时，我们的系统灵活性和性能都受到了制约。</p>
+<h2 id="从DTO到Orika"><a href="#从DTO到Orika" class="headerlink" title="从DTO到Orika"></a>从DTO到Orika</h2><p>各类博客不乏对DTO的讨论，对领域驱动的理解，但却鲜有文章介绍，如何完成DO对象到DTO对象的转换。我们期待有一款高性能的，易用的工具来帮助我们完成实体类的转换。便引出了今天的主角：Orika。</p>
+<h3 id="Orika是什么？"><a href="#Orika是什么？" class="headerlink" title="Orika是什么？"></a>Orika是什么？</h3><blockquote>
+<p>Orika是一个简单、快速的JavaBean拷贝框架，它能够递归地将数据从一个JavaBean复制到另一个JavaBean，这在多层应用开发中是非常有用的。</p>
+</blockquote>
+<h3 id="Orika的竞品"><a href="#Orika的竞品" class="headerlink" title="Orika的竞品"></a>Orika的竞品</h3><p>相信大多数朋友接触过apache的BeanUtils，直到认识了spring的BeanUtils，前者被后者完爆，后来又出现了Dozer，Orika等重量级的Bean拷贝工具，在性能和特性上都有了很大的提升。</p>
+<p>先给结论，众多Bean拷贝工具中，今天介绍的Orika具有想当大的优势。口说无凭，可参考下面文章中的各个工具的对比：<a href="http://tech.dianwoda.com/2017/11/04/gao-xing-neng-te-xing-feng-fu-de-beanying-she-gong-ju-orika/?utm_source=tuicool&amp;utm_medium=referral" target="_blank" rel="noopener">http://tech.dianwoda.com/2017/11/04/gao-xing-neng-te-xing-feng-fu-de-beanying-she-gong-ju-orika/?utm_source=tuicool&amp;utm_medium=referral</a> </p>
+<p>简单整理后，如下所示：</p>
+<ul>
+<li><strong>BeanUtils</strong></li>
+</ul>
+<p>apache的<code>BeanUtils</code>和spring的<code>BeanUtils</code>中拷贝方法的原理都是先用jdk中 <code>java.beans.Introspector</code>类的<code>getBeanInfo()</code>方法获取对象的属性信息及属性get/set方法，接着使用反射（<code>Method</code>的<code>invoke(Object obj, Object... args)</code>）方法进行赋值。apache支持名称相同但类型不同的属性的转换，spring支持忽略某些属性不进行映射，他们都设置了缓存保存已解析过的<code>BeanInfo</code>信息。</p>
+<ul>
+<li><strong>BeanCopier</strong></li>
+</ul>
+<p>cglib的<code>BeanCopier</code>采用了不同的方法：它不是利用反射对属性进行赋值，而是直接使用ASM的<code>MethodVisitor</code>直接编写各属性的<code>get/set</code>方法（具体过程可见<code>BeanCopier</code>类的<code>generateClass(ClassVisitor v)</code>方法）生成class文件，然后进行执行。由于是直接生成字节码执行，所以<code>BeanCopier</code>的性能较采用反射的<code>BeanUtils</code>有较大提高，这一点可在后面的测试中看出。</p>
+<ul>
+<li><strong>Dozer</strong></li>
+</ul>
+<p>使用以上类库虽然可以不用手动编写<code>get/set</code>方法，但是他们都不能对不同名称的对象属性进行映射。在定制化的属性映射方面做得比较好的有<a href="http://note.youdao.com/" target="_blank" rel="noopener">Dozer</a>，Dozer支持简单属性映射、复杂类型映射、双向映射、隐式映射以及递归映射。可使用xml或者注解进行映射的配置，支持自动类型转换，使用方便。但Dozer底层是使用reflect包下<code>Field</code>类的<code>set(Object obj, Object value)</code>方法进行属性赋值，执行速度上不是那么理想。</p>
+<ul>
+<li><strong>Orika</strong></li>
+</ul>
+<p>那么有没有特性丰富，速度又快的Bean映射工具呢，这就是下面要介绍的<a href="http://note.youdao.com/" target="_blank" rel="noopener">Orika</a>，Orika是近期在github活跃的项目，底层采用了javassist类库生成Bean映射的字节码，之后直接加载执行生成的字节码文件，因此在速度上比使用反射进行赋值会快很多，下面详细介绍Orika的使用方法。</p>
+<h2 id="Orika入门"><a href="#Orika入门" class="headerlink" title="Orika入门"></a>Orika入门</h2><h3 id="引入依赖"><a href="#引入依赖" class="headerlink" title="引入依赖"></a>引入依赖</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>ma.glasnost.orika<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>orika-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;orika.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="基础概念"><a href="#基础概念" class="headerlink" title="基础概念"></a>基础概念</h3><ul>
+<li><strong>MapperFactory</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MapperFactory mapperFactory = <span class="keyword">new</span> DefaultMapperFactory.Builder().build();</span><br></pre></td></tr></table></figure>
+<p>MapperFactory用于注册字段映射，配置转换器，自定义映射器等，而我们关注的主要是字段映射这个特性，在下面的小节中会介绍。</p>
+<ul>
+<li><strong>MapperFacade</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MapperFacade mapper = mapperFactory.getMapperFacade();</span><br><span class="line">PersonSource source = <span class="keyword">new</span> PersonSource();</span><br><span class="line">PersonDest destination = mapper.map(source, PersonDest.class);</span><br></pre></td></tr></table></figure>
+<p>MapperFacade和spring，apache中的BeanUtils具有相同的地位，负责对象间的映射，也是实际使用中，我们使用的最多的类。</p>
+<p>至于转换器，自定义映射器等等概念，属于Orika的高级特性，也是Orika为什么被称作一个重量级框架的原因，引入Orika的初衷是为了高性能，易用的拷贝对象，引入它们会给系统带来一定的侵入性，所以本文暂不介绍，详细的介绍，可参考官方文档：<a href="http://orika-mapper.github.io/orika-docs/intro.html" target="_blank" rel="noopener">http://orika-mapper.github.io/orika-docs/intro.html</a></p>
+<h3 id="映射字段名完全相同的对象"><a href="#映射字段名完全相同的对象" class="headerlink" title="映射字段名完全相同的对象"></a>映射字段名完全相同的对象</h3><p>如果DO对象和DTO对象的命名遵守一定的规范，那无疑会减少我们很大的工作量。那么，规范是怎么样的呢？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> String name;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> age;</span><br><span class="line">  <span class="keyword">private</span> Date birthDate;</span><br><span class="line">  List&lt;Address&gt; addresses; <span class="comment">// &lt;1&gt;</span></span><br><span class="line">  <span class="comment">// getters/setters omitted</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PersonDto</span> </span>&#123; </span><br><span class="line">  <span class="keyword">private</span> String name;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> age;</span><br><span class="line">  <span class="keyword">private</span> Date birthDate;</span><br><span class="line">  List&lt;AddressDto&gt; addresses; <span class="comment">// &lt;1&gt;</span></span><br><span class="line">  <span class="comment">// getters/setters omitted</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Address</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AddressDto</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>基本字段类型自不用说，关键是打上<1>标签的地方，按照通常的习惯，<code>List&lt;AddressDto&gt;</code>变量名会被命名为addressDtos，但我更加推荐与DO对象统一命名，命名为addresses。这样Orika在映射时便可以自动映射两者。</1></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MapperFactory mapperFactory = <span class="keyword">new</span> DefaultMapperFactory.Builder().build();</span><br><span class="line">Person person = <span class="keyword">new</span> Person();</span><br><span class="line"><span class="comment">//一顿赋值</span></span><br><span class="line">PersonDto personDto = mapperFactory.getMapperFacade().map(person, PersonDto.class);</span><br></pre></td></tr></table></figure>
+<p>这样便完成了两个对象之间的拷贝，你可能会思考：需要我们指定两个类的映射关系吗？集合可以自动映射吗？这一切Orika都帮助我们完成了，在默认行为下，只要类的字段名相同，Orika便会尽自己最大的努力帮助我们映射。</p>
+<h3 id="映射字段名不一致的对象"><a href="#映射字段名不一致的对象" class="headerlink" title="映射字段名不一致的对象"></a>映射字段名不一致的对象</h3><p>我对于DTO的理解是：DTO应当尽可能与DO的字段保持一致，不增不减不改，但可能出于一些特殊原因，需要映射两个名称不同的字段，Orika当然也支持这样常见的需求。只需要在MapperFactory中事先注册便可。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> String id;</span><br><span class="line">  <span class="keyword">private</span> Name name;</span><br><span class="line">  <span class="keyword">private</span> List&lt;Name&gt; knownAliases;</span><br><span class="line">  <span class="keyword">private</span> Date birthDate;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Name</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> String first;</span><br><span class="line">  <span class="keyword">private</span> String last; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PersonDto</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> String personId;</span><br><span class="line">  <span class="keyword">private</span> String firstName;</span><br><span class="line">  <span class="keyword">private</span> String lastName;</span><br><span class="line">  <span class="keyword">private</span> Date birthDate;</span><br><span class="line">  <span class="keyword">private</span> String[][] aliases;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>完成上述两个结构不甚相似的对象时，则需要我们额外做一些工作，剩下的便和之前一致了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">MapperFactory mapperFactory = <span class="keyword">new</span> DefaultMapperFactory.Builder().build();</span><br><span class="line">factory.classMap(Person.class, PersonDto.class) <span class="comment">// &lt;2&gt;</span></span><br><span class="line">      .field(<span class="string">"id"</span>,<span class="string">"personId"</span>)</span><br><span class="line">      .field(<span class="string">"name.first"</span>, <span class="string">"firstName"</span>)</span><br><span class="line">      .field(<span class="string">"name.last"</span>, <span class="string">"lastName"</span>)</span><br><span class="line">      .field(<span class="string">"knownAliases&#123;first&#125;"</span>, <span class="string">"aliases&#123;[0]&#125;"</span>)</span><br><span class="line">      .field(<span class="string">"knownAliases&#123;last&#125;"</span>, <span class="string">"aliases&#123;[1]&#125;"</span>)</span><br><span class="line">      .byDefault() <span class="comment">//&lt;1&gt;</span></span><br><span class="line">      .register();</span><br></pre></td></tr></table></figure>
+<p>这些<code>.{}[]</code>这些略微有点复杂的表达式不需要被掌握，只是想表明：如果你有这样需求，Orika也能支持。上述连续点的行为被称为 fluent-style ，这再不少框架中有体现。</p>
+<p><1> 注意byDefault()这个方法，在指定了classMap行为之后，相同字段互相映射这样的默认行为需要调用一次这个方法，才能被继承。</1></p>
+<p><2> classMap()方法返回了一个ClassMapBuilder对象，如上所示，我们见识到了它的field(),byDefault(),register()方法，这个建造者指定了对象映射的众多行为，还包括几个其他有用的方法：</2></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">classMapBuilder.field(<span class="string">"a"</span>,<span class="string">"b"</span>);<span class="comment">//Person和PersonDto的双向映射</span></span><br><span class="line">classMapBuilder.fieldAToB(<span class="string">"a"</span>,<span class="string">"b"</span>);<span class="comment">//单向映射  </span></span><br><span class="line">classMapBuilder.fieldBToA(<span class="string">"a"</span>,<span class="string">"b"</span>);<span class="comment">//单向映射</span></span><br><span class="line">classMapBuilder.exclude(<span class="string">"a"</span>);<span class="comment">//移除指定的字段映射，即使字段名相同也不会拷贝</span></span><br><span class="line">classMapBuilder.field(<span class="string">"a"</span>,<span class="string">"b"</span>).mapNulls(<span class="keyword">false</span>).mapNullsInReverse(<span class="keyword">false</span>);<span class="comment">//是否拷贝空属性，默认是true</span></span><br></pre></td></tr></table></figure>
+<p>更多的API可以参见源码</p>
+<h3 id="集合映射"><a href="#集合映射" class="headerlink" title="集合映射"></a>集合映射</h3><p>在类中我们之前已经见识过了List<address>与List<addressdto>的映射。如果根对象就是一个集合，List<person> 映射为 List<persondto>也是很常见的需求，这也很方便：</persondto></person></addressdto></address></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MapperFactory mapperFactory = <span class="keyword">new</span> DefaultMapperFactory.Builder().build();</span><br><span class="line">List&lt;Person&gt; persons = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">List&lt;PersonDto&gt; personDtos = mapperFactory.getMapperFacade().mapAsList(persons, PersonDto.class);</span><br></pre></td></tr></table></figure>
+<h3 id="递归映射"><a href="#递归映射" class="headerlink" title="递归映射"></a>递归映射</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> B b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> C c;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> D d;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">D</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Orika默认支持递归映射。</p>
+<h3 id="泛型映射"><a href="#泛型映射" class="headerlink" title="泛型映射"></a>泛型映射</h3><p>对泛型的支持是Orika的另一强大功能，这点在文档中只是被提及，网上并没有找到任何一个例子，所以在此我想稍微着重的介绍一下。既然文档没有相关的介绍，那如何了解Orika是怎样支持泛型映射的呢？只能翻出Orika的源码，在其丰富的测试用例中，可以窥见其对各种泛型特性的支持：<a href="https://github.com/orika-mapper/orika/tree/master/tests/src/main/java/ma/glasnost/orika/test/generics" target="_blank" rel="noopener">https://github.com/orika-mapper/orika/tree/master/tests/src/main/java/ma/glasnost/orika/test/generics</a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Response</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> T data;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ResponseDto</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> T data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当出现泛型时，按照前面的思路去拷贝，看看结果会如何，泛型示例1</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericTest1</span><span class="params">()</span></span>&#123;</span><br><span class="line">    MapperFactory mapperFactory = <span class="keyword">new</span> DefaultMapperFactory.Builder().build();</span><br><span class="line">    Response&lt;String&gt; response = <span class="keyword">new</span> Response&lt;&gt;();</span><br><span class="line">    response.setData(<span class="string">"test generic"</span>);</span><br><span class="line">    ResponseDto&lt;String&gt; responseDto = mapperFactory.getMapperFacade().map(response, ResponseDto.class);<span class="comment">// *</span></span><br><span class="line">    Assert.assertFalse(<span class="string">"test generic"</span>.equals(responseDto.getData()));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>会发现responseDto并不会Copy成功吗，特别是在*处，你会发现无所适从，没办法把ResponseDto<string>传递进去 ，同样的，还有下面的泛型示例2</string></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericTest2</span><span class="params">()</span></span>&#123;</span><br><span class="line">    MapperFactory mapperFactory = <span class="keyword">new</span> DefaultMapperFactory.Builder().build();</span><br><span class="line">    Response&lt;Person&gt; response = <span class="keyword">new</span> Response&lt;&gt;();</span><br><span class="line">    Person person = <span class="keyword">new</span> Person();</span><br><span class="line">    person.setName(<span class="string">"test generic"</span>);</span><br><span class="line">    response.setData(person);</span><br><span class="line">    Response&lt;PersonDto&gt; responseDto = mapperFactory.getMapperFacade().map(response, Response.class);</span><br><span class="line">    Assert.assertFalse(responseDto.getData() <span class="keyword">instanceof</span> PersonDto);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Response中的String和PersonDto在运行时(Runtime)泛型擦除这一特性难住了不少人，那么，Orika如何解决泛型映射呢？</p>
+<p>我们可以发现MapperFacade的具有一系列的重载方法，对各种类型的泛型拷贝进行支持</p>
+<p><img src="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720171117093043.png" alt="泛型支持"></p>
+<p>可以看到几乎每个方法都传入了一个Type，用于获取拷贝类的真实类型，而不是传入.class字节码，下面介绍正确的打开姿势：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericTest1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    MapperFactory mapperFactory = <span class="keyword">new</span> DefaultMapperFactory.Builder().build();</span><br><span class="line">    Response&lt;String&gt; response = <span class="keyword">new</span> Response&lt;&gt;();</span><br><span class="line">    response.setData(<span class="string">"test generic"</span>);</span><br><span class="line">    Type&lt;Response&lt;String&gt;&gt; fromType = <span class="keyword">new</span> TypeBuilder&lt;Response&lt;String&gt;&gt;() &#123;&#125;.build();</span><br><span class="line">    Type&lt;ResponseDto&lt;String&gt;&gt; toType = <span class="keyword">new</span> TypeBuilder&lt;ResponseDto&lt;String&gt;&gt;() &#123;&#125;.build();</span><br><span class="line">    ResponseDto&lt;String&gt; responseDto = mapperFactory.getMapperFacade().map(response, fromType, toType);</span><br><span class="line">    Assert.assertTrue(<span class="string">"test generic"</span>.equals(responseDto.getData()));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericTest2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    MapperFactory mapperFactory = <span class="keyword">new</span> DefaultMapperFactory.Builder().build();</span><br><span class="line">    Response&lt;Person&gt; response = <span class="keyword">new</span> Response&lt;&gt;();</span><br><span class="line">    Person person = <span class="keyword">new</span> Person();</span><br><span class="line">    person.setName(<span class="string">"test generic"</span>);</span><br><span class="line">    response.setData(person);</span><br><span class="line">    Type&lt;Response&lt;Person&gt;&gt; fromType = <span class="keyword">new</span> TypeBuilder&lt;Response&lt;Person&gt;&gt;() &#123;&#125;.build();</span><br><span class="line">    Type&lt;Response&lt;PersonDto&gt;&gt; toType = <span class="keyword">new</span> TypeBuilder&lt;Response&lt;PersonDto&gt;&gt;() &#123;&#125;.build();</span><br><span class="line">    Response&lt;PersonDto&gt; responseDto = mapperFactory.getMapperFacade().map(response, fromType, toType);</span><br><span class="line">    Assert.assertEquals(<span class="string">"test generic"</span> , responseDto.getData().getName());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="浅拷贝or深拷贝"><a href="#浅拷贝or深拷贝" class="headerlink" title="浅拷贝or深拷贝"></a>浅拷贝or深拷贝</h3><p>虽然不值得一提，但职业敏感度还是催使我们想要测试一下，Orika是深拷贝还是浅拷贝，毕竟浅拷贝有时候会出现一些意想不到的坑点</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">deepCloneTest</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    MapperFactory mapperFactory = <span class="keyword">new</span> DefaultMapperFactory.Builder().build();</span><br><span class="line">    Person person = <span class="keyword">new</span> Person();</span><br><span class="line">    Address address = <span class="keyword">new</span> Address();</span><br><span class="line">    person.setAddress(address);</span><br><span class="line">    PersonDto personDto = mapperFactory.getMapperFacade().map(person, PersonDto.class);</span><br><span class="line">    Assert.assertFalse(personDto.getAddress().hashCode() == person.getAddress().hashCode());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结论：在使用Orika时可以放心，其实现的是深拷贝，不用担心原始类和克隆类指向同一个对象的问题。</p>
+<h3 id="更多的特性？"><a href="#更多的特性？" class="headerlink" title="更多的特性？"></a>更多的特性？</h3><p>你如果关心Orika是否能完成你某项特殊的需求，在这里可能会对你有所帮助：<a href="http://orika-mapper.github.io/orika-docs/faq.html" target="_blank" rel="noopener">http://orika-mapper.github.io/orika-docs/faq.html</a></p>
+<p>怎么样，你是不是还在使用BeanUtils呢？尝试一下Orika吧！</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="http://lexburner.github.io/orika/" data-id="ck07xozso0085wx9eltmbn3rq" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
     <article id="post-spi" class="article article-type-post" itemscope="" itemprop="blogPost">
     <div class="article-inner">
         
@@ -338,7 +833,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spi/" data-id="ck03x0f5w008ysu9equ5kp68t" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/spi/" data-id="ck07xozsy0092wx9e0jqqx7yh" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -557,7 +1052,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-cloud-sleuth/" data-id="ck03x0f5v008ssu9e2lvr9qqx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/spring-cloud-sleuth/" data-id="ck07xozsz0095wx9e8dahiyi9" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -757,7 +1252,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-data-redis-2/" data-id="ck03x0f5z0097su9ezzoen6pj" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/spring-data-redis-2/" data-id="ck07xozt0009bwx9e7mmmxha0" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -987,7 +1482,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-data-redis-1/" data-id="ck03x0f5y0094su9engy6azws" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/spring-data-redis-1/" data-id="ck07xozsz0098wx9eobgm2hvo" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1155,7 +1650,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/java-skill-1/" data-id="ck03x0f16000tsu9eay7ybdb5" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/java-skill-1/" data-id="ck07xozom000uwx9egraawk59" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1341,7 +1836,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/concurrent-2/" data-id="ck03x0f4v005psu9eeaj8ju0n" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/concurrent-2/" data-id="ck07xozrs005lwx9eobb7hhq2" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1532,7 +2027,7 @@ public String test(){
 
 </div>
 
-    <a data-url="http://lexburner.github.io/concurrent-1/" data-id="ck03x0f4t005lsu9eyy8nn97q" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/concurrent-1/" data-id="ck07xozrm005gwx9ee8gfsmfd" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1682,392 +2177,7 @@ public String test(){
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-security-5/" data-id="ck03x0f60009csu9erx6oirt1" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
-    <article id="post-spring-security-4" class="article article-type-post" itemscope="" itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/spring-security-4/">Spring Security(四)--核心过滤器源码分析</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        <!-- 增加文章类型 -->
-                        
-	
-		<div class="article-type">
-		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
-		</div>
-	
-	
-	
-		
-	
-
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/spring-security-4/">
-            <time datetime="2017-09-30T15:25:34.000Z" itemprop="datePublished">2017-09-30</time>
-        </a>
-    </div>
-
-
-                        
-    <div class="article-category">
-    	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/Spring-Security/">Spring Security</a>
-    </div>
-
-                        <!-- 不显示标签 -->
-                        <!-- 
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Spring-Security/">Spring Security</a>
-    </div>
- -->
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p>[TOC]</p>
-<p>前面的部分，我们关注了Spring Security是如何完成认证工作的，但是另外一部分核心的内容：过滤器，一直没有提到，我们已经知道Spring Security使用了springSecurityFillterChian作为了安全过滤的入口，这一节主要分析一下这个过滤器链都包含了哪些关键的过滤器，并且各自的使命是什么。</p>
-<h2 id="4-过滤器详解"><a href="#4-过滤器详解" class="headerlink" title="4 过滤器详解"></a>4 过滤器详解</h2><h3 id="4-1-核心过滤器概述"><a href="#4-1-核心过滤器概述" class="headerlink" title="4.1 核心过滤器概述"></a>4.1 核心过滤器概述</h3><p>由于过滤器链路中的过滤较多，即使是Spring Security的官方文档中也并未对所有的过滤器进行介绍，在之前，《Spring Security(二)–Guides》入门指南中我们配置了一个表单登录的demo，以此为例，来看看这过程中Spring Security都帮我们自动配置了哪些过滤器。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Creating filter chain: o.s.s.web.util.matcher.AnyRequestMatcher@<span class="number">1</span>, </span><br><span class="line">[o.s.s.web.context.SecurityContextPersistenceFilter@<span class="number">8851</span>ce1, </span><br><span class="line">o.s.s.web.header.HeaderWriterFilter@<span class="number">6</span>a472566, o.s.s.web.csrf.CsrfFilter@<span class="number">61</span>cd1c71, </span><br><span class="line">o.s.s.web.authentication.logout.LogoutFilter@<span class="number">5e1</span>d03d7, </span><br><span class="line">o.s.s.web.authentication.UsernamePasswordAuthenticationFilter@<span class="number">122</span>d6c22, </span><br><span class="line">o.s.s.web.savedrequest.RequestCacheAwareFilter@<span class="number">5</span>ef6fd7f, </span><br><span class="line">o.s.s.web.servletapi.SecurityContextHolderAwareRequestFilter@<span class="number">4</span>beaf6bd, </span><br><span class="line">o.s.s.web.authentication.AnonymousAuthenticationFilter@<span class="number">6</span>edcad64, </span><br><span class="line">o.s.s.web.session.SessionManagementFilter@<span class="number">5e65</span>afb6, </span><br><span class="line">o.s.s.web.access.ExceptionTranslationFilter@<span class="number">5</span>b9396d3, </span><br><span class="line">o.s.s.web.access.intercept.FilterSecurityInterceptor@<span class="number">3</span>c5dbdf8</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
-<p>上述的log信息是我从springboot启动的日志中CV所得，spring security的过滤器日志有一个特点：log打印顺序与实际配置顺序符合，也就意味着<code>SecurityContextPersistenceFilter</code>是整个过滤器链的第一个过滤器，而<code>FilterSecurityInterceptor</code>则是末置的过滤器。另外通过观察过滤器的名称，和所在的包名，可以大致地分析出他们各自的作用，如<code>UsernamePasswordAuthenticationFilter</code>明显便是与使用用户名和密码登录相关的过滤器，而<code>FilterSecurityInterceptor</code>我们似乎看不出它的作用，但是其位于<code>web.access</code>包下，大致可以分析出他与访问限制相关。第四篇文章主要就是介绍这些常用的过滤器，对其中关键的过滤器进行一些源码分析。先大致介绍下每个过滤器的作用：</p>
-<ul>
-<li><strong>SecurityContextPersistenceFilter</strong> 两个主要职责：请求来临时，创建<code>SecurityContext</code>安全上下文信息，请求结束时清空<code>SecurityContextHolder</code>。</li>
-<li>HeaderWriterFilter (文档中并未介绍，非核心过滤器) 用来给http响应添加一些Header,比如X-Frame-Options, X-XSS-Protection*，X-Content-Type-Options.</li>
-<li>CsrfFilter 在spring4这个版本中被默认开启的一个过滤器，用于防止csrf攻击，了解前后端分离的人一定不会对这个攻击方式感到陌生，前后端使用json交互需要注意的一个问题。</li>
-<li>LogoutFilter 顾名思义，处理注销的过滤器</li>
-<li><strong>UsernamePasswordAuthenticationFilter</strong> 这个会重点分析，表单提交了username和password，被封装成token进行一系列的认证，便是主要通过这个过滤器完成的，在表单认证的方法中，这是最最关键的过滤器。</li>
-<li>RequestCacheAwareFilter  (文档中并未介绍，非核心过滤器) 内部维护了一个RequestCache，用于缓存request请求</li>
-<li>SecurityContextHolderAwareRequestFilter 此过滤器对ServletRequest进行了一次包装，使得request具有更加丰富的API</li>
-<li><strong>AnonymousAuthenticationFilter</strong> 匿名身份过滤器，这个过滤器个人认为很重要，需要将它与UsernamePasswordAuthenticationFilter 放在一起比较理解，spring security为了兼容未登录的访问，也走了一套认证流程，只不过是一个匿名的身份。</li>
-<li>SessionManagementFilter 和session相关的过滤器，内部维护了一个SessionAuthenticationStrategy，两者组合使用，常用来防止<code>session-fixation protection attack</code>，以及限制同一用户开启多个会话的数量</li>
-<li><strong>ExceptionTranslationFilter</strong> 直译成异常翻译过滤器，还是比较形象的，这个过滤器本身不处理异常，而是将认证过程中出现的异常交给内部维护的一些类去处理，具体是那些类下面详细介绍</li>
-<li><strong>FilterSecurityInterceptor</strong> 这个过滤器决定了访问特定路径应该具备的权限，访问的用户的角色，权限是什么？访问的路径需要什么样的角色和权限？这些判断和处理都是由该类进行的。</li>
-</ul>
-<p>其中加粗的过滤器可以被认为是Spring Security的核心过滤器，将在下面，一个过滤器对应一个小节来讲解。</p>
-<h3 id="4-2-SecurityContextPersistenceFilter"><a href="#4-2-SecurityContextPersistenceFilter" class="headerlink" title="4.2 SecurityContextPersistenceFilter"></a>4.2 SecurityContextPersistenceFilter</h3><p>试想一下，如果我们不使用Spring Security，如果保存用户信息呢，大多数情况下会考虑使用Session对吧？在Spring Security中也是如此，用户在登录过一次之后，后续的访问便是通过sessionId来识别，从而认为用户已经被认证。具体在何处存放用户信息，便是第一篇文章中提到的SecurityContextHolder；认证相关的信息是如何被存放到其中的，便是通过SecurityContextPersistenceFilter。在4.1概述中也提到了，SecurityContextPersistenceFilter的两个主要作用便是请求来临时，创建<code>SecurityContext</code>安全上下文信息和请求结束时清空<code>SecurityContextHolder</code>。顺带提一下：微服务的一个设计理念需要实现服务通信的无状态，而http协议中的无状态意味着不允许存在session，这可以通过<code>setAllowSessionCreation(false)</code> 实现，这并不意味着SecurityContextPersistenceFilter变得无用，因为它还需要负责清除用户信息。在Spring Security中，虽然安全上下文信息被存储于Session中，但我们在实际使用中不应该直接操作Session，而应当使用SecurityContextHolder。</p>
-<h4 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h4><p><code>org.springframework.security.web.context.SecurityContextPersistenceFilter</code></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SecurityContextPersistenceFilter</span> <span class="keyword">extends</span> <span class="title">GenericFilterBean</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">static</span> <span class="keyword">final</span> String FILTER_APPLIED = <span class="string">"__spring_security_scpf_applied"</span>;</span><br><span class="line">   <span class="comment">//安全上下文存储的仓库</span></span><br><span class="line">   <span class="keyword">private</span> SecurityContextRepository repo;</span><br><span class="line">  </span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="title">SecurityContextPersistenceFilter</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="comment">//HttpSessionSecurityContextRepository是SecurityContextRepository接口的一个实现类</span></span><br><span class="line">      <span class="comment">//使用HttpSession来存储SecurityContext</span></span><br><span class="line">      <span class="keyword">this</span>(<span class="keyword">new</span> HttpSessionSecurityContextRepository());</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doFilter</span><span class="params">(ServletRequest req, ServletResponse res, FilterChain chain)</span></span></span><br><span class="line"><span class="function">         <span class="keyword">throws</span> IOException, ServletException </span>&#123;</span><br><span class="line">      HttpServletRequest request = (HttpServletRequest) req;</span><br><span class="line">      HttpServletResponse response = (HttpServletResponse) res;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (request.getAttribute(FILTER_APPLIED) != <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="comment">// ensure that filter is only applied once per request</span></span><br><span class="line">         chain.doFilter(request, response);</span><br><span class="line">         <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      request.setAttribute(FILTER_APPLIED, Boolean.TRUE);</span><br><span class="line">      <span class="comment">//包装request，response</span></span><br><span class="line">      HttpRequestResponseHolder holder = <span class="keyword">new</span> HttpRequestResponseHolder(request,</span><br><span class="line">            response);</span><br><span class="line">      <span class="comment">//从Session中获取安全上下文信息</span></span><br><span class="line">      SecurityContext contextBeforeChainExecution = repo.loadContext(holder);</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">         <span class="comment">//请求开始时，设置安全上下文信息，这样就避免了用户直接从Session中获取安全上下文信息</span></span><br><span class="line">         SecurityContextHolder.setContext(contextBeforeChainExecution);</span><br><span class="line">         chain.doFilter(holder.getRequest(), holder.getResponse());</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">finally</span> &#123;</span><br><span class="line">         <span class="comment">//请求结束后，清空安全上下文信息</span></span><br><span class="line">         SecurityContext contextAfterChainExecution = SecurityContextHolder</span><br><span class="line">               .getContext();</span><br><span class="line">         SecurityContextHolder.clearContext();</span><br><span class="line">         repo.saveContext(contextAfterChainExecution, holder.getRequest(),</span><br><span class="line">               holder.getResponse());</span><br><span class="line">         request.removeAttribute(FILTER_APPLIED);</span><br><span class="line">         <span class="keyword">if</span> (debug) &#123;</span><br><span class="line">            logger.debug(<span class="string">"SecurityContextHolder now cleared, as request processing completed"</span>);</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>过滤器一般负责核心的处理流程，而具体的业务实现，通常交给其中聚合的其他实体类，这在Filter的设计中很常见，同时也符合职责分离模式。例如存储安全上下文和读取安全上下文的工作完全委托给了HttpSessionSecurityContextRepository去处理，而这个类中也有几个方法可以稍微解读下，方便我们理解内部的工作流程</p>
-<p><code>org.springframework.security.web.context.HttpSessionSecurityContextRepository</code></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HttpSessionSecurityContextRepository</span> <span class="keyword">implements</span> <span class="title">SecurityContextRepository</span> </span>&#123;</span><br><span class="line">   <span class="comment">// 'SPRING_SECURITY_CONTEXT'是安全上下文默认存储在Session中的键值</span></span><br><span class="line">   <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String SPRING_SECURITY_CONTEXT_KEY = <span class="string">"SPRING_SECURITY_CONTEXT"</span>;</span><br><span class="line">   ...</span><br><span class="line">   <span class="keyword">private</span> <span class="keyword">final</span> Object contextObject = SecurityContextHolder.createEmptyContext();</span><br><span class="line">   <span class="keyword">private</span> <span class="keyword">boolean</span> allowSessionCreation = <span class="keyword">true</span>;</span><br><span class="line">   <span class="keyword">private</span> <span class="keyword">boolean</span> disableUrlRewriting = <span class="keyword">false</span>;</span><br><span class="line">   <span class="keyword">private</span> String springSecurityContextKey = SPRING_SECURITY_CONTEXT_KEY;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">private</span> AuthenticationTrustResolver trustResolver = <span class="keyword">new</span> AuthenticationTrustResolverImpl();</span><br><span class="line"></span><br><span class="line">   <span class="comment">//从当前request中取出安全上下文，如果session为空，则会返回一个新的安全上下文</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> SecurityContext <span class="title">loadContext</span><span class="params">(HttpRequestResponseHolder requestResponseHolder)</span> </span>&#123;</span><br><span class="line">      HttpServletRequest request = requestResponseHolder.getRequest();</span><br><span class="line">      HttpServletResponse response = requestResponseHolder.getResponse();</span><br><span class="line">      HttpSession httpSession = request.getSession(<span class="keyword">false</span>);</span><br><span class="line">      SecurityContext context = readSecurityContextFromSession(httpSession);</span><br><span class="line">      <span class="keyword">if</span> (context == <span class="keyword">null</span>) &#123;</span><br><span class="line">         context = generateNewContext();</span><br><span class="line">      &#125;</span><br><span class="line">      ...</span><br><span class="line">      <span class="keyword">return</span> context;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   ...</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">containsContext</span><span class="params">(HttpServletRequest request)</span> </span>&#123;</span><br><span class="line">      HttpSession session = request.getSession(<span class="keyword">false</span>);</span><br><span class="line">      <span class="keyword">if</span> (session == <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> session.getAttribute(springSecurityContextKey) != <span class="keyword">null</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">private</span> SecurityContext <span class="title">readSecurityContextFromSession</span><span class="params">(HttpSession httpSession)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (httpSession == <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      ...</span><br><span class="line">      <span class="comment">// Session存在的情况下，尝试获取其中的SecurityContext</span></span><br><span class="line">      Object contextFromSession = httpSession.getAttribute(springSecurityContextKey);</span><br><span class="line">      <span class="keyword">if</span> (contextFromSession == <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      ...</span><br><span class="line">      <span class="keyword">return</span> (SecurityContext) contextFromSession;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">//初次请求时创建一个新的SecurityContext实例</span></span><br><span class="line">   <span class="function"><span class="keyword">protected</span> SecurityContext <span class="title">generateNewContext</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> SecurityContextHolder.createEmptyContext();</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>SecurityContextPersistenceFilter和HttpSessionSecurityContextRepository配合使用，构成了Spring Security整个调用链路的入口，为什么将它放在最开始的地方也是显而易见的，后续的过滤器中大概率会依赖Session信息和安全上下文信息。</p>
-<h3 id="4-3-UsernamePasswordAuthenticationFilter"><a href="#4-3-UsernamePasswordAuthenticationFilter" class="headerlink" title="4.3 UsernamePasswordAuthenticationFilter"></a>4.3 UsernamePasswordAuthenticationFilter</h3><p>表单认证是最常用的一个认证方式，一个最直观的业务场景便是允许用户在表单中输入用户名和密码进行登录，而这背后的UsernamePasswordAuthenticationFilter，在整个Spring Security的认证体系中则扮演着至关重要的角色。</p>
-<p><img src="http://kirito.iocoder.cn/2011121410543010.jpg" alt="http://kirito.iocoder.cn/2011121410543010.jpg"></p>
-<p>上述的时序图，可以看出UsernamePasswordAuthenticationFilter主要肩负起了调用身份认证器，校验身份的作用，至于认证的细节，在前面几章花了很大篇幅进行了介绍，到这里，其实Spring Security的基本流程就已经走通了。</p>
-<h4 id="源码分析-1"><a href="#源码分析-1" class="headerlink" title="源码分析"></a>源码分析</h4><p><code>org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter#attemptAuthentication</code></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Authentication <span class="title">attemptAuthentication</span><span class="params">(HttpServletRequest request,</span></span></span><br><span class="line"><span class="function"><span class="params">      HttpServletResponse response)</span> <span class="keyword">throws</span> AuthenticationException </span>&#123;</span><br><span class="line">   <span class="comment">//获取表单中的用户名和密码</span></span><br><span class="line">   String username = obtainUsername(request);</span><br><span class="line">   String password = obtainPassword(request);</span><br><span class="line">   ...</span><br><span class="line">   username = username.trim();</span><br><span class="line">   <span class="comment">//组装成username+password形式的token</span></span><br><span class="line">   UsernamePasswordAuthenticationToken authRequest = <span class="keyword">new</span> UsernamePasswordAuthenticationToken(</span><br><span class="line">         username, password);</span><br><span class="line">   <span class="comment">// Allow subclasses to set the "details" property</span></span><br><span class="line">   setDetails(request, authRequest);</span><br><span class="line">   <span class="comment">//交给内部的AuthenticationManager去认证，并返回认证信息</span></span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">this</span>.getAuthenticationManager().authenticate(authRequest);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><code>UsernamePasswordAuthenticationFilter</code>本身的代码只包含了上述这么一个方法，非常简略，而在其父类<code>AbstractAuthenticationProcessingFilter</code>中包含了大量的细节，值得我们分析：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractAuthenticationProcessingFilter</span> <span class="keyword">extends</span> <span class="title">GenericFilterBean</span></span></span><br><span class="line"><span class="class">      <span class="keyword">implements</span> <span class="title">ApplicationEventPublisherAware</span>, <span class="title">MessageSourceAware</span> </span>&#123;</span><br><span class="line">	<span class="comment">//包含了一个身份认证器</span></span><br><span class="line">	<span class="keyword">private</span> AuthenticationManager authenticationManager;</span><br><span class="line">	<span class="comment">//用于实现remeberMe</span></span><br><span class="line">	<span class="keyword">private</span> RememberMeServices rememberMeServices = <span class="keyword">new</span> NullRememberMeServices();</span><br><span class="line">	<span class="keyword">private</span> RequestMatcher requiresAuthenticationRequestMatcher;</span><br><span class="line">	<span class="comment">//这两个Handler很关键，分别代表了认证成功和失败相应的处理器</span></span><br><span class="line">	<span class="keyword">private</span> AuthenticationSuccessHandler successHandler = <span class="keyword">new</span> SavedRequestAwareAuthenticationSuccessHandler();</span><br><span class="line">	<span class="keyword">private</span> AuthenticationFailureHandler failureHandler = <span class="keyword">new</span> SimpleUrlAuthenticationFailureHandler();</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doFilter</span><span class="params">(ServletRequest req, ServletResponse res, FilterChain chain)</span></span></span><br><span class="line"><span class="function">			<span class="keyword">throws</span> IOException, ServletException </span>&#123;</span><br><span class="line"></span><br><span class="line">		HttpServletRequest request = (HttpServletRequest) req;</span><br><span class="line">		HttpServletResponse response = (HttpServletResponse) res;</span><br><span class="line">		...</span><br><span class="line">		Authentication authResult;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			<span class="comment">//此处实际上就是调用UsernamePasswordAuthenticationFilter的attemptAuthentication方法</span></span><br><span class="line">			authResult = attemptAuthentication(request, response);</span><br><span class="line">			<span class="keyword">if</span> (authResult == <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="comment">//子类未完成认证，立刻返回</span></span><br><span class="line">				<span class="keyword">return</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			sessionStrategy.onAuthentication(authResult, request, response);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">//在认证过程中可以直接抛出异常，在过滤器中，就像此处一样，进行捕获</span></span><br><span class="line">		<span class="keyword">catch</span> (InternalAuthenticationServiceException failed) &#123;</span><br><span class="line">			<span class="comment">//内部服务异常</span></span><br><span class="line">			unsuccessfulAuthentication(request, response, failed);</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">catch</span> (AuthenticationException failed) &#123;</span><br><span class="line">			<span class="comment">//认证失败</span></span><br><span class="line">			unsuccessfulAuthentication(request, response, failed);</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">//认证成功</span></span><br><span class="line">		<span class="keyword">if</span> (continueChainBeforeSuccessfulAuthentication) &#123;</span><br><span class="line">			chain.doFilter(request, response);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">//注意，认证成功后过滤器把authResult结果也传递给了成功处理器</span></span><br><span class="line">		successfulAuthentication(request, response, chain, authResult);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>整个流程理解起来也并不难，主要就是内部调用了authenticationManager完成认证，根据认证结果执行successfulAuthentication或者unsuccessfulAuthentication，无论成功失败，一般的实现都是转发或者重定向等处理，不再细究AuthenticationSuccessHandler和AuthenticationFailureHandler，有兴趣的朋友，可以去看看两者的实现类。</p>
-<h3 id="4-4-AnonymousAuthenticationFilter"><a href="#4-4-AnonymousAuthenticationFilter" class="headerlink" title="4.4 AnonymousAuthenticationFilter"></a>4.4 AnonymousAuthenticationFilter</h3><p>匿名认证过滤器，可能有人会想：匿名了还有身份？我自己对于Anonymous匿名身份的理解是Spirng Security为了整体逻辑的统一性，即使是未通过认证的用户，也给予了一个匿名身份。而<code>AnonymousAuthenticationFilter</code>该过滤器的位置也是非常的科学的，它位于常用的身份认证过滤器（如<code>UsernamePasswordAuthenticationFilter</code>、<code>BasicAuthenticationFilter</code>、<code>RememberMeAuthenticationFilter</code>）之后，意味着只有在上述身份过滤器执行完毕后，SecurityContext依旧没有用户信息，<code>AnonymousAuthenticationFilter</code>该过滤器才会有意义—-基于用户一个匿名身份。</p>
-<h4 id="源码分析-2"><a href="#源码分析-2" class="headerlink" title="源码分析"></a>源码分析</h4><p><code>org.springframework.security.web.authentication.AnonymousAuthenticationFilter</code></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AnonymousAuthenticationFilter</span> <span class="keyword">extends</span> <span class="title">GenericFilterBean</span> <span class="keyword">implements</span></span></span><br><span class="line"><span class="class">      <span class="title">InitializingBean</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">private</span> AuthenticationDetailsSource&lt;HttpServletRequest, ?&gt; authenticationDetailsSource = <span class="keyword">new</span> WebAuthenticationDetailsSource();</span><br><span class="line">   <span class="keyword">private</span> String key;</span><br><span class="line">   <span class="keyword">private</span> Object principal;</span><br><span class="line">   <span class="keyword">private</span> List&lt;GrantedAuthority&gt; authorities;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   <span class="comment">//自动创建一个"anonymousUser"的匿名用户,其具有ANONYMOUS角色</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="title">AnonymousAuthenticationFilter</span><span class="params">(String key)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">this</span>(key, <span class="string">"anonymousUser"</span>, AuthorityUtils.createAuthorityList(<span class="string">"ROLE_ANONYMOUS"</span>));</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">    *</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@param</span> key key用来识别该过滤器创建的身份</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@param</span> principal principal代表匿名用户的身份</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@param</span> authorities authorities代表匿名用户的权限集合</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="title">AnonymousAuthenticationFilter</span><span class="params">(String key, Object principal,</span></span></span><br><span class="line"><span class="function"><span class="params">         List&lt;GrantedAuthority&gt; authorities)</span> </span>&#123;</span><br><span class="line">      Assert.hasLength(key, <span class="string">"key cannot be null or empty"</span>);</span><br><span class="line">      Assert.notNull(principal, <span class="string">"Anonymous authentication principal must be set"</span>);</span><br><span class="line">      Assert.notNull(authorities, <span class="string">"Anonymous authorities must be set"</span>);</span><br><span class="line">      <span class="keyword">this</span>.key = key;</span><br><span class="line">      <span class="keyword">this</span>.principal = principal;</span><br><span class="line">      <span class="keyword">this</span>.authorities = authorities;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   ...</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doFilter</span><span class="params">(ServletRequest req, ServletResponse res, FilterChain chain)</span></span></span><br><span class="line"><span class="function">         <span class="keyword">throws</span> IOException, ServletException </span>&#123;</span><br><span class="line">      <span class="comment">//过滤器链都执行到匿名认证过滤器这儿了还没有身份信息，塞一个匿名身份进去</span></span><br><span class="line">      <span class="keyword">if</span> (SecurityContextHolder.getContext().getAuthentication() == <span class="keyword">null</span>) &#123;</span><br><span class="line">         SecurityContextHolder.getContext().setAuthentication(</span><br><span class="line">               createAuthentication((HttpServletRequest) req));</span><br><span class="line">      &#125;</span><br><span class="line">      chain.doFilter(req, res);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">protected</span> Authentication <span class="title">createAuthentication</span><span class="params">(HttpServletRequest request)</span> </span>&#123;</span><br><span class="line">     <span class="comment">//创建一个AnonymousAuthenticationToken</span></span><br><span class="line">      AnonymousAuthenticationToken auth = <span class="keyword">new</span> AnonymousAuthenticationToken(key,</span><br><span class="line">            principal, authorities);</span><br><span class="line">      auth.setDetails(authenticationDetailsSource.buildDetails(request));</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> auth;</span><br><span class="line">   &#125;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>其实对比AnonymousAuthenticationFilter和UsernamePasswordAuthenticationFilter就可以发现一些门道了，UsernamePasswordAuthenticationToken对应AnonymousAuthenticationToken，他们都是Authentication的实现类，而Authentication则是被SecurityContextHolder(SecurityContext)持有的，一切都被串联在了一起。</p>
-<h3 id="4-5-ExceptionTranslationFilter"><a href="#4-5-ExceptionTranslationFilter" class="headerlink" title="4.5 ExceptionTranslationFilter"></a>4.5 ExceptionTranslationFilter</h3><p>ExceptionTranslationFilter异常转换过滤器位于整个springSecurityFilterChain的后方，用来转换整个链路中出现的异常，将其转化，顾名思义，转化以意味本身并不处理。一般其只处理两大类异常：AccessDeniedException访问异常和AuthenticationException认证异常。</p>
-<p>这个过滤器非常重要，因为它将Java中的异常和HTTP的响应连接在了一起，这样在处理异常时，我们不用考虑密码错误该跳到什么页面，账号锁定该如何，只需要关注自己的业务逻辑，抛出相应的异常便可。如果该过滤器检测到AuthenticationException，则将会交给内部的AuthenticationEntryPoint去处理，如果检测到AccessDeniedException，需要先判断当前用户是不是匿名用户，如果是匿名访问，则和前面一样运行AuthenticationEntryPoint，否则会委托给AccessDeniedHandler去处理，而AccessDeniedHandler的默认实现，是AccessDeniedHandlerImpl。所以ExceptionTranslationFilter内部的AuthenticationEntryPoint是至关重要的，顾名思义：认证的入口点。</p>
-<h4 id="源码分析-3"><a href="#源码分析-3" class="headerlink" title="源码分析"></a>源码分析</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExceptionTranslationFilter</span> <span class="keyword">extends</span> <span class="title">GenericFilterBean</span> </span>&#123;</span><br><span class="line">  <span class="comment">//处理异常转换的核心方法</span></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleSpringSecurityException</span><span class="params">(HttpServletRequest request,</span></span></span><br><span class="line"><span class="function"><span class="params">        HttpServletResponse response, FilterChain chain, RuntimeException exception)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException, ServletException </span>&#123;</span><br><span class="line">     <span class="keyword">if</span> (exception <span class="keyword">instanceof</span> AuthenticationException) &#123;</span><br><span class="line">       	<span class="comment">//重定向到登录端点</span></span><br><span class="line">        sendStartAuthentication(request, response, chain,</span><br><span class="line">              (AuthenticationException) exception);</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">else</span> <span class="keyword">if</span> (exception <span class="keyword">instanceof</span> AccessDeniedException) &#123;</span><br><span class="line">        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();</span><br><span class="line">        <span class="keyword">if</span> (authenticationTrustResolver.isAnonymous(authentication) || authenticationTrustResolver.isRememberMe(authentication)) &#123;</span><br><span class="line">		  <span class="comment">//重定向到登录端点</span></span><br><span class="line">           sendStartAuthentication(</span><br><span class="line">                 request,</span><br><span class="line">                 response,</span><br><span class="line">                 chain,</span><br><span class="line">                 <span class="keyword">new</span> InsufficientAuthenticationException(</span><br><span class="line">                       <span class="string">"Full authentication is required to access this resource"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">           <span class="comment">//交给accessDeniedHandler处理</span></span><br><span class="line">           accessDeniedHandler.handle(request, response,</span><br><span class="line">                 (AccessDeniedException) exception);</span><br><span class="line">        &#125;</span><br><span class="line">     &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>剩下的便是要搞懂AuthenticationEntryPoint和AccessDeniedHandler就可以了。</p>
-<p><img src="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170929231608.png" alt="AuthenticationEntryPoint"></p>
-<p>选择了几个常用的登录端点，以其中第一个为例来介绍，看名字就能猜到是认证失败之后，让用户跳转到登录页面。还记得我们一开始怎么配置表单登录页面的吗？</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableWebSecurity</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WebSecurityConfig</span> <span class="keyword">extends</span> <span class="title">WebSecurityConfigurerAdapter</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">configure</span><span class="params">(HttpSecurity http)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        http</span><br><span class="line">            .authorizeRequests()</span><br><span class="line">                .antMatchers(<span class="string">"/"</span>, <span class="string">"/home"</span>).permitAll()</span><br><span class="line">                .anyRequest().authenticated()</span><br><span class="line">                .and()</span><br><span class="line">            .formLogin()<span class="comment">//FormLoginConfigurer</span></span><br><span class="line">                .loginPage(<span class="string">"/login"</span>)</span><br><span class="line">                .permitAll()</span><br><span class="line">                .and()</span><br><span class="line">            .logout()</span><br><span class="line">                .permitAll();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>我们顺着formLogin返回的FormLoginConfigurer往下找，看看能发现什么，最终在FormLoginConfigurer的父类AbstractAuthenticationFilterConfigurer中有了不小的收获：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractAuthenticationFilterConfigurer</span> <span class="keyword">extends</span> ...</span>&#123;</span><br><span class="line">   ...</span><br><span class="line">   <span class="comment">//formLogin不出所料配置了AuthenticationEntryPoint</span></span><br><span class="line">   <span class="keyword">private</span> LoginUrlAuthenticationEntryPoint authenticationEntryPoint;</span><br><span class="line">   <span class="comment">//认证失败的处理器</span></span><br><span class="line">   <span class="keyword">private</span> AuthenticationFailureHandler failureHandler;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>具体如何配置的就不看了，我们得出了结论，formLogin()配置了之后最起码做了两件事，其一，为UsernamePasswordAuthenticationFilter设置了相关的配置，其二配置了AuthenticationEntryPoint。</p>
-<p>登录端点还有Http401AuthenticationEntryPoint，Http403ForbiddenEntryPoint这些都是很简单的实现，有时候我们访问受限页面，又没有配置登录，就看到了一个空荡荡的默认错误页面，上面显示着401,403，就是这两个入口起了作用。</p>
-<p>还剩下一个AccessDeniedHandler访问决策器未被讲解，简单提一下：AccessDeniedHandlerImpl这个默认实现类会根据errorPage和状态码来判断，最终决定跳转的页面</p>
-<p><code>org.springframework.security.web.access.AccessDeniedHandlerImpl#handle</code></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handle</span><span class="params">(HttpServletRequest request, HttpServletResponse response,</span></span></span><br><span class="line"><span class="function"><span class="params">      AccessDeniedException accessDeniedException)</span> <span class="keyword">throws</span> IOException,</span></span><br><span class="line"><span class="function">      ServletException </span>&#123;</span><br><span class="line">   <span class="keyword">if</span> (!response.isCommitted()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (errorPage != <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="comment">// Put exception into request scope (perhaps of use to a view)</span></span><br><span class="line">         request.setAttribute(WebAttributes.ACCESS_DENIED_403,</span><br><span class="line">               accessDeniedException);</span><br><span class="line">         <span class="comment">// Set the 403 status code.</span></span><br><span class="line">         response.setStatus(HttpServletResponse.SC_FORBIDDEN);</span><br><span class="line">         <span class="comment">// forward to error page.</span></span><br><span class="line">         RequestDispatcher dispatcher = request.getRequestDispatcher(errorPage);</span><br><span class="line">         dispatcher.forward(request, response);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">else</span> &#123;</span><br><span class="line">         response.sendError(HttpServletResponse.SC_FORBIDDEN,</span><br><span class="line">               accessDeniedException.getMessage());</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="4-6-FilterSecurityInterceptor"><a href="#4-6-FilterSecurityInterceptor" class="headerlink" title="4.6 FilterSecurityInterceptor"></a>4.6 FilterSecurityInterceptor</h3><p>想想整个认证安全控制流程还缺了什么？我们已经有了认证，有了请求的封装，有了Session的关联…还缺一个：由什么控制哪些资源是受限的，这些受限的资源需要什么权限，需要什么角色…这一切和访问控制相关的操作，都是由FilterSecurityInterceptor完成的。</p>
-<p>FilterSecurityInterceptor的工作流程用笔者的理解可以理解如下：FilterSecurityInterceptor从SecurityContextHolder中获取Authentication对象，然后比对用户拥有的权限和资源所需的权限。前者可以通过Authentication对象直接获得，而后者则需要引入我们之前一直未提到过的两个类：SecurityMetadataSource，AccessDecisionManager。理解清楚决策管理器的整个创建流程和SecurityMetadataSource的作用需要花很大一笔功夫，这里，暂时只介绍其大概的作用。</p>
-<p>在JavaConfig的配置中，我们通常如下配置路径的访问控制：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">configure</span><span class="params">(HttpSecurity http)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">	http</span><br><span class="line">		.authorizeRequests()</span><br><span class="line">			.antMatchers(<span class="string">"/resources/**"</span>, <span class="string">"/signup"</span>, <span class="string">"/about"</span>).permitAll()</span><br><span class="line">             .antMatchers(<span class="string">"/admin/**"</span>).hasRole(<span class="string">"ADMIN"</span>)</span><br><span class="line">             .antMatchers(<span class="string">"/db/**"</span>).access(<span class="string">"hasRole('ADMIN') and hasRole('DBA')"</span>)</span><br><span class="line">             .anyRequest().authenticated()</span><br><span class="line">			.withObjectPostProcessor(<span class="keyword">new</span> ObjectPostProcessor&lt;FilterSecurityInterceptor&gt;() &#123;</span><br><span class="line">				<span class="keyword">public</span> &lt;O extends FilterSecurityInterceptor&gt; <span class="function">O <span class="title">postProcess</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">						O fsi)</span> </span>&#123;</span><br><span class="line">					fsi.setPublishAuthorizationSuccess(<span class="keyword">true</span>);</span><br><span class="line">					<span class="keyword">return</span> fsi;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在ObjectPostProcessor的泛型中看到了FilterSecurityInterceptor，以笔者的经验，目前并没有太多机会需要修改FilterSecurityInterceptor的配置。</p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>本篇文章在介绍过滤器时，顺便进行了一些源码的分析，目的是方便理解整个Spring Security的工作流。伴随着整个过滤器链的介绍，安全框架的轮廓应该已经浮出水面了，下面的章节，主要打算通过自定义一些需求，再次分析其他组件的源码，学习应该如何改造Spring Security，为我们所用。</p>
-<p><strong>欢迎关注我的微信公众号：「Kirito的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
-</div>
-
-    <a data-url="http://lexburner.github.io/spring-security-4/" data-id="ck03x0f8800dhsu9e0piqdoos" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
-    <article id="post-project-rules-2" class="article article-type-post" itemscope="" itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/project-rules-2/">警惕不规范的变量命名</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        <!-- 增加文章类型 -->
-                        
-	
-		<div class="article-type">
-		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
-		</div>
-	
-	
-	
-		
-	
-
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/project-rules-2/">
-            <time datetime="2017-09-23T05:45:56.000Z" itemprop="datePublished">2017-09-23</time>
-        </a>
-    </div>
-
-
-                        
-    <div class="article-category">
-    	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/技术杂谈/">技术杂谈</a>
-    </div>
-
-                        <!-- 不显示标签 -->
-                        <!-- 
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/JAVA/">JAVA</a>, <a class="tag-link" href="/tags/技术杂谈/">技术杂谈</a>
-    </div>
- -->
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p>就在最近，项目组开始强调开发规范了，今天分享一个变量名命名不规范的小案例，强调一下规范的重要性。例子虽小，但却比较有启发意义。</p>
-<h2 id="Boolean变量名命名规范"><a href="#Boolean变量名命名规范" class="headerlink" title="Boolean变量名命名规范"></a>Boolean变量名命名规范</h2><p>16年底，阿里公开了《Java开发规范手册》，其中有一条便是“布尔类型不能以is为前缀”。规范中没有举出例子，但是给出了原因：会导致部分序列化框架的无法解析。</p>
-<p>看看错误的示范，会导致什么问题，以Spring中的jdbcTemplate来进行实验。</p>
-<h3 id="定义实体类"><a href="#定义实体类" class="headerlink" title="定义实体类"></a>定义实体类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Entity</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Bar</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Id</span></span><br><span class="line">    <span class="meta">@GeneratedValue</span></span><br><span class="line">    <span class="keyword">private</span> Integer id;</span><br><span class="line">    <span class="keyword">private</span> Boolean isSuccess;<span class="comment">// 注意这是错误的命名</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> isSend;<span class="comment">// 注意这是错误的命名</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Boolean <span class="title">getSuccess</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> isSuccess;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setSuccess</span><span class="params">(Boolean success)</span> </span>&#123;</span><br><span class="line">        isSuccess = success;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isSend</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> isSend;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setSend</span><span class="params">(<span class="keyword">boolean</span> send)</span> </span>&#123;</span><br><span class="line">        isSend = send;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>其中，isSuccess使用的是包装类型Boolean，而isSend使用的是原生类型boolean，而getter，setter方法是使用Intellij IDEA自动生成的，布尔类型生成getter，setter方法时略微特殊，比如原生类型的getter方式是以is开头的，他们略微有点区别，注意区分。生成getter，setter方法之后，其实已经有点奇怪了，不急，继续下面的实验。</p>
-<p>在数据库中，isSuccess被映射了is_success，isSend被映射成了is_send，这符合我们的预期。并且为了后续的实验，我们事先准备一条记录，用于后续的查询，在mysql的方言中，布尔类型被默认自动映射成byte，1代表ture，0代表false。</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>is_success</th>
-<th>is_send</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>1</td>
-<td>1</td>
-</tr>
-</tbody>
-</table>
-<h3 id="使用JdbcTemplate查询"><a href="#使用JdbcTemplate查询" class="headerlink" title="使用JdbcTemplate查询"></a>使用JdbcTemplate查询</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">(String id)</span> </span>&#123;</span><br><span class="line">    RowMapper&lt;Bar&gt; barRowMapper = <span class="keyword">new</span> BeanPropertyRowMapper&lt;Bar&gt;(Bar.class);</span><br><span class="line">    Bar bar = jdbcTemplate.queryForObject(<span class="string">"select * from bar where id = ?"</span>, <span class="keyword">new</span> Object[]&#123;id&#125;, barRowMapper);</span><br><span class="line">    System.out.println(bar);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>JdbcTemplate提供了BeanPropertyRowMapper完成数据库到实体类的映射，事先我重写了Bar类的toString方法，调用<code>test(1)</code>看看是否能成功映射。结果如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Bar&#123;id=<span class="number">1</span>, isSuccess=<span class="keyword">null</span>, isSend=<span class="keyword">false</span>&#125;</span><br></pre></td></tr></table></figure>
-<p>数据库中是实际存在这样的字段，并且值都是true，而使用JdbcTemplate，却查询不到这样的问题，这边是不遵循规范导致的问题。</p>
-<p>相信这个例子可以让大家更加加深映像，特别是在维护老旧代码时，如果发现有is开头的boolean值，需要额外地注意。</p>
-<h2 id="包装类型与原生类型"><a href="#包装类型与原生类型" class="headerlink" title="包装类型与原生类型"></a>包装类型与原生类型</h2><p>在回顾一下上述的demo，原生类型和包装类型都没有封装成功，isSuccess得到了一个null值，isSend得到了一个false值。后者足够引起我们的警惕，如果说前者会引起一个NullPointerExcepiton导致程序异常，还可以引起开发者的注意，而后者很有可能一直作为一个隐藏的bug，不被人所察觉，因为boolean的默认值为false。</p>
-<p>在类变量中，也普遍提倡使用包装类型，而原生类型的不足之处是很明显的。以Integer num;字段为例，num=null代表的含义是num字段未被保存，未定义；而num=0代表的含义是明确的，数量为0。原生类型的表达能力有限。所以提倡在局部作用域的计算中使用原生类型，而在类变量中使用包装类型。</p>
-<h2 id="JavaBean规范"><a href="#JavaBean规范" class="headerlink" title="JavaBean规范"></a>JavaBean规范</h2><p>如今的微服务的时代，都是在聊架构，聊容器编排，竟然还有人聊JavaBean，但既然说到了规范，顺带提下。</p>
-<p>先来做个选择题，以下选项中符合JavaBean命名规范的有哪些？：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">A : ebook</span><br><span class="line">B : eBook</span><br><span class="line">C : Ebook</span><br><span class="line">D : EBook</span><br></pre></td></tr></table></figure>
-<p>.</p>
-<p>.</p>
-<p>.</p>
-<p>.</p>
-<p>正确答案是：A,D</p>
-<p>怎么样，符合你的预想吗？JavaBean规范并不是像很多人想的那样，首字母小写，之后的每一个单词首字母大写这样的驼峰命名法。正确的命名规范应该是：要么前两个字母都是小写，要么前两个字母都是大写。因为英文单词中有URL，USA这样固定形式的大写词汇，所以才有了这样的规范。特别警惕B那种形式，一些诸如sNo，eBook,eMail,cId这样的命名，都是不规范的。</p>
-<p>由此引申出了getter，setter命名的规范，除了第一节中Boolean类型的特例之外，网上还有不上文章，强调了这样的概念：eBook对应的getter，setter应当为geteBook(),seteBook()，即当类变量的首字母是小写，而第二个字母是大写时，生成的getter，setter应当是（get/set）+类变量名。但上面已经介绍过了，eBook这样的变量命名本身就是不规范的，在不规范的变量命名下强调规范的getter，setter命名，出发点就错了。有兴趣的朋友可以在eclipse，intellij idea中试试，这几种规范，不规范的变量命名，各自对应的getter，setter方法是如何的。另外需要知晓一点，IDE提供的自动生成getter，setter的机制，以及lombok这类框架的机制，都是由默认的设置，在与其他反射框架配合使用时，只有双方都遵循规范，才能够配合使用，而不能笃信框架。这一点上，有部分国产的框架做的并不是很好。</p>
-<p>最后说一个和JavaBean相关的取值规范，在jsp的c标签，freemarker一类的模板语法，以及一些el表达式中，${student.name}并不是取的student的name字段，而是调用了student的getName方法，这也应当被注意，student.name如何找到对应的getter方法，需要解决上一段中提到的同样的问题，建议不确定的地方多测试，尽量采取稳妥的写法。</p>
-<p>可能有人会觉得这样的介绍类似于“茴”字有几种写法，但笔者认为恰恰是这些小的规范，容易被人忽视，才更加需要被注意。</p>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
-</div>
-
-    <a data-url="http://lexburner.github.io/project-rules-2/" data-id="ck03x0f1n001psu9eqf5t3env" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/spring-security-5/" data-id="ck07xozt3009jwx9etbj7qtib" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -2160,6 +2270,44 @@ public String test(){
                     <li>
                         
                         <!-- <div class="item-thumbnail">
+                            <a href="/dubbo-perf-benchmark/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
+                            <p class="item-title"><a href="/dubbo-perf-benchmark/" class="title">使用 JMeter 进行 Dubbo 性能测试</a></p>
+                            <p class="item-date"><time datetime="2019-09-05T11:45:52.000Z" itemprop="datePublished">2019-09-05</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/tokyo-travel/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/随笔/">随笔</a></p>
+                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本旅游攻略||内含秋叶原、动漫打卡地介绍</a></p>
+                            <p class="item-date"><time datetime="2019-09-02T12:19:23.000Z" itemprop="datePublished">2019-09-02</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
                             <a href="/taurusdb-race/" class="thumbnail">
     
     
@@ -2214,44 +2362,6 @@ public String test(){
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <!-- <div class="item-thumbnail">
-                            <a href="/network-interfaces/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div> -->
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
-                            <p class="item-title"><a href="/network-interfaces/" class="title">研究网卡地址注册时的一点思考</a></p>
-                            <p class="item-date"><time datetime="2019-04-29T11:09:53.000Z" itemprop="datePublished">2019-04-29</time></p>
-                        </div>
-                    </li>
-                
-                    <li>
-                        
-                        <!-- <div class="item-thumbnail">
-                            <a href="/dubbo-rsocket/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div> -->
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
-                            <p class="item-title"><a href="/dubbo-rsocket/" class="title">【Dubbo3.0新特性】集成RSocket,新增响应式支持</a></p>
-                            <p class="item-date"><time datetime="2019-04-11T11:19:41.000Z" itemprop="datePublished">2019-04-11</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -2261,7 +2371,7 @@ public String test(){
     <div class="widget-wrap">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
         </div>
     </div>
 
@@ -2270,7 +2380,7 @@ public String test(){
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">一月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">一月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
         </div>
     </div>
 
@@ -2279,7 +2389,7 @@ public String test(){
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 10px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 10px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件IO/" style="font-size: 10px;">文件IO</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
+            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 10px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件IO/" style="font-size: 10px;">文件IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
         </div>
     </div>
 
