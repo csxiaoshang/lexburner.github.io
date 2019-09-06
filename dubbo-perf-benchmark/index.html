@@ -27,7 +27,7 @@
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20190906143444779.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20190906143425928.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20190906144422407.png">
-<meta property="og:updated_time" content="2019-09-06T07:20:39.745Z">
+<meta property="og:updated_time" content="2019-09-06T09:49:06.217Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用 JMeter 进行 Dubbo 性能测试">
 <meta name="twitter:description" content="1 前言说道性能测试工具，你会立刻联想到哪一个？ab（ApacheBench）、JMeter、LoadRunner、wrk…可以说市面上的压测工具实在是五花八门。那如果再问一句，对 Dubbo 进行性能压测，你会 pick 哪一个？可能大多数人就懵逼了。可以发现，大多数的压测工具对开放的协议支持地比较好，例如：HTTP 协议，但对于 Dubbo 框架的私有协议：dubbo，它们都显得力不从心了。">
@@ -279,6 +279,7 @@ ga('send', 'pageview');
             
             <h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h2><p>说道性能测试工具，你会立刻联想到哪一个？ab（ApacheBench）、JMeter、LoadRunner、wrk…可以说市面上的压测工具实在是五花八门。那如果再问一句，对 Dubbo 进行性能压测，你会 pick 哪一个？可能大多数人就懵逼了。可以发现，大多数的压测工具对开放的协议支持地比较好，例如：HTTP 协议，但对于 Dubbo 框架的私有协议：<code>dubbo</code>，它们都显得力不从心了。</p>
 <p>如果不从通用的压测工具上解决 Dubbo 的压测需求问题，可以自己写 Dubbo 客户端，自己统计汇总结果，但总归不够优雅，再加上很多开发同学没有丰富的测试经验，很容易出现一些偏差。说到底，还是压测工具靠谱，于是便引出了本文的主角 —— <strong><a href="https://github.com/thubbo/jmeter-plugins-for-apache-dubbo" target="_blank" rel="noopener">jmeter-plugins-for-apache-dubbo</a></strong>。这是一款由 Dubbo 社区 Commiter – <a href="https://ningyu1.github.io/blog/about/" target="_blank" rel="noopener">凝雨</a> 同学开发的 JMeter 插件，可以非常轻松地对 Dubbo 实现性能测试。</p>
+<a id="more"></a>
 <h2 id="2-JMeter-介绍"><a href="#2-JMeter-介绍" class="headerlink" title="2 JMeter 介绍"></a>2 JMeter 介绍</h2><p>在开始压测 Dubbo 之前，先简单介绍一下这款开源的性能测试工具 —— JMeter。JMeter 是 Apache 组织基于 Java 开发的一款性能测试工具。它最初被设计用于 Web 应用测试，但后来扩展到其他测试领域，并可以在 Windows、Mac、Linux 环境下安装使用。JMeter 还提供了图形界面，这使得编写测试用例变得非常简单，具有易学和易操作的特点。</p>
 <blockquote>
 <p>JMeter 官网：<a href="http://jmeter.apache.org/download_jmeter.cgi" target="_blank" rel="noopener">http://jmeter.apache.org/download_jmeter.cgi</a></p>
@@ -369,7 +370,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubbo-perf-benchmark/" data-id="ck07xozs50067wx9e1fswxn3x" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/dubbo-perf-benchmark/" data-id="ck07xu2eb006d049ebkf7jqon" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
