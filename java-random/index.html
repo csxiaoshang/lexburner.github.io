@@ -24,7 +24,7 @@
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20180911184147013.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20180911185754582.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-06T09:45:07.809Z">
+<meta property="og:updated_time" content="2019-09-09T02:17:44.037Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java随机数探秘">
 <meta name="twitter:description" content="本文的前3节参考修改自微信公众号「咖啡拿铁」的文章，感谢李钊同学对这个话题热情的讨论。  1 前言一提到 Java 中的随机数，很多人就会想到 Random，当出现生成随机数这样需求时，大多数人都会选择使用 Random 来生成随机数。Random 类是线程安全的，但其内部使用 CAS 来保证线程安全性，在多线程并发的情况下的时候它的表现是存在优化空间的。在 JDK1.7 之后，Java 提供了">
@@ -283,13 +283,12 @@ ga('send', 'pageview');
 <h4 id="Random原理"><a href="#Random原理" class="headerlink" title="Random原理"></a>Random原理</h4><p>Random 中的方法比较多，这里就针对比较常见的 nextInt() 和 nextInt(int bound) 方法进行分析，前者会计算出 int 范围内的随机数，后者如果我们传入 10，那么他会求出 [0,10) 之间的 int 类型的随机数，左闭右开。我们首先看一下 Random() 的构造方法:</p>
 <p> <img src="http://kirito.iocoder.cn/20190906173929.jpg" alt="img"></p>
 <p>可以发现在构造方法当中，根据当前时间的种子生成了一个 AtomicLong 类型的 seed，这也是我们后续的关键所在。</p>
-<p>####nextInt()</p>
-<p>nextInt() 的代码如下所示：</p>
+<h3 id="nextInt"><a href="#nextInt" class="headerlink" title="nextInt()"></a>nextInt()</h3><p>nextInt() 的代码如下所示：</p>
 <p> <img src="http://kirito.iocoder.cn/642.png" alt="img"></p>
 <p>这个里面直接调用的是 next() 方法，传入的 32，代指的是 Int 类型的位数。</p>
 <p><img src="http://kirito.iocoder.cn/643.jpeg" alt="img"></p>
 <p>这里会根据 seed 当前的值，通过一定的规则(伪随机算法)算出下一个 seed，然后进行 CAS，如果 CAS 失败则继续循环上面的操作。最后根据我们需要的 bit 位数来进行返回。核心便是 CAS 算法。</p>
-<h4 id="nextInt-int-bound"><a href="#nextInt-int-bound" class="headerlink" title="nextInt(int bound)"></a>nextInt(int bound)</h4><p>nextInt(int bound) 的代码如下所示：<img src="http://kirito.iocoder.cn/644.jpeg" alt="img"></p>
+<h3 id="nextInt-int-bound"><a href="#nextInt-int-bound" class="headerlink" title="nextInt(int bound)"></a>nextInt(int bound)</h3><p>nextInt(int bound) 的代码如下所示：<img src="http://kirito.iocoder.cn/644.jpeg" alt="img"></p>
 <p>这个流程比 nextInt() 多了几步，具体步骤如下:</p>
 <ol>
 <li>首先获取 31 位的随机数，注意这里是 31 位，和上面 32 位不同，因为在 nextInt() 方法中可以获取到随机数可能是负数，而 nextInt(int bound) 规定只能获取到 [0,bound) 之前的随机数，也就意味着必须是正数，预留一位符号位，所以只获取了31位。(不要想着使用取绝对值这样操作，会导致性能下降)</li>
@@ -347,7 +346,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/java-random/" data-id="ck07xu2en007q049ea800aiwb" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/java-random/" data-id="ck0rhuq5e007vp09edv701bnd" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -484,25 +483,6 @@ ga('send', 'pageview');
                     <li>
                         
                         <!-- <div class="item-thumbnail">
-                            <a href="/tokyo-travel/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div> -->
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/随笔/">随笔</a></p>
-                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本旅游攻略||内含秋叶原、动漫打卡地介绍</a></p>
-                            <p class="item-date"><time datetime="2019-09-02T12:19:23.000Z" itemprop="datePublished">2019-09-02</time></p>
-                        </div>
-                    </li>
-                
-                    <li>
-                        
-                        <!-- <div class="item-thumbnail">
                             <a href="/taurusdb-race/" class="thumbnail">
     
     
@@ -515,6 +495,25 @@ ga('send', 'pageview');
                         <div class="item-inner">
                             <p class="item-category"><a class="article-category-link" href="/categories/性能挑战赛/">性能挑战赛</a></p>
                             <p class="item-title"><a href="/taurusdb-race/" class="title">华为云 TaurusDB 性能挑战赛赛题总结</a></p>
+                            <p class="item-date"><time datetime="2019-09-02T12:19:23.000Z" itemprop="datePublished">2019-09-02</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/tokyo-travel/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/随笔/">随笔</a></p>
+                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本东京游记||内含秋叶原、动漫打卡地攻略</a></p>
                             <p class="item-date"><time datetime="2019-09-02T12:19:23.000Z" itemprop="datePublished">2019-09-02</time></p>
                         </div>
                     </li>
