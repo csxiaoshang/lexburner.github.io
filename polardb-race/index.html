@@ -3,25 +3,25 @@
 <head><meta name="generator" content="Hexo 3.8.0">
     <meta charset="utf-8">
     
-    <title>PolarDB数据库性能大赛Java选手分享 | 徐靖峰|个人博客</title>
+    <title>PolarDB 数据库性能大赛 Java 选手分享 | 徐靖峰|个人博客</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="1 前言 国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大(当然，主要还是前者 QA">
+    <meta name="description" content="1 前言 国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大 (当然，主要还是前者 Q">
 <meta name="keywords" content="数据库">
 <meta property="og:type" content="article">
-<meta property="og:title" content="PolarDB数据库性能大赛Java选手分享">
+<meta property="og:title" content="PolarDB 数据库性能大赛 Java 选手分享">
 <meta property="og:url" content="http://lexburner.github.io/polardb-race/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
-<meta property="og:description" content="1 前言 国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大(当然，主要还是前者 QA">
+<meta property="og:description" content="1 前言 国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大 (当然，主要还是前者 Q">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20181210184521001.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/KiritoDB.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20181210204156199.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20181210215200345.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-02T12:23:27.166Z">
+<meta property="og:updated_time" content="2019-09-26T09:45:31.456Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="PolarDB数据库性能大赛Java选手分享">
-<meta name="twitter:description" content="1 前言 国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大(当然，主要还是前者 QA">
+<meta name="twitter:title" content="PolarDB 数据库性能大赛 Java 选手分享">
+<meta name="twitter:description" content="1 前言 国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大 (当然，主要还是前者 Q">
 <meta name="twitter:image" content="http://kirito.iocoder.cn/image-20181210184521001.png">
     
 
@@ -220,7 +220,7 @@ ga('send', 'pageview');
                 
     
         <h1 class="article-title" itemprop="name">
-            PolarDB数据库性能大赛Java选手分享
+            PolarDB 数据库性能大赛 Java 选手分享
         </h1>
     
 
@@ -269,41 +269,41 @@ ga('send', 'pageview');
         
             
             <h3 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h3><p><img src="http://kirito.iocoder.cn/image-20181210184521001.png" alt="排名"></p>
-<p>国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大(当然，主要还是前者 QAQ)。所以在本文中，我除了介绍整体的架构之外，还会着重笔墨来探讨 Java 编写存储类型应用的一些最佳实践，文末会给出 github 的开源地址。</p>
+<p>国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大 (当然，主要还是前者 QAQ)。所以在本文中，我除了介绍整体的架构之外，还会着重笔墨来探讨 Java 编写存储类型应用的一些最佳实践，文末会给出 github 的开源地址。</p>
 <a id="more"></a>
 <h3 id="2-赛题概览"><a href="#2-赛题概览" class="headerlink" title="2 赛题概览"></a>2 赛题概览</h3><p>比赛总体分成了初赛和复赛两个阶段，整体要求实现一个简化、高效的 kv 存储引擎</p>
 <p>初赛要求支持 Write、Read 接口。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(<span class="keyword">byte</span>[] key, <span class="keyword">byte</span>[] value)</span></span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">byte</span>[] read(<span class="keyword">byte</span>[] key);</span><br></pre></td></tr></table></figure>
 <p>复赛在初赛题目基础上，还需要额外实现一个 Range 接口。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">range</span><span class="params">(<span class="keyword">byte</span>[] lower, <span class="keyword">byte</span>[] upper, AbstractVisitor visitor)</span></span>;</span><br></pre></td></tr></table></figure>
-<p>程序评测逻辑 分为2个阶段：<br>1）Recover 正确性评测：<br>此阶段评测程序会并发写入特定数据（key 8B、value 4KB）同时进行任意次 kill -9 来模拟进程意外退出（参赛引擎需要保证进程意外退出时数据持久化不丢失），接着重新打开 DB，调用 Read、Range 接口来进行正确性校验</p>
+<p>程序评测逻辑 分为 2 个阶段：<br>1）Recover 正确性评测：<br>此阶段评测程序会并发写入特定数据（key 8B、value 4KB）同时进行任意次 kill -9 来模拟进程意外退出（参赛引擎需要保证进程意外退出时数据持久化不丢失），接着重新打开 DB，调用 Read、Range 接口来进行正确性校验</p>
 <p>2）性能评测</p>
 <ul>
 <li>随机写入：64 个线程并发随机写入，每个线程使用 Write 各写 100 万次随机数据（key 8B、value 4KB）</li>
 <li>随机读取：64 个线程并发随机读取，每个线程各使用 Read 读取 100 万次随机数据</li>
-<li>顺序读取：64 个线程并发顺序读取，每个线程各使用 Range 有序（增序）遍历全量数据 2 次<br>注：<br>2.2 阶段会对所有读取的 kv 校验是否匹配，如不通过则终止，评测失败；<br>2.3 阶段除了对迭代出来每条的 kv校 验是否匹配外，还会额外校验是否严格字典序递增，如不通过则终止，评测失败。</li>
+<li>顺序读取：64 个线程并发顺序读取，每个线程各使用 Range 有序（增序）遍历全量数据 2 次<br>注：<br>2.2 阶段会对所有读取的 kv 校验是否匹配，如不通过则终止，评测失败；<br>2.3 阶段除了对迭代出来每条的 kv 校 验是否匹配外，还会额外校验是否严格字典序递增，如不通过则终止，评测失败。</li>
 </ul>
 <p>语言限定：C++ &amp; JAVA，一起排名</p>
-<h3 id="3-赛题剖析"><a href="#3-赛题剖析" class="headerlink" title="3 赛题剖析"></a>3 赛题剖析</h3><p>关于文件 IO 操作的一些基本常识，我已经在专题文章中进行了介绍，如果你没有浏览那篇文章，建议先行浏览一下：<a href="https://www.cnkirito.moe/file-io-best-practise/" target="_blank" rel="noopener">文件IO操作的一些最佳实践</a>。再回归赛题，先对赛题中的几个关键词来进行解读。</p>
+<h3 id="3-赛题剖析"><a href="#3-赛题剖析" class="headerlink" title="3 赛题剖析"></a>3 赛题剖析</h3><p>关于文件 IO 操作的一些基本常识，我已经在专题文章中进行了介绍，如果你没有浏览那篇文章，建议先行浏览一下：<a href="https://www.cnkirito.moe/file-io-best-practise/" target="_blank" rel="noopener">文件 IO 操作的一些最佳实践</a>。再回归赛题，先对赛题中的几个关键词来进行解读。</p>
 <h4 id="3-1-key-8B-value-4kb"><a href="#3-1-key-8B-value-4kb" class="headerlink" title="3.1 key 8B, value 4kb"></a>3.1 key 8B, value 4kb</h4><p>key 为固定的 8 字节，因此可使用 long 来表示。</p>
 <p>value 为 4kb，这节省了我们很大的工作量，因为 4kb 的整数倍落盘是非常磁盘 IO 友好的。</p>
 <p>value 为 4kb 的另一个好处是我们再内存做索引时，可以使用 int 而不是 long，来记录数据的逻辑偏移量：LogicOffset = PhysicalOffset / 4096，可以将 offset 的内存占用量减少一半。</p>
 <h4 id="3-2-kill-9-数据不丢失"><a href="#3-2-kill-9-数据不丢失" class="headerlink" title="3.2 kill -9 数据不丢失"></a>3.2 kill -9 数据不丢失</h4><p>首先赛题明确表示会进行 kill -9 并验证数据的一致性，这加大了我们在内存中做 write buffer 的难度。但它并没有要求断电不丢失，这间接地阐释了一点：我们可以使用 pageCache 来做写入缓存，在具体代码中我使用了 PageCache 来充当数据和索引的写入缓冲（两者策略不同）。同时这点也限制了参赛选手，不能使用 AIO 这样的异步落盘方式。</p>
 <h4 id="3-3-分阶段测评"><a href="#3-3-分阶段测评" class="headerlink" title="3.3 分阶段测评"></a>3.3 分阶段测评</h4><p>赛题分为了随机写，随机读，顺序读三个阶段，每个阶段都会重新 open，且不会发生随机写到一半校验随机读这样的行为，所以我们在随机写阶段不需要在内存维护索引，而是直接落盘。随机读和顺序读阶段，磁盘均存在数据，open 阶段需要恢复索引，可以使用多线程并发恢复。</p>
-<p><strong>同时，赛题还有存在一些隐性的测评细节没有披露给大家，但通过测试，我们可以得知这些信息。</strong></p>
+<p><strong> 同时，赛题还有存在一些隐性的测评细节没有披露给大家，但通过测试，我们可以得知这些信息。</strong></p>
 <h4 id="3-4-清空-PageCache-的耗时"><a href="#3-4-清空-PageCache-的耗时" class="headerlink" title="3.4 清空 PageCache 的耗时"></a>3.4 清空 PageCache 的耗时</h4><p>虽然我们可以使用 PageCache，但评测程序在每个阶段之后都使用脚本清空了 PageCache，并且将这部分时间也算进了最终的成绩之中，所以有人感到奇怪：三个阶段的耗时相加比输出出来的成绩要差，其实那几秒便是清空 PageCache 的耗时。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>清理 pagecache (页缓存)</span><br><span class="line">sysctl -w vm.drop_caches=1</span><br><span class="line"><span class="meta">#</span>清理 dentries（目录缓存）和 inodes</span><br><span class="line">sysctl -w vm.drop_caches=2</span><br><span class="line"><span class="meta">#</span>清理pagecache、dentries和inodes</span><br><span class="line">sysctl -w vm.drop_caches=3</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>清理 pagecache (页缓存)</span><br><span class="line">sysctl -w vm.drop_caches=1</span><br><span class="line"><span class="meta">#</span>清理 dentries（目录缓存）和 inodes</span><br><span class="line">sysctl -w vm.drop_caches=2</span><br><span class="line"><span class="meta">#</span>清理 pagecache、dentries 和 inodes</span><br><span class="line">sysctl -w vm.drop_caches=3</span><br></pre></td></tr></table></figure>
 <p>这一点启发我们，不能毫无节制的使用 PageCache，也正是因为这一点，一定程度上使得 Direct IO 这一操作成了本次竞赛的银弹。</p>
-<h4 id="3-5-key-的分布"><a href="#3-5-key-的分布" class="headerlink" title="3.5 key 的分布"></a>3.5 key 的分布</h4><p>这一个隐性条件可谓是本次比赛的关键，因为它涉及到 Range 部分的架构设计。本次比赛的 key 共计 6400w，但是他们的分布都是<strong>均匀</strong>的，在<a href="https://www.cnkirito.moe/file-io-best-practise/" target="_blank" rel="noopener">《文件IO操作的一些最佳实践》</a> 一文中我们已经提到了数据分区的好处，可以大大减少顺序读写的锁冲突，而 key 的分布均匀这一特性，启发我们在做数据分区时，可以按照 key 的搞 n 位来做 hash，从而确保 key 两个分区之间整体有序(分区内部无序)。实际我尝试了将数据分成 1024、2048 个分区，效果最佳。</p>
+<h4 id="3-5-key-的分布"><a href="#3-5-key-的分布" class="headerlink" title="3.5 key 的分布"></a>3.5 key 的分布</h4><p>这一个隐性条件可谓是本次比赛的关键，因为它涉及到 Range 部分的架构设计。本次比赛的 key 共计 6400w，但是他们的分布都是 <strong> 均匀 </strong> 的，在 <a href="https://www.cnkirito.moe/file-io-best-practise/" target="_blank" rel="noopener">《文件 IO 操作的一些最佳实践》</a> 一文中我们已经提到了数据分区的好处，可以大大减少顺序读写的锁冲突，而 key 的分布均匀这一特性，启发我们在做数据分区时，可以按照 key 的搞 n 位来做 hash，从而确保 key 两个分区之间整体有序 (分区内部无序)。实际我尝试了将数据分成 1024、2048 个分区，效果最佳。</p>
 <h4 id="3-6-Range-的缓存设计"><a href="#3-6-Range-的缓存设计" class="headerlink" title="3.6 Range 的缓存设计"></a>3.6 Range 的缓存设计</h4><p>赛题要求 64 个线程 Range 两次全量的数据，限时 1h，这也启发了我们，如果不对数据进行缓存，想要在 1h 内完成比赛是不可能的，所以，我们的架构设计应该尽量以 Range 为核心，兼顾随机写和随机读。Range 部分也是最容易拉开差距的一个环节。</p>
 <h3 id="4-架构详解"><a href="#4-架构详解" class="headerlink" title="4 架构详解"></a>4 架构详解</h3><p>首先需要明确的是，随机写指的是 key 的写入是随机的，但我们可以根据 key hash，将随机写转换为对应分区文件的顺序写。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * using high ten bit of the given key to determine which file it hits.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HighTenPartitioner</span> <span class="keyword">implements</span> <span class="title">Partitionable</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getPartition</span><span class="params">(<span class="keyword">byte</span>[] key)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ((key[<span class="number">0</span>] &amp; <span class="number">0xff</span>) &lt;&lt; <span class="number">2</span>) | ((key[<span class="number">1</span>] &amp; <span class="number">0xff</span>) &gt;&gt; <span class="number">6</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * using high ten bit of the given key to determine which file it hits.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HighTenPartitioner</span> <span class="keyword">implements</span> <span class="title">Partitionable</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getPartition</span><span class="params">(<span class="keyword">byte</span>[] key)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ((key[<span class="number">0</span>] &amp; <span class="number">0xff</span>)&lt;&lt; <span class="number">2</span>) | ((key[<span class="number">1</span>] &amp; <span class="number">0xff</span>)&gt;&gt; <span class="number">6</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>明确了高位分区的前提再来看整体的架构就变得明朗了</p>
-<p><strong>全局视角</strong></p>
+<p><strong> 全局视角 </strong></p>
 <p><img src="http://kirito.iocoder.cn/KiritoDB.png" alt="全局视角"></p>
-<p><strong>分区视角</strong></p>
+<p><strong> 分区视角 </strong></p>
 <p><img src="http://kirito.iocoder.cn/image-20181210204156199.png" alt="分区视角"></p>
-<p><strong>内存视角</strong></p>
+<p><strong> 内存视角 </strong></p>
 <p>内存中仅仅维护有序的 <code>key[1024][625000]</code> 数组和 <code>offset[1024][625000]</code> 数组。</p>
 <p>上述两张图对整体的架构进行了一个很好的诠释，利用数据分布均匀的特性，可以将全局数据 hash 成 1024 个分区，在每个分区中存放两类文件：索引文件和数据文件。在随机写入阶段，根据 key 获得该数据对应分区位置，并按照时序，顺序追加到文件末尾，将全局随机写转换为局部顺序写。利用索引和数据一一对应的特性，我们也不需要将 data 的逻辑偏移量落盘，在 recover 阶段可以按照恢复 key 的次序，反推出 value 的逻辑偏移量。</p>
 <p>在 range 阶段，由于我们事先按照 key 的高 10 为做了分区，所以我们可以认定一个事实，patition(N) 中的任何一个数据一定大于 partition(N-1) 中的任何一个数据，于是我们可以采用大块读，将一个 partition 整体读进内存，供 64 个 visit 线程消费。到这儿便奠定了整体的基调：读盘线程负责按分区读盘进入内存，64 个 visit 线程负责消费内存，按照 key 的次序随机访问内存，进行 Visitor 的回调。</p>
@@ -323,20 +323,20 @@ ga('send', 'pageview');
 <ol>
 <li>fetch thread 1~4 加载磁盘数据进入缓存是并发的</li>
 <li>visit group 1~64 访问同一个 buffer 是并发的</li>
-<li>visit group 1~64 访问不同 partition 对应的 buffer 是按照次序来进行的(打到全局有序)</li>
-<li>加载 partitonN 会阻塞 visit bufferN，visit bufferN 会阻塞加载 partitionN+4(相当于复用4块缓存)</li>
+<li>visit group 1~64 访问不同 partition 对应的 buffer 是按照次序来进行的 (打到全局有序)</li>
+<li>加载 partitonN 会阻塞 visit bufferN，visit bufferN 会阻塞加载 partitionN+4(相当于复用 4 块缓存)</li>
 </ol>
 <p>大块的加载读进缓存，最大程度复用，是 ReadSeq 部分的关键。顺序读两轮的成绩在 196~198s 左右，相比 C++ 又慢了 4s 左右。</p>
 <h3 id="9-魔鬼在细节中"><a href="#9-魔鬼在细节中" class="headerlink" title="9 魔鬼在细节中"></a>9 魔鬼在细节中</h3><p>这儿是个分水岭，介绍完了整体架构和四个阶段的细节实现，下面就是介绍下具体的优化点了。</p>
-<h3 id="10-Java-实现-Direct-IO"><a href="#10-Java-实现-Direct-IO" class="headerlink" title="10 Java 实现 Direct IO"></a>10 Java 实现 Direct IO</h3><p>由于这次比赛将 drop cache 的时间算进了测评程序之中，所以在不必要的地方应当尽量避免 pageCache，也就是说除了写索引之外，其他阶段不应该出现 pageCache。这对于 Java 选手来说可能是不小的障碍，因为 Java 原生没有提供 Direct IO，需要自己封装一套 JNA 接口，封装这套接口借鉴了开源框架 jaydio 的思路，感谢@尘央的协助，大家可以在文末的代码中看到实现细节。这一点可以说是拦住了一大票 Java 选手。</p>
+<h3 id="10-Java-实现-Direct-IO"><a href="#10-Java-实现-Direct-IO" class="headerlink" title="10 Java 实现 Direct IO"></a>10 Java 实现 Direct IO</h3><p>由于这次比赛将 drop cache 的时间算进了测评程序之中，所以在不必要的地方应当尽量避免 pageCache，也就是说除了写索引之外，其他阶段不应该出现 pageCache。这对于 Java 选手来说可能是不小的障碍，因为 Java 原生没有提供 Direct IO，需要自己封装一套 JNA 接口，封装这套接口借鉴了开源框架 jaydio 的思路，感谢 @尘央的协助，大家可以在文末的代码中看到实现细节。这一点可以说是拦住了一大票 Java 选手。</p>
 <p>Direct IO 需要注意的两个细节：</p>
 <ol>
 <li>分配的内存需要对齐，对应 jna 方法：posix_memalign</li>
 <li>写入的数据需要对齐通常是 pageSize 的整数倍，实际使用了 pread 的 O_DIRECT</li>
 </ol>
-<h3 id="11-直接内存优于堆内内存"><a href="#11-直接内存优于堆内内存" class="headerlink" title="11 直接内存优于堆内内存"></a>11 直接内存优于堆内内存</h3><p>这一点在《文件IO操作的一些最佳实践》中有所提及，堆外内存的两大好处是减少了一份内存拷贝，并且对 gc 友好，在 Direct IO 的实现中，应该配备一套堆外内存的接口，才能发挥出最大的功效。尤其在 Range 阶段，一个缓存区的大小便对应一个 partition 数据分区的大小：256M，大块的内存，更加适合用 DirectByteBuffer 装载。</p>
+<h3 id="11-直接内存优于堆内内存"><a href="#11-直接内存优于堆内内存" class="headerlink" title="11 直接内存优于堆内内存"></a>11 直接内存优于堆内内存</h3><p>这一点在《文件 IO 操作的一些最佳实践》中有所提及，堆外内存的两大好处是减少了一份内存拷贝，并且对 gc 友好，在 Direct IO 的实现中，应该配备一套堆外内存的接口，才能发挥出最大的功效。尤其在 Range 阶段，一个缓存区的大小便对应一个 partition 数据分区的大小：256M，大块的内存，更加适合用 DirectByteBuffer 装载。</p>
 <h3 id="12-JVM-调优"><a href="#12-JVM-调优" class="headerlink" title="12 JVM 调优"></a>12 JVM 调优</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-server -Xms2560m -Xmx2560m -XX:MaxDirectMemorySize=1024m -XX:NewRatio=4 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:-UseBiasedLocking</span><br></pre></td></tr></table></figure>
-<p>众所周知 newRatio 控制的是 young 区和 old 区大小的比例，官方推荐参数为  <code>-XX:NewRatio=1</code>，很多不注意的 Java 选手可能没有意识去修改它，会在无形中被 gc 拖累。经过和@阿杜的讨论，最终得出的结论：</p>
+<p>众所周知 newRatio 控制的是 young 区和 old 区大小的比例，官方推荐参数为  <code>-XX:NewRatio=1</code>，很多不注意的 Java 选手可能没有意识去修改它，会在无形中被 gc 拖累。经过和 @阿杜的讨论，最终得出的结论：</p>
 <ol>
 <li>young 区过大，对象在年轻代待得太久，多次拷贝</li>
 <li>old 区过小，会频繁触发 old 区的 cms gc</li>
@@ -351,10 +351,10 @@ ga('send', 'pageview');
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="keyword">final</span> AffinityLock al2 = AffinityLock.acquireLock()) &#123;</span><br><span class="line">    <span class="comment">// do fetch ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>这个方式可以让你的代码快 1~2 s，并且保持测评的稳定性。</p>
 <h3 id="0-聊聊-FileChannel，MMAP，Direct-IO，聊聊比赛"><a href="#0-聊聊-FileChannel，MMAP，Direct-IO，聊聊比赛" class="headerlink" title="0 聊聊 FileChannel，MMAP，Direct IO，聊聊比赛"></a>0 聊聊 FileChannel，MMAP，Direct IO，聊聊比赛</h3><p>我在最终版本的代码中，几乎完全抛弃了 FileChannel，事实上，在不 Drop Cache 的场景下，它已经可以发挥出它利用 PageCache 的一些优势，并且优秀的 Java 存储引擎都主要使用了 FileChannel 来进行读写，在少量的场景下，使用了 MMAP 作为辅助，毕竟，MMAP 在写小数据量文件时存在其价值。</p>
-<p>另外需要注意的一点，在跟@96年的亚普长谈的一个夜晚，发现 FileChannel 中出人意料的一个实现，在分配对内内存时，它仍然会拷贝一份堆外内存，这对于实际使用 FileChannel 的场景需要额外注意，这部分意料之外分配的内存很容易导致线上的问题（实际上已经遇到了，和 glibc 的 malloc 相关，当 buffer 大于 128k 时，会使用 mmap 分配一块内存作为缓存）</p>
+<p>另外需要注意的一点，在跟 @96 年的亚普长谈的一个夜晚，发现 FileChannel 中出人意料的一个实现，在分配对内内存时，它仍然会拷贝一份堆外内存，这对于实际使用 FileChannel 的场景需要额外注意，这部分意料之外分配的内存很容易导致线上的问题（实际上已经遇到了，和 glibc 的 malloc 相关，当 buffer 大于 128k 时，会使用 mmap 分配一块内存作为缓存）</p>
 <p>说回 FileChannel，MMAP，最容易想到的是 RocketMQ 之中对两者灵活的运用，不知道在其他 Java 实现的存储引擎之中，是不是可以考虑使用 Direct IO 来提升存储引擎的性能呢？我们可以设想一下，利用有限并且少量的 PageCache 来保证一致性，在主流程中使用 Direct IO 配合顺序读写是不是一种可以配套使用的方案，不仅仅 PolarDB，算作是参加本次比赛给予我的一个启发。</p>
 <p>虽然无缘决赛，但使用 Java 取得这样的成绩还算不是特别难过，在 6400w 数据随机写，随机读，顺序读的场景下，Java 可以做到仅仅相差 C++ 不到 10s 的 overhead，我倒是觉得完全是可以接受的，哈哈。还有一些小的优化点就不在此赘述了，欢迎留言与我交流优化点和比赛感悟。</p>
-<p><strong>欢迎关注我的微信公众号：「Kirito的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
+<p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
 <p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
@@ -366,7 +366,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/polardb-race/" data-id="ck103sodd00ccs89ex6ao39gu" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/polardb-race/" data-id="ck10ijlyn00chi59e0hu8xyyi" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -453,7 +453,7 @@ ga('send', 'pageview');
     
         <a href="/file-io-best-practise/" id="article-nav-older" class="article-nav-link-wrap">
             <strong class="article-nav-caption">下一篇</strong>
-            <div class="article-nav-title">文件IO操作的一些最佳实践</div>
+            <div class="article-nav-title">文件 IO 操作的一些最佳实践</div>
         </a>
     
 </nav>
@@ -533,7 +533,7 @@ ga('send', 'pageview');
                         
                         <div class="item-inner">
                             <p class="item-category"><a class="article-category-link" href="/categories/随笔/">随笔</a></p>
-                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本东京游记||内含秋叶原、动漫打卡地攻略</a></p>
+                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本东京游记 || 内含秋叶原、动漫打卡地攻略</a></p>
                             <p class="item-date"><time datetime="2019-09-02T12:19:23.000Z" itemprop="datePublished">2019-09-02</time></p>
                         </div>
                     </li>
@@ -585,7 +585,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-并发合集/">JAVA 并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
         </div>
     </div>
 
@@ -603,7 +603,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 10px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件IO/" style="font-size: 10px;">文件IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
+            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB-性能挑战赛/" style="font-size: 10px;">PolarDB 性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件-IO/" style="font-size: 10px;">文件 IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
         </div>
     </div>
 

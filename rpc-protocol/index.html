@@ -3,19 +3,19 @@
 <head><meta name="generator" content="Hexo 3.8.0">
     <meta charset="utf-8">
     
-    <title>深入理解RPC之协议篇 | 徐靖峰|个人博客</title>
+    <title>深入理解 RPC 之协议篇 | 徐靖峰|个人博客</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="description" content="协议（Protocol）是个很广的概念，RPC 被称为远程过程调用协议，HTTP 和 TCP 也是大家熟悉的协议，也有人经常拿 RPC 和 RESTFUL 做对比，后者也可以被理解为一种协议… 我个人偏向于把“协议”理解为不同厂家不同用户之间的“约定”，而在 RPC 中，协议的含义也有多层。 Protocol 在 RPC 中的层次关系翻看 dubbo 和 motan 两个国内知名度数一数二的 RP">
 <meta name="keywords" content="RPC">
 <meta property="og:type" content="article">
-<meta property="og:title" content="深入理解RPC之协议篇">
+<meta property="og:title" content="深入理解 RPC 之协议篇">
 <meta property="og:url" content="http://lexburner.github.io/rpc-protocol/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="协议（Protocol）是个很广的概念，RPC 被称为远程过程调用协议，HTTP 和 TCP 也是大家熟悉的协议，也有人经常拿 RPC 和 RESTFUL 做对比，后者也可以被理解为一种协议… 我个人偏向于把“协议”理解为不同厂家不同用户之间的“约定”，而在 RPC 中，协议的含义也有多层。 Protocol 在 RPC 中的层次关系翻看 dubbo 和 motan 两个国内知名度数一数二的 RP">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-11-20T11:10:40.351Z">
+<meta property="og:updated_time" content="2019-09-26T09:45:30.592Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="深入理解RPC之协议篇">
+<meta name="twitter:title" content="深入理解 RPC 之协议篇">
 <meta name="twitter:description" content="协议（Protocol）是个很广的概念，RPC 被称为远程过程调用协议，HTTP 和 TCP 也是大家熟悉的协议，也有人经常拿 RPC 和 RESTFUL 做对比，后者也可以被理解为一种协议… 我个人偏向于把“协议”理解为不同厂家不同用户之间的“约定”，而在 RPC 中，协议的含义也有多层。 Protocol 在 RPC 中的层次关系翻看 dubbo 和 motan 两个国内知名度数一数二的 RP">
     
 
@@ -214,7 +214,7 @@ ga('send', 'pageview');
                 
     
         <h1 class="article-title" itemprop="name">
-            深入理解RPC之协议篇
+            深入理解 RPC 之协议篇
         </h1>
     
 
@@ -263,7 +263,7 @@ ga('send', 'pageview');
         
             
             <p>协议（Protocol）是个很广的概念，RPC 被称为远程过程调用协议，HTTP 和 TCP 也是大家熟悉的协议，也有人经常拿 RPC 和 RESTFUL 做对比，后者也可以被理解为一种协议… 我个人偏向于把“协议”理解为不同厂家不同用户之间的“约定”，而在 RPC 中，协议的含义也有多层。</p>
-<h2 id="Protocol-在-RPC-中的层次关系"><a href="#Protocol-在-RPC-中的层次关系" class="headerlink" title="Protocol 在 RPC 中的层次关系"></a>Protocol 在 RPC 中的层次关系</h2><p>翻看 dubbo 和 motan 两个国内知名度数一数二的 RPC 框架（或者叫服务治理框架可能更合适）的文档，他们都有专门的一章介绍自身对多种协议的支持。RPC 框架是一个分层结构，从我的这个《深入理解RPC》系列就可以看出，是按照分层来介绍 RPC 的原理的，前面已经介绍过了传输层，序列化层，动态代理层，他们各自负责 RPC 调用生命周期中的一环，而协议层则是凌驾于它们所有层之上的一层。简单描述下各个层之间的关系：</p>
+<h2 id="Protocol-在-RPC-中的层次关系"><a href="#Protocol-在-RPC-中的层次关系" class="headerlink" title="Protocol 在 RPC 中的层次关系"></a>Protocol 在 RPC 中的层次关系</h2><p>翻看 dubbo 和 motan 两个国内知名度数一数二的 RPC 框架（或者叫服务治理框架可能更合适）的文档，他们都有专门的一章介绍自身对多种协议的支持。RPC 框架是一个分层结构，从我的这个《深入理解 RPC》系列就可以看出，是按照分层来介绍 RPC 的原理的，前面已经介绍过了传输层，序列化层，动态代理层，他们各自负责 RPC 调用生命周期中的一环，而协议层则是凌驾于它们所有层之上的一层。简单描述下各个层之间的关系：</p>
 <blockquote>
 <p>protocol 层主要用于配置 refer（发现服务） 和 exporter（暴露服务） 的实现方式，transport 层定义了传输的方式，codec 层诠释了具体传输过程中报文解析的方式，serialize 层负责将对象转换成字节，以用于传输，proxy 层负责将这些细节屏蔽。</p>
 <p>它们的包含关系如下：protocol &gt; transport &gt; codec &gt; serialize</p>
@@ -275,7 +275,7 @@ ga('send', 'pageview');
 <p>反之，Dubbo 缺省协议不适合传送大数据量的服务，比如传文件，传视频等，除非请求量很低。</p>
 <p>适用场景：常规远程服务方法调用</p>
 <h3 id="rmi"><a href="#rmi" class="headerlink" title="rmi://"></a>rmi://</h3><p>RMI 协议采用 JDK 标准的 <code>java.rmi.*</code> 实现，采用阻塞式短连接和 JDK 标准序列化方式。</p>
-<p>适用场景：常规远程服务方法调用，与原生RMI服务互操作</p>
+<p>适用场景：常规远程服务方法调用，与原生 RMI 服务互操作</p>
 <h3 id="hessian"><a href="#hessian" class="headerlink" title="hessian://"></a>hessian://</h3><p>Hessian 协议用于集成 Hessian 的服务，Hessian 底层采用 Http 通讯，采用 Servlet 暴露服务，Dubbo 缺省内嵌 Jetty 作为服务器实现。</p>
 <p>Dubbo 的 Hessian 协议可以和原生 Hessian 服务互操作，即：</p>
 <ul>
@@ -283,7 +283,7 @@ ga('send', 'pageview');
 <li>或者提供方用标准 Hessian 暴露服务，消费方用 Dubbo 的 Hessian 协议调用。</li>
 </ul>
 <p>Hessian 在之前介绍过，当时仅仅是用它来作为序列化工具，但其本身其实就是一个协议，可以用来做远程通信。</p>
-<p>适用场景：页面传输，文件传输，或与原生hessian服务互操作</p>
+<p>适用场景：页面传输，文件传输，或与原生 hessian 服务互操作</p>
 <h3 id="http"><a href="#http" class="headerlink" title="http://"></a>http://</h3><p>基于 HTTP 表单的远程调用协议，采用 Spring 的 HttpInvoker 实现</p>
 <p>适用场景：需同时给应用程序和浏览器 JS 使用的服务。</p>
 <h3 id="webserivice"><a href="#webserivice" class="headerlink" title="webserivice://"></a>webserivice://</h3><p>基于 WebService 的远程调用协议，基于 Apache CXF 的 <code>frontend-simple</code> 和 <code>transports-http</code> 实现。</p>
@@ -299,7 +299,7 @@ ga('send', 'pageview');
 <blockquote>
 <p>dubbo 支持的众多协议详见 <a href="http://dubbo.io/books/dubbo-user-book/references/protocol/dubbo.html" target="_blank" rel="noopener">http://dubbo.io/books/dubbo-user-book/references/protocol/dubbo.html</a></p>
 </blockquote>
-<p>dubbo的一个分支 <a href="https://github.com/dangdangdotcom/dubbox" target="_blank" rel="noopener">dangdangdotcom/dubbox</a> 扩展了 REST 协议</p>
+<p>dubbo 的一个分支 <a href="https://github.com/dangdangdotcom/dubbox" target="_blank" rel="noopener">dangdangdotcom/dubbox</a> 扩展了 REST 协议</p>
 <h3 id="rest"><a href="#rest" class="headerlink" title="rest://"></a>rest://</h3><p>JAX-RS 是标准的 Java REST API，得到了业界的广泛支持和应用，其著名的开源实现就有很多，包括 Oracle 的 Jersey，RedHat 的 RestEasy，Apache 的 CXF 和 Wink，以及 restlet 等等。另外，所有支持 JavaEE 6.0 以上规范的商用 JavaEE 应用服务器都对 JAX-RS 提供了支持。因此，JAX-RS 是一种已经非常成熟的解决方案，并且采用它没有任何所谓 vendor lock-in 的问题。</p>
 <p>JAX-RS 在网上的资料非常丰富，例如下面的入门教程：</p>
 <ul>
@@ -308,18 +308,18 @@ ga('send', 'pageview');
 </ul>
 <p>更多的资料请自行 google 或者百度一下。就学习 JAX-RS 来说，一般主要掌握其各种 annotation 的用法即可。</p>
 <blockquote>
-<p>注意：dubbo 是基于 JAX-RS 2.0 版本的，有时候需要注意一下资料或REST实现所涉及的版本。</p>
+<p>注意：dubbo 是基于 JAX-RS 2.0 版本的，有时候需要注意一下资料或 REST 实现所涉及的版本。</p>
 </blockquote>
 <p>适用场景：跨语言调用</p>
 <p>千米网也给 dubbo 贡献了一个扩展协议：<a href="https://github.com/dubbo/dubbo-rpc-jsonrpc" target="_blank" rel="noopener">https://github.com/dubbo/dubbo-rpc-jsonrpc</a></p>
-<h3 id="jsonrpc"><a href="#jsonrpc" class="headerlink" title="jsonrpc://"></a>jsonrpc://</h3><h4 id="Why-HTTP"><a href="#Why-HTTP" class="headerlink" title="Why HTTP"></a>Why HTTP</h4><p>在互联网快速迭代的大潮下，越来越多的公司选择nodejs、django、rails这样的快速脚本框架来开发web端应用 而后端的服务用Java又是最合适的，这就产生了大量的跨语言的调用需求。<br>而http、json是天然合适作为跨语言的标准，各种语言都有成熟的类库<br>虽然Dubbo的异步长连接协议效率很高，但是在脚本语言中，这点效率的损失并不重要。</p>
+<h3 id="jsonrpc"><a href="#jsonrpc" class="headerlink" title="jsonrpc://"></a>jsonrpc://</h3><h4 id="Why-HTTP"><a href="#Why-HTTP" class="headerlink" title="Why HTTP"></a>Why HTTP</h4><p>在互联网快速迭代的大潮下，越来越多的公司选择 nodejs、django、rails 这样的快速脚本框架来开发 web 端应用 而后端的服务用 Java 又是最合适的，这就产生了大量的跨语言的调用需求。<br>而 http、json 是天然合适作为跨语言的标准，各种语言都有成熟的类库<br>虽然 Dubbo 的异步长连接协议效率很高，但是在脚本语言中，这点效率的损失并不重要。</p>
 <h4 id="Why-Not-RESTful"><a href="#Why-Not-RESTful" class="headerlink" title="Why Not RESTful"></a>Why Not RESTful</h4><p>Dubbox 在 RESTful 接口上已经做出了尝试，但是 REST 架构和 dubbo 原有的 RPC 架构是有区别的，<br>区别在于 REST 架构需要有资源 (Resources) 的定义， 需要用到 HTTP 协议的基本操作 GET、POST、PUT、DELETE 对资源进行操作。<br>Dubbox 需要重新定义接口的属性，这对原有的 Dubbo 接口迁移是一个较大的负担。<br>相比之下，RESTful 更合适互联网系统之间的调用，而 RPC 更合适一个系统内的调用，<br>所以我们使用了和 Dubbo 理念较为一致的 JsonRPC</p>
 <p><a href="http://www.jsonrpc.org/specification" target="_blank" rel="noopener">JSON-RPC 2.0 规范</a> 和 JAX-RS 一样，也是一个规范，JAVA 对其的支持可参考 <a href="https://github.com/briandilley/jsonrpc4j" target="_blank" rel="noopener">jsonrpc4j</a></p>
 <p>适用场景：跨语言调用</p>
 <h2 id="Motan-中的协议"><a href="#Motan-中的协议" class="headerlink" title="Motan 中的协议"></a>Motan 中的协议</h2><h3 id="motan"><a href="#motan" class="headerlink" title="motan://"></a>motan://</h3><p>motan 协议之于 motan，地位等同于 dubbo 协议之于 dubbo，两者都是各自默认的且都是自定义的协议。内部使用 netty 进行通信（旧版本使用 netty3 ，最新版本支持 netty4），默认使用 hessian 作为序列化器。</p>
 <p>适用场景：常规远程服务方法调用</p>
-<h3 id="injvm"><a href="#injvm" class="headerlink" title="injvm://"></a>injvm://</h3><p>顾名思义，如果 Provider 和 Consumer 位于同一个 jvm，motan 提供了 injvm 协议。这个协议是jvm内部调用，不经过本地网络，一般在服务化拆分时，作为过渡方案使用，可以通过开关机制在本地和远程调用之间进行切换，等过渡完成后再去除本地实现的引用。</p>
-<h3 id="grpc-和yar"><a href="#grpc-和yar" class="headerlink" title="grpc://和yar://"></a>grpc://和yar://</h3><p>这两个协议的诞生缘起于一定的历史遗留问题，moton 是新浪微博开源的，而其内部有很多 PHP 应用，为解决跨语言问题，这两个协议进而出现了。</p>
+<h3 id="injvm"><a href="#injvm" class="headerlink" title="injvm://"></a>injvm://</h3><p>顾名思义，如果 Provider 和 Consumer 位于同一个 jvm，motan 提供了 injvm 协议。这个协议是 jvm 内部调用，不经过本地网络，一般在服务化拆分时，作为过渡方案使用，可以通过开关机制在本地和远程调用之间进行切换，等过渡完成后再去除本地实现的引用。</p>
+<h3 id="grpc-和-yar"><a href="#grpc-和-yar" class="headerlink" title="grpc:// 和 yar://"></a>grpc:// 和 yar://</h3><p>这两个协议的诞生缘起于一定的历史遗留问题，moton 是新浪微博开源的，而其内部有很多 PHP 应用，为解决跨语言问题，这两个协议进而出现了。</p>
 <p>适用场景：较为局限的跨语言调用</p>
 <h3 id="restful"><a href="#restful" class="headerlink" title="restful://"></a>restful://</h3><p>motan 在 <a href="https://github.com/weibocom/motan/tree/0.3.1" target="_blank" rel="noopener">0.3.1</a> (2017-07-11) 版本发布了 restful 协议的支持（和 dubbo 的 rest 协议本质一样），dubbo 默认使用 jetty 作为 http server，而 motan 使用则是 netty 。主要实现的是 java 对 restful 指定的规范，即 javax.ws.rs 包下的类。</p>
 <p>适用场景：跨语言调用</p>
@@ -332,7 +332,7 @@ ga('send', 'pageview');
 <p><a href="https://github.com/weibocom/motan-openresty" target="_blank" rel="noopener">Motan-openresty</a> is a Lua(Luajit) implementation based on <a href="http://openresty.org/" target="_blank" rel="noopener">Openresty</a></p>
 </blockquote>
 <p>从 motan 的 changeLog 以及 github 首页的介绍来看，其致力于打造成一个跨语言的服务治理框架，这倒是比较亦可赛艇的事。</p>
-<h3 id="面向未来的协议"><a href="#面向未来的协议" class="headerlink" title="面向未来的协议"></a>面向未来的协议</h3><p>motan 已经支持 motan2://，计划支持 mcq://，kafka:// …支持更多的协议，以应对复杂的业务场景。对这个感兴趣的朋友，可以参见这篇文章：<a href="http://mp.weixin.qq.com/s/XZVCHZZzCX8wwgNKZtsmcA" target="_blank" rel="noopener">http://mp.weixin.qq.com/s/XZVCHZZzCX8wwgNKZtsmcA</a></p>
+<h3 id="面向未来的协议"><a href="#面向未来的协议" class="headerlink" title="面向未来的协议"></a>面向未来的协议</h3><p>motan 已经支持 motan2://，计划支持 mcq://，kafka:// … 支持更多的协议，以应对复杂的业务场景。对这个感兴趣的朋友，可以参见这篇文章：<a href="http://mp.weixin.qq.com/s/XZVCHZZzCX8wwgNKZtsmcA" target="_blank" rel="noopener">http://mp.weixin.qq.com/s/XZVCHZZzCX8wwgNKZtsmcA</a></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如果仅仅是将 dubbo，motan 作为一个 RPC 框架使用，那大多人会选择其默认的协议（dubbo 协议，motan 协议），而如果是有历史遗留原因，如需要对接异构系统，就需要替换成其他协议了。大多数互联网公司选择自研 RPC 框架，或者改造自己的协议，都是为了适配自身业务的特殊性，协议层的选择非常重要。</p>
 
         
@@ -344,7 +344,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/rpc-protocol/" data-id="ck103sobp008xs89e8e6i0zyh" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/rpc-protocol/" data-id="ck10ijlwv008ii59e1hw1ie7a" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -423,7 +423,7 @@ ga('send', 'pageview');
             <strong class="article-nav-caption">上一篇</strong>
             <div class="article-nav-title">
                 
-                    深入理解RPC之服务注册与发现篇
+                    深入理解 RPC 之服务注册与发现篇
                 
             </div>
         </a>
@@ -431,7 +431,7 @@ ga('send', 'pageview');
     
         <a href="/motan-async/" id="article-nav-older" class="article-nav-link-wrap">
             <strong class="article-nav-caption">下一篇</strong>
-            <div class="article-nav-title">Motan中使用异步RPC接口</div>
+            <div class="article-nav-title">Motan 中使用异步 RPC 接口</div>
         </a>
     
 </nav>
@@ -511,7 +511,7 @@ ga('send', 'pageview');
                         
                         <div class="item-inner">
                             <p class="item-category"><a class="article-category-link" href="/categories/随笔/">随笔</a></p>
-                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本东京游记||内含秋叶原、动漫打卡地攻略</a></p>
+                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本东京游记 || 内含秋叶原、动漫打卡地攻略</a></p>
                             <p class="item-date"><time datetime="2019-09-02T12:19:23.000Z" itemprop="datePublished">2019-09-02</time></p>
                         </div>
                     </li>
@@ -563,7 +563,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-并发合集/">JAVA 并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
         </div>
     </div>
 
@@ -581,7 +581,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 10px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件IO/" style="font-size: 10px;">文件IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
+            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB-性能挑战赛/" style="font-size: 10px;">PolarDB 性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件-IO/" style="font-size: 10px;">文件 IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
         </div>
     </div>
 

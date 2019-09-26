@@ -5,13 +5,13 @@
     
     <title>华为云 TaurusDB 性能挑战赛赛题总结 | 徐靖峰|个人博客</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="1 前言 回顾第一次参加性能挑战赛–第四届阿里中间件性能挑战赛，那时候真的是什么都不会，只有一腔热情，借着比赛学会了 Netty、学会了文件 IO 的最佳实践，到了这次华为云举办的 TaurusDB 性能挑战赛，已经是第三次参加比赛了，同时也是最“坎坷”的一次比赛。经过我和某位不愿意透露姓名的 96 年小迷妹的不懈努力，最终跑分排名为第 3 名。">
+    <meta name="description" content="1 前言 回顾第一次参加性能挑战赛 – 第四届阿里中间件性能挑战赛，那时候真的是什么都不会，只有一腔热情，借着比赛学会了 Netty、学会了文件 IO 的最佳实践，到了这次华为云举办的 TaurusDB 性能挑战赛，已经是第三次参加比赛了，同时也是最“坎坷”的一次比赛。经过我和某位不愿意透露姓名的 96 年小迷妹的不懈努力，最终跑分排名为第 3 名。">
 <meta name="keywords" content="数据库">
 <meta property="og:type" content="article">
 <meta property="og:title" content="华为云 TaurusDB 性能挑战赛赛题总结">
 <meta property="og:url" content="http://lexburner.github.io/taurusdb-race/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
-<meta property="og:description" content="1 前言 回顾第一次参加性能挑战赛–第四届阿里中间件性能挑战赛，那时候真的是什么都不会，只有一腔热情，借着比赛学会了 Netty、学会了文件 IO 的最佳实践，到了这次华为云举办的 TaurusDB 性能挑战赛，已经是第三次参加比赛了，同时也是最“坎坷”的一次比赛。经过我和某位不愿意透露姓名的 96 年小迷妹的不懈努力，最终跑分排名为第 3 名。">
+<meta property="og:description" content="1 前言 回顾第一次参加性能挑战赛 – 第四届阿里中间件性能挑战赛，那时候真的是什么都不会，只有一腔热情，借着比赛学会了 Netty、学会了文件 IO 的最佳实践，到了这次华为云举办的 TaurusDB 性能挑战赛，已经是第三次参加比赛了，同时也是最“坎坷”的一次比赛。经过我和某位不愿意透露姓名的 96 年小迷妹的不懈努力，最终跑分排名为第 3 名。">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20190902204538276.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20190902214231821.png">
@@ -22,10 +22,10 @@
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20190903193128706.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20190903201156406.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20190903215024344.png">
-<meta property="og:updated_time" content="2019-09-03T14:18:50.736Z">
+<meta property="og:updated_time" content="2019-09-26T09:45:29.481Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="华为云 TaurusDB 性能挑战赛赛题总结">
-<meta name="twitter:description" content="1 前言 回顾第一次参加性能挑战赛–第四届阿里中间件性能挑战赛，那时候真的是什么都不会，只有一腔热情，借着比赛学会了 Netty、学会了文件 IO 的最佳实践，到了这次华为云举办的 TaurusDB 性能挑战赛，已经是第三次参加比赛了，同时也是最“坎坷”的一次比赛。经过我和某位不愿意透露姓名的 96 年小迷妹的不懈努力，最终跑分排名为第 3 名。">
+<meta name="twitter:description" content="1 前言 回顾第一次参加性能挑战赛 – 第四届阿里中间件性能挑战赛，那时候真的是什么都不会，只有一腔热情，借着比赛学会了 Netty、学会了文件 IO 的最佳实践，到了这次华为云举办的 TaurusDB 性能挑战赛，已经是第三次参加比赛了，同时也是最“坎坷”的一次比赛。经过我和某位不愿意透露姓名的 96 年小迷妹的不懈努力，最终跑分排名为第 3 名。">
 <meta name="twitter:image" content="http://kirito.iocoder.cn/image-20190902204538276.png">
     
 
@@ -273,9 +273,9 @@ ga('send', 'pageview');
         
             
             <h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h2><p><img src="http://kirito.iocoder.cn/image-20190902204538276.png" alt="image-20190902204538276"></p>
-<p>回顾第一次参加性能挑战赛–第四届阿里中间件性能挑战赛，那时候真的是什么都不会，只有一腔热情，借着比赛学会了 Netty、学会了文件 IO 的最佳实践，到了这次华为云举办的 TaurusDB 性能挑战赛，已经是第三次参加比赛了，同时也是最“坎坷”的一次比赛。经过我和某位不愿意透露姓名的 96 年小迷妹的不懈努力，最终跑分排名为第 3 名。</p>
+<p>回顾第一次参加性能挑战赛 – 第四届阿里中间件性能挑战赛，那时候真的是什么都不会，只有一腔热情，借着比赛学会了 Netty、学会了文件 IO 的最佳实践，到了这次华为云举办的 TaurusDB 性能挑战赛，已经是第三次参加比赛了，同时也是最“坎坷”的一次比赛。经过我和某位不愿意透露姓名的 96 年小迷妹的不懈努力，最终跑分排名为第 3 名。</p>
 <a id="more"></a>
-<p>如果要挑选一个词来概括这次比赛的核心内容，那非”计算存储分离“莫属了，通过这次比赛，自己也对计算存储分离架构有了比较直观的感受。为了比较直观的体现计算存储分离的优势，以看电影来举个例子：若干年前，我总是常备一块大容量的硬盘存储小电影，但自从家里带宽升级到 100mpbs 之后，我从来不保存电影了，要看直接下载/缓冲，基本几分钟就好了。这在几年前还不可想象，如今是触手可及的事实，归根到底是随着互联网的发展，网络 IO 已经不再是瓶颈了。</p>
+<p>如果要挑选一个词来概括这次比赛的核心内容，那非”计算存储分离“莫属了，通过这次比赛，自己也对计算存储分离架构有了比较直观的感受。为了比较直观的体现计算存储分离的优势，以看电影来举个例子：若干年前，我总是常备一块大容量的硬盘存储小电影，但自从家里带宽升级到 100mpbs 之后，我从来不保存电影了，要看直接下载 / 缓冲，基本几分钟就好了。这在几年前还不可想象，如今是触手可及的事实，归根到底是随着互联网的发展，网络 IO 已经不再是瓶颈了。</p>
 <p>计算存储分离架构相比传统本地存储架构而言，具有更加灵活、成本更低等特性，但架构的复杂性也会更高，也会更加考验选手的综合能力。</p>
 <blockquote>
 <p>计算存储分离架构的含义：</p>
@@ -287,16 +287,16 @@ ga('send', 'pageview');
 <h2 id="2-赛题概览"><a href="#2-赛题概览" class="headerlink" title="2 赛题概览"></a>2 赛题概览</h2><p>比赛整体分成了初赛和复赛两个部分，初赛要求实现一个简化、高效的本地 kv 存储引擎，复赛在初赛的基础上增加了计算存储分离的架构，计算节点需要通过网络传输将数据递交给存储节点存储。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">KVStoreRace</span> </span>&#123;</span><br><span class="line">   </span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">init</span><span class="params">(<span class="keyword">final</span> String dir, <span class="keyword">final</span> <span class="keyword">int</span> thread_num)</span> <span class="keyword">throws</span> KVSException</span>;</span><br><span class="line">   </span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">set</span><span class="params">(<span class="keyword">final</span> String key, <span class="keyword">final</span> <span class="keyword">byte</span>[] value)</span> <span class="keyword">throws</span> KVSException</span>;</span><br><span class="line">   </span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">get</span><span class="params">(<span class="keyword">final</span> String key, <span class="keyword">final</span> Ref&lt;<span class="keyword">byte</span>[]&gt; val)</span> <span class="keyword">throws</span> KVSException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>计算节点和存储节点共用上述的接口，评测程序分为 2 个阶段：</p>
-<p><strong>正确性评测</strong></p>
+<p><strong> 正确性评测 </strong></p>
 <p>此阶段评测程序会并发写入随机数据（key 8B、value 4KB），写入数据过程中进行任意次进程意外退出测试，引擎需要保证异常中止不影响已经写入的数据正确性。<br>异常中止后，重启引擎，验证已经写入数据正确性和完整性，并继续写入数据，重复此过程直至数据写入完毕。<br>只有通过此阶段测试才会进入下一阶段测试。</p>
-<p><strong>性能评测</strong></p>
+<p><strong> 性能评测 </strong></p>
 <p>随机写入：16 个线程并发随机写入，每个线程使用 Set 各写 400 万次随机数据（key 8B、value 4KB）<br>顺序读取：16 个线程并发按照写入顺序逐一读取，每个线程各使用 Get 读取 400 万次随机数据<br>热点读取：16 个线程并发读取，每个线程按照写入顺序热点分区，随机读取 400 万次数据，读取范围覆盖全部写入数据。热点的逻辑为：按照数据的写入顺序按 10MB 数据粒度分区，分区逆序推进，在每个 10MB 数据分区内随机读取。随机读取次数会增加约 10%。</p>
-<p><strong>语言限定</strong></p>
+<p><strong> 语言限定 </strong></p>
 <p>CPP &amp; Java，一起排名</p>
-<h2 id="3-赛题剖析"><a href="#3-赛题剖析" class="headerlink" title="3 赛题剖析"></a>3 赛题剖析</h2><p>看过我之前《PolarDB数据库性能大赛Java选手分享》的朋友应该对题目不会感到陌生，基本可以看做是在 PolarDB 数据库性能挑战赛上增加一个网络通信的部分，所以重头戏基本是在复赛网络通信的比拼上。初赛主要是文件 IO 和存储架构的设计，如果对文件 IO 常识不太了解，可以先行阅读 <a href="https://www.cnkirito.moe/file-io-best-practise/" target="_blank" rel="noopener">《文件IO操作的一些最佳实践》</a>。</p>
+<h2 id="3-赛题剖析"><a href="#3-赛题剖析" class="headerlink" title="3 赛题剖析"></a>3 赛题剖析</h2><p>看过我之前《PolarDB 数据库性能大赛 Java 选手分享》的朋友应该对题目不会感到陌生，基本可以看做是在 PolarDB 数据库性能挑战赛上增加一个网络通信的部分，所以重头戏基本是在复赛网络通信的比拼上。初赛主要是文件 IO 和存储架构的设计，如果对文件 IO 常识不太了解，可以先行阅读 <a href="https://www.cnkirito.moe/file-io-best-practise/" target="_blank" rel="noopener">《文件 IO 操作的一些最佳实践》</a>。</p>
 <p><img src="http://kirito.iocoder.cn/image-20190902214231821.png" alt="image-20190902214231821"></p>
 <h3 id="3-1-架构设计"><a href="#3-1-架构设计" class="headerlink" title="3.1 架构设计"></a>3.1 架构设计</h3><p>计算节点只负责生成数据，在实际生产中计算节点还承担额外的计算开销，由于计算节点是无状态的，所以不能够聚合数据写入、落盘等操作，但可以在 Get 触发网络 IO 时一次读取大块数据用作缓存，减少网络 IO 次数。</p>
-<p>存储节点负责存储数据，考验了选手对磁盘 IO 和缓存的设计，可以一次使用缓存写入/读取大块数据，减少磁盘 IO 次数。</p>
+<p>存储节点负责存储数据，考验了选手对磁盘 IO 和缓存的设计，可以一次使用缓存写入 / 读取大块数据，减少磁盘 IO 次数。</p>
 <p>所以选手们将会围绕网络 IO、磁盘 IO 和缓存设计来设计整体架构。</p>
 <h3 id="3-2-正确性检测"><a href="#3-2-正确性检测" class="headerlink" title="3.2 正确性检测"></a>3.2 正确性检测</h3><p>赛题明确表示会进行 kill -9 并验证数据的一致性，正确性检测主要影响的是写入阶段。</p>
 <p>存储节点负责存储数据，需要保证 kill -9 不丢失数据，但并不要求断电不丢失，这间接地阐释了一点：我们可以使用 PageCache 来做写入缓存；正确性检测对于计算节点与存储节点之间通信影响便是：每次写入操作都必须 ack，所以选手必须保证同步通信，类似于 ping/pong 模型。</p>
@@ -316,7 +316,7 @@ ga('send', 'pageview');
 <p>F: 3. 为什么 index 部分直接使用 Mmap，而不和 data 部分一样处理？</p>
 <p>Q:    这需要追溯到 Mmap 的特点，Mmap 适合直接写索引这种小数据，所以不需要聚合。</p>
 </blockquote>
-<h3 id="4-3-热点读-amp-顺序读架构"><a href="#4-3-热点读-amp-顺序读架构" class="headerlink" title="4.3 热点读&amp;顺序读架构"></a>4.3 热点读&amp;顺序读架构</h3><p><img src="http://kirito.iocoder.cn/image-20190903134612617.png" alt="image-20190903134612617"></p>
+<h3 id="4-3-热点读-amp-顺序读架构"><a href="#4-3-热点读-amp-顺序读架构" class="headerlink" title="4.3 热点读 &amp; 顺序读架构"></a>4.3 热点读 &amp; 顺序读架构</h3><p><img src="http://kirito.iocoder.cn/image-20190903134612617.png" alt="image-20190903134612617"></p>
 <p>热点读取阶段 &amp; 顺序读取阶段 ，这两个阶段其实可以认为是一种策略，只不过一个正序，一个逆序，这里以热点读为例介绍。我们采取了贪心的思想，一次读取操作本应该只会返回 4kb 的数据，但为了做预读缓存，我们决定会存储节点返回 10M 的数据，并缓存在计算节点中，模拟了一个操作系统预读的机制，同时为了能够让计算节点精确知道缓存是否命中，会同时返回索引数据，并在计算节点的内存中维护索引表，这样便减少了成吨的网络 IO 次数。</p>
 <h3 id="4-4-存储设计"><a href="#4-4-存储设计" class="headerlink" title="4.4 存储设计"></a>4.4 存储设计</h3><p><img src="http://kirito.iocoder.cn/image-20190903133433218.png" alt="image-20190903133433218"></p>
 <p>站在每个线程的视角，可以发现在我们的架构中，每个线程都是独立的。评测程序会对每个线程写入 400w 数据，最终形成 16 <em> 16G 的数据文件和 16 </em> 32M 左右的索引文件。</p>
@@ -346,7 +346,7 @@ ga('send', 'pageview');
 <p><img src="http://kirito.iocoder.cn/image-20190903215024344.png" alt="image-20190903215024344"></p>
 <p>然后事与愿违，该方案并没有取得成效。</p>
 <h2 id="7-聊聊比赛吧"><a href="#7-聊聊比赛吧" class="headerlink" title="7 聊聊比赛吧"></a>7 聊聊比赛吧</h2><p>之前此类工程性质的性能挑战赛只有阿里一家互联网公司承办过，作为热衷于中间件性能优化的参赛选手而言，非常高兴华为也能够举办这样性质的比赛。虽然比赛中出现了诸多的幺蛾子，但毕竟是第一次承办比赛，我也就不表了。</p>
-<p>如果你同样也是性能挑战赛的爱好者，想要在下一次中间件性能挑战赛中有一群小伙伴一起解题、组队，体验冲分的乐趣，欢迎关注我的微信公众号：【Kirito的技术分享】，也欢迎加入微信技术交流群进行交流~</p>
+<p>如果你同样也是性能挑战赛的爱好者，想要在下一次中间件性能挑战赛中有一群小伙伴一起解题、组队，体验冲分的乐趣，欢迎关注我的微信公众号：【Kirito 的技术分享】，也欢迎加入微信技术交流群进行交流 ~</p>
 
         
         </div>
@@ -357,7 +357,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/taurusdb-race/" data-id="ck103soc500aes89e89ye560h" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/taurusdb-race/" data-id="ck10ijlxf00a7i59efkinwln6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -444,7 +444,7 @@ ga('send', 'pageview');
     
         <a href="/tokyo-travel/" id="article-nav-older" class="article-nav-link-wrap">
             <strong class="article-nav-caption">下一篇</strong>
-            <div class="article-nav-title">日本东京游记||内含秋叶原、动漫打卡地攻略</div>
+            <div class="article-nav-title">日本东京游记 || 内含秋叶原、动漫打卡地攻略</div>
         </a>
     
 </nav>
@@ -524,7 +524,7 @@ ga('send', 'pageview');
                         
                         <div class="item-inner">
                             <p class="item-category"><a class="article-category-link" href="/categories/随笔/">随笔</a></p>
-                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本东京游记||内含秋叶原、动漫打卡地攻略</a></p>
+                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本东京游记 || 内含秋叶原、动漫打卡地攻略</a></p>
                             <p class="item-date"><time datetime="2019-09-02T12:19:23.000Z" itemprop="datePublished">2019-09-02</time></p>
                         </div>
                     </li>
@@ -576,7 +576,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-并发合集/">JAVA 并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
         </div>
     </div>
 
@@ -594,7 +594,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 10px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件IO/" style="font-size: 10px;">文件IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
+            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB-性能挑战赛/" style="font-size: 10px;">PolarDB 性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件-IO/" style="font-size: 10px;">文件 IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
         </div>
     </div>
 

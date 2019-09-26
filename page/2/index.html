@@ -210,7 +210,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/direct-io/">Java文件IO操作之DirectIO</a>
+            <a class="article-title" href="/direct-io/">Java 文件 IO 操作之 DirectIO</a>
         </h1>
     
 
@@ -257,7 +257,7 @@ ga('send', 'pageview');
         
         <div class="article-entry" itemprop="articleBody">
         
-            <p></p><p>在前文《文件IO操作的一些最佳实践》中，我介绍了一些 Java 中常见的文件操作的接口，并且就 PageCache 和 DIrect IO 进行了探讨，最近我自己封装了一个 Direct IO 的库，趁着这个机会，本文重点谈谈 Java 中 Direct IO 的意义，以及简单介绍下我自己的轮子。</p><p></p>
+            <p></p><p>在前文《文件 IO 操作的一些最佳实践》中，我介绍了一些 Java 中常见的文件操作的接口，并且就 PageCache 和 DIrect IO 进行了探讨，最近我自己封装了一个 Direct IO 的库，趁着这个机会，本文重点谈谈 Java 中 Direct IO 的意义，以及简单介绍下我自己的轮子。</p><p></p>
             <p class="article-more-link">
                 <a href="/direct-io/#more">查看更多</a>
             </p>
@@ -270,7 +270,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/direct-io/" data-id="ck103so700003s89etu59ddhy" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/direct-io/" data-id="ck10ijls50003i59evlwfw2ty" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -401,7 +401,7 @@ ga('send', 'pageview');
         
         <div class="article-entry" itemprop="articleBody">
         
-            <p></p><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>一致性哈希算法在很多领域有应用，例如分布式缓存领域的 MemCache，Redis，负载均衡领域的 Nginx，各类 RPC 框架。不同领域场景不同，需要顾及的因素也有所差异，本文主要讨论在<strong>负载均衡</strong>中一致性哈希算法的设计。</p>
+            <p></p><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>一致性哈希算法在很多领域有应用，例如分布式缓存领域的 MemCache，Redis，负载均衡领域的 Nginx，各类 RPC 框架。不同领域场景不同，需要顾及的因素也有所差异，本文主要讨论在 <strong> 负载均衡 </strong> 中一致性哈希算法的设计。</p>
 <p>在介绍一致性哈希算法之前，我将会介绍一些哈希算法，讨论它们的区别和使用场景。也会给出一致性哈希算法的 Java 通用实现，可以直接引用，文末会给出 github 地址。</p>
 <blockquote>
 <p>友情提示：阅读本文前，最好对一致性哈希算法有所了解，例如你最好听过一致性哈希环这个概念，我会在基本概念上缩短篇幅。</p>
@@ -418,7 +418,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/consistent-hash-lb/" data-id="ck103soe800d0s89eqxv4txji" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/consistent-hash-lb/" data-id="ck10ijlzl00d5i59e92bd865o" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -568,7 +568,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/timer/" data-id="ck103socb00avs89evxdx4ru8" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/timer/" data-id="ck10ijlxp00aoi59etfyrvlej" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -715,7 +715,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/thinging-in-ask/" data-id="ck103soet00dvs89e0w2mh37d" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/thinging-in-ask/" data-id="ck10ijm0000dzi59eec4y8p9e" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -846,7 +846,7 @@ ga('send', 'pageview');
         
         <div class="article-entry" itemprop="articleBody">
         
-            <p></p><h3 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h3><p>在前一篇文章<strong>《聊聊 TCP 长连接和心跳那些事》</strong>中，我们已经聊过了 TCP 中的 KeepAlive，以及在应用层设计心跳的意义，但却对长连接心跳的设计方案没有做详细地介绍。事实上，设计一个好的心跳机制并不是一件容易的事，就我所熟知的几个 RPC 框架，它们的心跳机制可以说大相径庭，这篇文章我将探讨一下<strong>如何设计一个优雅的心跳机制，主要从 Dubbo 的现有方案以及一个改进方案来做分析</strong>。</p><p></p>
+            <p></p><h3 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h3><p>在前一篇文章 <strong>《聊聊 TCP 长连接和心跳那些事》</strong> 中，我们已经聊过了 TCP 中的 KeepAlive，以及在应用层设计心跳的意义，但却对长连接心跳的设计方案没有做详细地介绍。事实上，设计一个好的心跳机制并不是一件容易的事，就我所熟知的几个 RPC 框架，它们的心跳机制可以说大相径庭，这篇文章我将探讨一下 <strong> 如何设计一个优雅的心跳机制，主要从 Dubbo 的现有方案以及一个改进方案来做分析 </strong>。</p><p></p>
             <p class="article-more-link">
                 <a href="/heartbeat-design/#more">查看更多</a>
             </p>
@@ -859,7 +859,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/heartbeat-design/" data-id="ck103sodb00c3s89ejbwx29pt" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/heartbeat-design/" data-id="ck10ijlyi00c3i59eujtt5124" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1004,7 +1004,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="ck103soc600ahs89e3qssim3s" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="ck10ijlxm00ahi59ev0gv7bmn" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1139,7 +1139,7 @@ ga('send', 'pageview');
 <blockquote>
 <p>因特网上的可用资源可以用简单字符串来表示，该文档就是描述了这种字符串的语法和语<br>义。而这些字符串则被称为：“统一资源定位器”（URL）</p>
 </blockquote>
-<p><strong>一个标准的 URL 格式</strong>至多可以包含如下的几个部分</p>
+<p><strong> 一个标准的 URL 格式 </strong> 至多可以包含如下的几个部分</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">protocol://username:password@host:port/path?key=value&amp;key=value</span><br></pre></td></tr></table></figure><p></p>
             <p class="article-more-link">
                 <a href="/dubbo-url/#more">查看更多</a>
@@ -1153,7 +1153,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubbo-url/" data-id="ck103soaw006ms89ewii1o3gs" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/dubbo-url/" data-id="ck10ijlw1006ei59exhprzv7f" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1237,7 +1237,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/polardb-race/">PolarDB数据库性能大赛Java选手分享</a>
+            <a class="article-title" href="/polardb-race/">PolarDB 数据库性能大赛 Java 选手分享</a>
         </h1>
     
 
@@ -1285,7 +1285,7 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             <p></p><h3 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h3><p><img src="http://kirito.iocoder.cn/image-20181210184521001.png" alt="排名"></p>
-<p>国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大(当然，主要还是前者 QAQ)。所以在本文中，我除了介绍整体的架构之外，还会着重笔墨来探讨 Java 编写存储类型应用的一些最佳实践，文末会给出 github 的开源地址。</p><p></p>
+<p>国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大 (当然，主要还是前者 QAQ)。所以在本文中，我除了介绍整体的架构之外，还会着重笔墨来探讨 Java 编写存储类型应用的一些最佳实践，文末会给出 github 的开源地址。</p><p></p>
             <p class="article-more-link">
                 <a href="/polardb-race/#more">查看更多</a>
             </p>
@@ -1298,7 +1298,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/polardb-race/" data-id="ck103sodd00ccs89ex6ao39gu" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/polardb-race/" data-id="ck10ijlyn00chi59e0hu8xyyi" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1382,7 +1382,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/file-io-best-practise/">文件IO操作的一些最佳实践</a>
+            <a class="article-title" href="/file-io-best-practise/">文件 IO 操作的一些最佳实践</a>
         </h1>
     
 
@@ -1419,7 +1419,7 @@ ga('send', 'pageview');
                         <!-- 
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/PolarDB性能挑战赛/">PolarDB性能挑战赛</a>
+        <a class="tag-link" href="/tags/PolarDB-性能挑战赛/">PolarDB 性能挑战赛</a>
     </div>
  -->
                     </div>
@@ -1429,7 +1429,7 @@ ga('send', 'pageview');
         
         <div class="article-entry" itemprop="articleBody">
         
-            <p></p><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>已经过去的中间件性能挑战赛，和正在进行中的 <a href="https://tianchi.aliyun.com/programming/introduction.htm?spm=5176.11165320.5678.1.483b4682l8fBSf&amp;raceId=231689" target="_blank" rel="noopener">第一届 PolarDB 数据性能大赛</a> 都涉及到了文件操作，合理地设计架构以及正确地压榨机器的读写性能成了比赛中获取较好成绩的关键。正在参赛的我收到了几位公众号读者朋友的反馈，他们大多表达出了这样的烦恼：“对比赛很感兴趣，但不知道怎么入门”，“能跑出成绩，但相比前排的选手，成绩相差10倍有余”…为了能让更多的读者参与到之后相类似的比赛中来，我简单整理一些文件IO操作的最佳实践，而不涉及整体系统的架构设计，希望通过这篇文章的介绍，让你能够欢快地参与到之后类似的性能挑战赛之中来。</p><p></p>
+            <p></p><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>已经过去的中间件性能挑战赛，和正在进行中的 <a href="https://tianchi.aliyun.com/programming/introduction.htm?spm=5176.11165320.5678.1.483b4682l8fBSf&amp;raceId=231689" target="_blank" rel="noopener">第一届 PolarDB 数据性能大赛</a> 都涉及到了文件操作，合理地设计架构以及正确地压榨机器的读写性能成了比赛中获取较好成绩的关键。正在参赛的我收到了几位公众号读者朋友的反馈，他们大多表达出了这样的烦恼：“对比赛很感兴趣，但不知道怎么入门”，“能跑出成绩，但相比前排的选手，成绩相差 10 倍有余”…为了能让更多的读者参与到之后相类似的比赛中来，我简单整理一些文件 IO 操作的最佳实践，而不涉及整体系统的架构设计，希望通过这篇文章的介绍，让你能够欢快地参与到之后类似的性能挑战赛之中来。</p><p></p>
             <p class="article-more-link">
                 <a href="/file-io-best-practise/#more">查看更多</a>
             </p>
@@ -1442,7 +1442,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/file-io-best-practise/" data-id="ck103sod700bws89eo44dpx2q" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/file-io-best-practise/" data-id="ck10ijlyg00byi59ek67yuy1q" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1577,9 +1577,9 @@ ga('send', 'pageview');
 <blockquote>
 <p>响应式编程在单机环境下是否鸡肋？</p>
 </blockquote>
-<p>结论是：没有结论，我觉得只能抱着怀疑的眼光审视这个问题了。另外还聊到了 RSocket 这个最近在 SpringOne 大会上比较火爆的响应式”新“网络协议，github 地址<a href="https://github.com/rsocket/rsocket" target="_blank" rel="noopener">戳这里</a>，为什么给”新“字打了个引号，仔细观察下 RSocket 的 commit log，其实三年前就有了。有兴趣的同学自行翻阅，说不定就是今年这最后两三个月的热点技术哦。</p>
-<p> Java 圈子有一个怪事，那就是对 RxJava，Reactor，WebFlux 这些响应式编程的名词、框架永远处于渴望了解，感到新鲜，却又不甚了解，使用贫乏的状态。之前转载小马哥的那篇《Reactive Programming 一种技术，各自表述》时，就已经聊过这个关于名词之争的话题了，今天群里的讨论更是加深了我的映像。Java 圈子里面很多朋友一直对响应式编程处于一个了解名词，知道基本原理，而不是深度用户的状态(我也是之一)。可能真的和圈子有关，按石冲兄的说法，其实 Scala 圈子里面的那帮人，不知道比咱们高到哪里去了（就响应式编程而言）。</p>
-<p>实在是好久没发文章了，向大家说声抱歉，以后的更新频率肯定是没有以前那么勤了（说的好像以前很勤快似的），一部分原因是在公司内网写的文章没法贴到公众号中和大家分享讨论，另一部分是目前我也处于学习公司内部框架的阶段，不太方便提炼成文章，最后，最大的一部分原因还是我这段时间需要学(tou)习(lan)其(da)他(you)东(xi)西啦。好了，废话也说完了，下面是译文的正文部分。</p><p></p>
+<p>结论是：没有结论，我觉得只能抱着怀疑的眼光审视这个问题了。另外还聊到了 RSocket 这个最近在 SpringOne 大会上比较火爆的响应式 “ 新“网络协议，github 地址 <a href="https://github.com/rsocket/rsocket" target="_blank" rel="noopener">戳这里</a>，为什么给”新“字打了个引号，仔细观察下 RSocket 的 commit log，其实三年前就有了。有兴趣的同学自行翻阅，说不定就是今年这最后两三个月的热点技术哦。</p>
+<p> Java 圈子有一个怪事，那就是对 RxJava，Reactor，WebFlux 这些响应式编程的名词、框架永远处于渴望了解，感到新鲜，却又不甚了解，使用贫乏的状态。之前转载小马哥的那篇《Reactive Programming 一种技术，各自表述》时，就已经聊过这个关于名词之争的话题了，今天群里的讨论更是加深了我的映像。Java 圈子里面很多朋友一直对响应式编程处于一个了解名词，知道基本原理，而不是深度用户的状态 (我也是之一)。可能真的和圈子有关，按石冲兄的说法，其实 Scala 圈子里面的那帮人，不知道比咱们高到哪里去了（就响应式编程而言）。</p>
+<p>实在是好久没发文章了，向大家说声抱歉，以后的更新频率肯定是没有以前那么勤了（说的好像以前很勤快似的），一部分原因是在公司内网写的文章没法贴到公众号中和大家分享讨论，另一部分是目前我也处于学习公司内部框架的阶段，不太方便提炼成文章，最后，最大的一部分原因还是我这段时间需要学 (tou) 习(lan)其 (da) 他(you)东 (xi) 西啦。好了，废话也说完了，下面是译文的正文部分。</p><p></p>
             <p class="article-more-link">
                 <a href="/comparing-rxjava/#more">查看更多</a>
             </p>
@@ -1592,7 +1592,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/comparing-rxjava/" data-id="ck103soap005ws89e8vmjrihi" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/comparing-rxjava/" data-id="ck10ijlvo005li59e4uw6ylsv" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1734,7 +1734,7 @@ ga('send', 'pageview');
                         
                         <div class="item-inner">
                             <p class="item-category"><a class="article-category-link" href="/categories/随笔/">随笔</a></p>
-                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本东京游记||内含秋叶原、动漫打卡地攻略</a></p>
+                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本东京游记 || 内含秋叶原、动漫打卡地攻略</a></p>
                             <p class="item-date"><time datetime="2019-09-02T12:19:23.000Z" itemprop="datePublished">2019-09-02</time></p>
                         </div>
                     </li>
@@ -1786,7 +1786,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-并发合集/">JAVA 并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
         </div>
     </div>
 
@@ -1804,7 +1804,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 10px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件IO/" style="font-size: 10px;">文件IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
+            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB-性能挑战赛/" style="font-size: 10px;">PolarDB 性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件-IO/" style="font-size: 10px;">文件 IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
         </div>
     </div>
 

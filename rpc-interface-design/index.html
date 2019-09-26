@@ -3,12 +3,12 @@
 <head><meta name="generator" content="Hexo 3.8.0">
     <meta charset="utf-8">
     
-    <title>设计RPC接口时，你有考虑过这些吗？ | 徐靖峰|个人博客</title>
+    <title>设计 RPC 接口时，你有考虑过这些吗？ | 徐靖峰|个人博客</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="description" content="RPC 框架的讨论一直是各个技术交流群中的热点话题，阿里的 dubbo，新浪微博的 motan，谷歌的 grpc，以及不久前蚂蚁金服开源的 sofa，都是比较出名的 RPC 框架。RPC 框架，或者一部分人习惯称之为服务治理框架，更多的讨论是存在于其技术架构，比如 RPC 的实现原理，RPC 各个分层的意义，具体 RPC 框架的源码分析…但却并没有太多话题和“如何设计 RPC 接口”这样的业务架构">
 <meta name="keywords" content="RPC">
 <meta property="og:type" content="article">
-<meta property="og:title" content="设计RPC接口时，你有考虑过这些吗？">
+<meta property="og:title" content="设计 RPC 接口时，你有考虑过这些吗？">
 <meta property="og:url" content="http://lexburner.github.io/rpc-interface-design/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="RPC 框架的讨论一直是各个技术交流群中的热点话题，阿里的 dubbo，新浪微博的 motan，谷歌的 grpc，以及不久前蚂蚁金服开源的 sofa，都是比较出名的 RPC 框架。RPC 框架，或者一部分人习惯称之为服务治理框架，更多的讨论是存在于其技术架构，比如 RPC 的实现原理，RPC 各个分层的意义，具体 RPC 框架的源码分析…但却并没有太多话题和“如何设计 RPC 接口”这样的业务架构">
@@ -16,9 +16,9 @@
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20180627182932069.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/image-20180628103929293.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2018-11-20T11:53:13.356Z">
+<meta property="og:updated_time" content="2019-09-26T09:45:30.804Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="设计RPC接口时，你有考虑过这些吗？">
+<meta name="twitter:title" content="设计 RPC 接口时，你有考虑过这些吗？">
 <meta name="twitter:description" content="RPC 框架的讨论一直是各个技术交流群中的热点话题，阿里的 dubbo，新浪微博的 motan，谷歌的 grpc，以及不久前蚂蚁金服开源的 sofa，都是比较出名的 RPC 框架。RPC 框架，或者一部分人习惯称之为服务治理框架，更多的讨论是存在于其技术架构，比如 RPC 的实现原理，RPC 各个分层的意义，具体 RPC 框架的源码分析…但却并没有太多话题和“如何设计 RPC 接口”这样的业务架构">
 <meta name="twitter:image" content="http://kirito.iocoder.cn/image-20180627182932069.png">
     
@@ -218,7 +218,7 @@ ga('send', 'pageview');
                 
     
         <h1 class="article-title" itemprop="name">
-            设计RPC接口时，你有考虑过这些吗？
+            设计 RPC 接口时，你有考虑过这些吗？
         </h1>
     
 
@@ -281,20 +281,20 @@ ga('send', 'pageview');
 <p>麻雀虽小，五脏俱全，这样一个微服务模块就实现了。</p>
 <h3 id="旧-RPC-接口的痛点"><a href="#旧-RPC-接口的痛点" class="headerlink" title="旧 RPC 接口的痛点"></a>旧 RPC 接口的痛点</h3><p>统一好术语，这一节来描述下我曾经遭遇过的 RPC 接口设计的痛点，相信不少人有过相同的遭遇。</p>
 <ul>
-<li><strong>查询接口过多。</strong>各种 findBy 方法，加上各自的重载，几乎占据了一个接口 80% 的代码量。这也符合一般人的开发习惯，因为页面需要各式各样的数据格式，加上查询条件差异很大，便造成了：一个查询条件，一个方法的尴尬场景。这样会导致另外一个问题，需要使用某个查询方法时，直接新增了方法，但实际上可能这个方法已经出现过了，隐藏在了令人眼花缭乱的方法中。</li>
-<li><strong>难以扩展</strong>。接口的任何改动，比如新增一个入参，都会导致调用者被迫升级，这也通常是 RPC 设计被诟病的一点，不合理的 RPC 接口设计会放大这个缺点。</li>
-<li><strong>升级困难。</strong> 在之前的 “初识 RPC 接口设计”一节中，版本管理的粒度是 project，而不是 module，这意味着：api 即使没有发生变化，app 版本演进，也会造成 api 的被迫升级，因为 project 是一个整体。问题又和上一条一样了，api 一旦发生变化，调用者也得被迫升级，牵一发而动全身。</li>
-<li><strong>难以测试</strong>。接口一多，职责随之变得繁杂，业务场景各异，测试用例难以维护。特别是对于那些有良好习惯编写单元测试的程序员而言，简直是噩梦，用例也得跟着改。</li>
-<li><strong>异常设计不合理</strong>。在既往的工作经历中曾经有一次会议，就 RPC 调用中的异常设计引发了争议，一派人觉得需要有一个业务 CommonResponse，封装异常，每次调用后，优先判断调用结果是否 success，在进行业务逻辑处理；另一派人觉得这比较麻烦，由于 RPC 框架是可以封装异常调用的，所以应当直接 try catch 异常，不需要进行业务包裹。在没有明确规范时，这两种风格的代码同时存在于项目中，十分难看！</li>
+<li><strong> 查询接口过多。</strong> 各种 findBy 方法，加上各自的重载，几乎占据了一个接口 80% 的代码量。这也符合一般人的开发习惯，因为页面需要各式各样的数据格式，加上查询条件差异很大，便造成了：一个查询条件，一个方法的尴尬场景。这样会导致另外一个问题，需要使用某个查询方法时，直接新增了方法，但实际上可能这个方法已经出现过了，隐藏在了令人眼花缭乱的方法中。</li>
+<li><strong> 难以扩展 </strong>。接口的任何改动，比如新增一个入参，都会导致调用者被迫升级，这也通常是 RPC 设计被诟病的一点，不合理的 RPC 接口设计会放大这个缺点。</li>
+<li><strong> 升级困难。</strong> 在之前的 “初识 RPC 接口设计”一节中，版本管理的粒度是 project，而不是 module，这意味着：api 即使没有发生变化，app 版本演进，也会造成 api 的被迫升级，因为 project 是一个整体。问题又和上一条一样了，api 一旦发生变化，调用者也得被迫升级，牵一发而动全身。</li>
+<li><strong> 难以测试 </strong>。接口一多，职责随之变得繁杂，业务场景各异，测试用例难以维护。特别是对于那些有良好习惯编写单元测试的程序员而言，简直是噩梦，用例也得跟着改。</li>
+<li><strong> 异常设计不合理 </strong>。在既往的工作经历中曾经有一次会议，就 RPC 调用中的异常设计引发了争议，一派人觉得需要有一个业务 CommonResponse，封装异常，每次调用后，优先判断调用结果是否 success，在进行业务逻辑处理；另一派人觉得这比较麻烦，由于 RPC 框架是可以封装异常调用的，所以应当直接 try catch 异常，不需要进行业务包裹。在没有明确规范时，这两种风格的代码同时存在于项目中，十分难看！</li>
 </ul>
 <p>在千米网的三个月中，看了不少最佳实践。加上一次公司内部易永健老师的分享，涉及到了相同的话题，耳濡目染，这些曾经我发觉的痛点也逐渐有了解决之道。</p>
 <h3 id="1-单参数接口"><a href="#1-单参数接口" class="headerlink" title="1 单参数接口"></a>1 单参数接口</h3><p>如果你使用过 springcloud ，可能会不适应 http 通信的限制，因为 @RequestBody 只能使用单一的参数，也就意味着，springcloud 构建的微服务架构下，接口天然是单参数的。而 RPC 方法入参的个数在语法层面是不会受到限制的，但如果强制要求入参为单参数，会解决一部分的痛点。</p>
-<p><strong>1.1 使用 Specification 模式解决查询接口过多的问题</strong></p>
+<p><strong>1.1 使用 Specification 模式解决查询接口过多的问题 </strong></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">StudentApi</span></span>&#123;</span><br><span class="line">    <span class="function">Student <span class="title">findByName</span><span class="params">(String name)</span></span>;</span><br><span class="line">    <span class="function">List&lt;Student&gt; <span class="title">findAllByName</span><span class="params">(String name)</span></span>;</span><br><span class="line">    <span class="function">Student <span class="title">findByNameAndNo</span><span class="params">(String name,String no)</span></span>;</span><br><span class="line">    <span class="function">Student <span class="title">findByIdcard</span><span class="params">(String Idcard)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>如上的多个查询方法目的都是同一个：根据条件查询出 Student，只不过查询条件有所差异。试想一下，Student 对象假设有 10 个属性，最坏的情况下它们的排列组合都可能作为查询条件，这便是查询接口过多的根源。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">StudentApi</span></span>&#123;</span><br><span class="line">    <span class="function">Student <span class="title">findBySpec</span><span class="params">(StudentSpec spec)</span></span>;</span><br><span class="line">    <span class="function">List&lt;Student&gt; <span class="title">findListBySpec</span><span class="params">(StudentListSpec spec)</span></span>;</span><br><span class="line">    <span class="function">Page&lt;Student&gt; <span class="title">findPageBySpec</span><span class="params">(StudentPageSpec spec)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>上述接口便是最通用的单参接口，三个方法几乎囊括了 99% 的查询条件。所有的查询条件都被封装在了 StudentSpec,StudentListSpec,StudentPageSpec 之中，分别满足了单对象查询，批量查询，分页查询的需求。如果你了解领域驱动设计，会发现这里借鉴了其中 Specification 模式的思想。</p>
-<p><strong>1.2 单参数易于做统一管理</strong></p>
+<p><strong>1.2 单参数易于做统一管理 </strong></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">SomeProvider</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">opA</span><span class="params">(ARequest request)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">opB</span><span class="params">(BRequest request)</span></span>;</span><br><span class="line">    <span class="function">CommonResponse&lt;C&gt; <span class="title">opC</span><span class="params">(CRequest request)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>入参中的入参虽然形态各异，但由于是单个入参，所以可以统一继承 AbstractBaseRequest，即上述的 ARequest，BRequest，CRequest 都是 AbstractBaseRequest 的子类。在千米内部项目中，AbstractBaseRequest 定义了 traceId、clientIp、clientType、operationType 等公共入参，减少了重复命名，我们一致认为，这更加的 OO。</p>
 <p>有了 AbstractBaseRequest，我们可以更加轻松地在其之上做 AOP，千米的实践中，大概做了如下的操作：</p>
@@ -306,7 +306,7 @@ ga('send', 'pageview');
 <li>操作成功统一发消息</li>
 </ul>
 <p>如果不遵守单参数的约定，上述这些功能也并不是无法实现，但所需花费的精力远大于单参数，一个简单的约定带来的优势，我们认为是值得的。</p>
-<p><strong>1.3 单参数入参兼容性强</strong></p>
+<p><strong>1.3 单参数入参兼容性强 </strong></p>
 <p>还记得前面的小节中，我提到了 SpringCloud，在 SpringCloud Feign 中，接口的入参通常会被 @RequestBody 修饰，强制做单参数的限制。千米内部使用了 Dubbo 作为 Rpc 框架，一般而言，为 Dubbo 服务设计的接口是不能直接用作 Feign 接口的（主要是因为 @RequestBody 的限制），但有了单参数的限制，便使之成为了可能。为什么我好端端的 Dubbo 接口需要兼容 Feign 接口？可能会有人发出这样的疑问，莫急，这样做的初衷当然不是为了单纯做接口兼容，而是想充分利用 HTTP 丰富的技术栈以及一些自动化工具。</p>
 <ul>
 <li>自动生成 HTTP 接口实现（让服务端同时支持 Dubbo 和 HTTP 两种服务接口）</li>
@@ -323,17 +323,17 @@ ga('send', 'pageview');
 <p><img src="http://kirito.iocoder.cn/image-20180628103929293.png" alt="TestNg 自动化测试"></p>
 <p>这块涉及到了公司内部的代码，只做下简单介绍，我们一般通过内部项目 com.qianmi.codegenerator:api-dubbo-2-restful ，com.qianmi.codegenerator:api-request-json 生成自动化的测试用例，方便测试。而这些自动化工具中大量使用了反射，而由于单参数的设计，反射用起来比较方便。</p>
 <h3 id="2-接口异常设计"><a href="#2-接口异常设计" class="headerlink" title="2. 接口异常设计"></a>2. 接口异常设计</h3><p>首先肯定一点，RPC 框架是可以封装异常的，Exception 也是返回值的一部分。在 go 语言中可能更习惯于返回 err,res 的组合，但 JAVA 中我个人更偏向于 try catch 的方法捕获异常。RPC 接口设计中的异常设计也是一个注意点。</p>
-<p><strong>初始方案</strong></p>
+<p><strong> 初始方案 </strong></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ModuleAProvider</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">opA</span><span class="params">(ARequest request)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">opB</span><span class="params">(BRequest request)</span></span>;</span><br><span class="line">    <span class="function">CommonResponse&lt;C&gt; <span class="title">opC</span><span class="params">(CRequest request)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>我们假设模块 A 存在上述的 ModuleAProvider 接口，ModuleAProvider 的实现中或多或少都会出现异常，例如可能存在的异常 ModuleAException，调用者实际上并不知道 ModuleAException 的存在，只有当出现异常时，才会知晓。对于 ModuleAException 这种业务异常，我们更希望调用方能够显示的处理，所以 ModuleAException 应该被设计成 Checked Excepition。</p>
-<p><strong>正确的异常设计姿势</strong></p>
+<p><strong> 正确的异常设计姿势 </strong></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ModuleAProvider</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">opA</span><span class="params">(ARequest request)</span> <span class="keyword">throws</span> ModuleAException</span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">opB</span><span class="params">(BRequest request)</span> <span class="keyword">throws</span> ModuleAException</span>;</span><br><span class="line">    <span class="function">CommonResponse&lt;C&gt; <span class="title">opC</span><span class="params">(CRequest request)</span> <span class="keyword">throws</span> ModuleAException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>上述接口中定义的异常实际上也是一种契约，契约的好处便是不需要叙述，调用方自然会想到要去处理 Checked Exception，否则连编译都过不了。</p>
-<p><strong>调用方的处理方式</strong></p>
+<p><strong> 调用方的处理方式 </strong></p>
 <p>在 ModuleB 中，应当如下处理异常：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ModuleBService</span> <span class="keyword">implements</span> <span class="title">ModuleBProvider</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Reference</span></span><br><span class="line">    ModuleAProvider moduleAProvider;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">someOp</span><span class="params">()</span> <span class="keyword">throws</span> ModuleBexception</span>&#123;</span><br><span class="line">        <span class="keyword">try</span>&#123;</span><br><span class="line">            moduleAProvider.opA(...);</span><br><span class="line">        &#125;<span class="keyword">catch</span>(ModuleAException e)&#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ModuleBException(e.getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">anotherOp</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">try</span>&#123;</span><br><span class="line">            moduleAProvider.opB(...);</span><br><span class="line">        &#125;<span class="keyword">catch</span>(ModuleAException e)&#123;</span><br><span class="line">            <span class="comment">// 业务逻辑处理</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>someOp 演示了一个异常流的传递，ModuleB 暴露出去的异常应当是 ModuleB 的 api 模块中异常类，虽然其依赖了 ModuleA ，但需要将异常进行转换，或者对于那些意料之中的业务异常可以像 anotherOp() 一样进行处理，不再传递。这时如果新增 ModuleC 依赖 ModuleB，那么 ModuleC 完全不需要关心 ModuleA 的异常。</p>
-<p><strong>异常与熔断</strong></p>
+<p><strong> 异常与熔断 </strong></p>
 <p>作为系统设计者，我们应该认识到一点： RPC 调用，失败是常态。通常我们需要对 RPC 接口做熔断处理，比如千米内部便集成了 Netflix 提供的熔断组件 Hystrix。Hystrix 需要知道什么样的异常需要进行熔断，什么样的异常不能够进行熔断。在没有上述的异常设计之前，回答这个问题可能还有些难度，但有了 Checked Exception 的契约，一切都变得明了清晰了。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ModuleAProviderProxy</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Reference</span></span><br><span class="line">    <span class="keyword">private</span> ModuleAProvider moduleAProvider;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@HystrixCommand</span>(ignoreExceptions = &#123;ModuleAException.class&#125;)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">opA</span><span class="params">(ARequest request)</span> <span class="keyword">throws</span> ModuleAException </span>&#123;</span><br><span class="line">        moduleAProvider.opA(request);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@HystrixCommand</span>(ignoreExceptions = &#123;ModuleAException.class&#125;)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">opB</span><span class="params">(BRequest request)</span> <span class="keyword">throws</span> ModuleAException </span>&#123;</span><br><span class="line">        moduleAProvider.oBB(request);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@HystrixCommand</span>(ignoreExceptions = &#123;ModuleAException.class&#125;)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> CommonResponse&lt;C&gt; <span class="title">opC</span><span class="params">(CRequest request)</span> <span class="keyword">throws</span> ModuleAException </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> moduleAProvider.opC(request);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>如服务不可用等原因引发的多次接口调用超时异常，会触发 Hystrix 的熔断；而对于业务异常，我们则认为不需要进行熔断，因为对于接口 throws 出的业务异常，我们也认为是正常响应的一部分，只不过借助于 JAVA 的异常机制来表达。实际上，和生成自动化测试类的工具一样，我们使用了另一套自动化的工具，可以由 Dubbo 接口自动生成对应的 Hystrix Proxy。我们坚定的认为开发体验和用户体验一样重要，所以公司内部会有非常多的自动化工具。</p>
@@ -348,26 +348,26 @@ ga('send', 'pageview');
 <p>​            <strong>api 版本的演进应该是缓慢的，而 app 版本的演进应该是频繁的。</strong></p>
 <p>所以，对于这两个演进速度不一致的模块，我们应该单独做版本管理，他们有自己的版本号。</p>
 <h3 id="4-问题回归"><a href="#4-问题回归" class="headerlink" title="4. 问题回归"></a>4. 问题回归</h3><ul>
-<li><strong>查询接口过多。</strong>各种 findBy 方法，加上各自的重载，几乎占据了一个接口 80% 的代码量。这也符合一般人的开发习惯，因为页面需要各式各样的数据格式，加上查询条件差异很大，便造成了：一个查询条件，一个方法的尴尬场景。这样会导致另外一个问题，需要使用某个查询方法时，直接新增了方法，但实际上可能这个方法已经出现过了，隐藏在了令人眼花缭乱的方法中。</li>
+<li><strong> 查询接口过多。</strong> 各种 findBy 方法，加上各自的重载，几乎占据了一个接口 80% 的代码量。这也符合一般人的开发习惯，因为页面需要各式各样的数据格式，加上查询条件差异很大，便造成了：一个查询条件，一个方法的尴尬场景。这样会导致另外一个问题，需要使用某个查询方法时，直接新增了方法，但实际上可能这个方法已经出现过了，隐藏在了令人眼花缭乱的方法中。</li>
 </ul>
-<p>解决方案：使用单参+Specification 模式，降低重复的查询方法，大大降低接口中的方法数量。</p>
+<p>解决方案：使用单参 +Specification 模式，降低重复的查询方法，大大降低接口中的方法数量。</p>
 <ul>
-<li><strong>难以扩展</strong>。接口的任何改动，比如新增一个入参，都会导致调用者被迫升级，这也通常是 RPC 设计被诟病的一点，不合理的 RPC 接口设计会放大这个缺点。</li>
+<li><strong> 难以扩展 </strong>。接口的任何改动，比如新增一个入参，都会导致调用者被迫升级，这也通常是 RPC 设计被诟病的一点，不合理的 RPC 接口设计会放大这个缺点。</li>
 </ul>
 <p>解决方案：单参设计其实无形中包含了所有的查询条件的排列组合，可以直接在 app 实现逻辑的新增，而不需要对 api 进行改动（如果是参数的新增则必须进行 api 的升级，参数的废弃可以用 @Deprecated 标准）。</p>
 <ul>
-<li><strong>升级困难。</strong> 在之前的 “初识 RPC 接口设计”一节中，版本管理的粒度是 project，而不是 module，这意味着：api 即使没有发生变化，app 版本演进，也会造成 api 的被迫升级，因为 project 是一个整体。问题又和上一条一样了，api 一旦发生变化，调用者也得被迫升级，牵一发而动全身。</li>
+<li><strong> 升级困难。</strong> 在之前的 “初识 RPC 接口设计”一节中，版本管理的粒度是 project，而不是 module，这意味着：api 即使没有发生变化，app 版本演进，也会造成 api 的被迫升级，因为 project 是一个整体。问题又和上一条一样了，api 一旦发生变化，调用者也得被迫升级，牵一发而动全身。</li>
 </ul>
 <p>解决方案：以 module 为版本演进的粒度。api 和 app 单独演进，减少调用者的不必要升级次数。</p>
 <ul>
-<li><strong>难以测试</strong>。接口一多，职责随之变得繁杂，业务场景各异，测试用例难以维护。特别是对于那些有良好习惯编写单元测试的程序员而言，简直是噩梦，用例也得跟着改。</li>
+<li><strong> 难以测试 </strong>。接口一多，职责随之变得繁杂，业务场景各异，测试用例难以维护。特别是对于那些有良好习惯编写单元测试的程序员而言，简直是噩梦，用例也得跟着改。</li>
 </ul>
-<p>解决方案：单参数设计+自动化测试工具，打造良好的开发体验。</p>
+<p>解决方案：单参数设计 + 自动化测试工具，打造良好的开发体验。</p>
 <ul>
-<li><strong>异常设计不合理</strong>。在既往的工作经历中曾经有一次会议，就 RPC 调用中的异常设计引发了争议，一派人觉得需要有一个业务 CommonResponse，封装异常，每次调用后，优先判断调用结果是否 success，在进行业务逻辑处理；另一派人觉得这比较麻烦，由于 RPC 框架是可以封装异常调用的，所以应当直接 try catch 异常，不需要进行业务包裹。在没有明确规范时，这两种风格的代码同时存在于项目中，十分难看！</li>
+<li><strong> 异常设计不合理 </strong>。在既往的工作经历中曾经有一次会议，就 RPC 调用中的异常设计引发了争议，一派人觉得需要有一个业务 CommonResponse，封装异常，每次调用后，优先判断调用结果是否 success，在进行业务逻辑处理；另一派人觉得这比较麻烦，由于 RPC 框架是可以封装异常调用的，所以应当直接 try catch 异常，不需要进行业务包裹。在没有明确规范时，这两种风格的代码同时存在于项目中，十分难看！</li>
 </ul>
-<p>解决方案：Checked Exception+正确异常处理姿势，使得代码更加优雅，降低了调用方不处理异常带来的风险。</p>
-<p><strong>欢迎关注我的微信公众号：「Kirito的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
+<p>解决方案：Checked Exception+ 正确异常处理姿势，使得代码更加优雅，降低了调用方不处理异常带来的风险。</p>
+<p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
 <p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
@@ -379,7 +379,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/rpc-interface-design/" data-id="ck103sode00ces89ell235umx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/rpc-interface-design/" data-id="ck10ijlys00cri59e9wemp8ek" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -458,7 +458,7 @@ ga('send', 'pageview');
             <strong class="article-nav-caption">上一篇</strong>
             <div class="article-nav-title">
                 
-                    天池中间件大赛dubboMesh优化总结（qps从1000到6850）
+                    天池中间件大赛 dubboMesh 优化总结（qps 从 1000 到 6850）
                 
             </div>
         </a>
@@ -466,7 +466,7 @@ ga('send', 'pageview');
     
         <a href="/dubbojs-in-qianmi/" id="article-nav-older" class="article-nav-link-wrap">
             <strong class="article-nav-caption">下一篇</strong>
-            <div class="article-nav-title">【千米网】从跨语言调用到dubbo2.js</div>
+            <div class="article-nav-title">【千米网】从跨语言调用到 dubbo2.js</div>
         </a>
     
 </nav>
@@ -546,7 +546,7 @@ ga('send', 'pageview');
                         
                         <div class="item-inner">
                             <p class="item-category"><a class="article-category-link" href="/categories/随笔/">随笔</a></p>
-                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本东京游记||内含秋叶原、动漫打卡地攻略</a></p>
+                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本东京游记 || 内含秋叶原、动漫打卡地攻略</a></p>
                             <p class="item-date"><time datetime="2019-09-02T12:19:23.000Z" itemprop="datePublished">2019-09-02</time></p>
                         </div>
                     </li>
@@ -598,7 +598,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-并发合集/">JAVA 并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
         </div>
     </div>
 
@@ -616,7 +616,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 10px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件IO/" style="font-size: 10px;">文件IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
+            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB-性能挑战赛/" style="font-size: 10px;">PolarDB 性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件-IO/" style="font-size: 10px;">文件 IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
         </div>
     </div>
 

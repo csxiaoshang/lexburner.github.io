@@ -3,24 +3,24 @@
 <head><meta name="generator" content="Hexo 3.8.0">
     <meta charset="utf-8">
     
-    <title>java小技巧(一)--远程debug | 徐靖峰|个人博客</title>
+    <title>java 小技巧 (一)-- 远程 debug | 徐靖峰|个人博客</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="该系列介绍一些java开发中常用的一些小技巧，多小呢，从不会到会只需要一篇文章这么小。这一篇介绍如何使用jdk自带的扩展包配合Intellij IDEA实现远程debug。 项目中经常会有出现这样的问题，会令程序员抓狂：关键代码段没有打印日志，本地环境正常生产环境却又问题…这时候，远程debug可能会启动作用。 1 准备用于debug的代码准备一个RestController用于接收请求，最后可以">
+    <meta name="description" content="该系列介绍一些 java 开发中常用的一些小技巧，多小呢，从不会到会只需要一篇文章这么小。这一篇介绍如何使用 jdk 自带的扩展包配合 Intellij IDEA 实现远程 debug。 项目中经常会有出现这样的问题，会令程序员抓狂：关键代码段没有打印日志，本地环境正常生产环境却又问题… 这时候，远程 debug 可能会启动作用。 1 准备用于 debug 的代码准备一个 RestControll">
 <meta name="keywords" content="JAVA">
 <meta property="og:type" content="article">
-<meta property="og:title" content="java小技巧(一)--远程debug">
+<meta property="og:title" content="java 小技巧 (一)-- 远程 debug">
 <meta property="og:url" content="http://lexburner.github.io/java-skill-1/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
-<meta property="og:description" content="该系列介绍一些java开发中常用的一些小技巧，多小呢，从不会到会只需要一篇文章这么小。这一篇介绍如何使用jdk自带的扩展包配合Intellij IDEA实现远程debug。 项目中经常会有出现这样的问题，会令程序员抓狂：关键代码段没有打印日志，本地环境正常生产环境却又问题…这时候，远程debug可能会启动作用。 1 准备用于debug的代码准备一个RestController用于接收请求，最后可以">
+<meta property="og:description" content="该系列介绍一些 java 开发中常用的一些小技巧，多小呢，从不会到会只需要一篇文章这么小。这一篇介绍如何使用 jdk 自带的扩展包配合 Intellij IDEA 实现远程 debug。 项目中经常会有出现这样的问题，会令程序员抓狂：关键代码段没有打印日志，本地环境正常生产环境却又问题… 这时候，远程 debug 可能会启动作用。 1 准备用于 debug 的代码准备一个 RestControll">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://kirito.iocoder.cn/maven_install.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/%E8%BF%9C%E7%A8%8Bdebug_idea%E9%85%8D%E7%BD%AE.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/%E8%BF%90%E8%A1%8Cremote.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/debug%E4%BF%A1%E6%81%AF%E5%B1%95%E7%A4%BA.png">
-<meta property="og:updated_time" content="2018-11-20T11:52:08.138Z">
+<meta property="og:updated_time" content="2019-09-26T09:45:31.657Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="java小技巧(一)--远程debug">
-<meta name="twitter:description" content="该系列介绍一些java开发中常用的一些小技巧，多小呢，从不会到会只需要一篇文章这么小。这一篇介绍如何使用jdk自带的扩展包配合Intellij IDEA实现远程debug。 项目中经常会有出现这样的问题，会令程序员抓狂：关键代码段没有打印日志，本地环境正常生产环境却又问题…这时候，远程debug可能会启动作用。 1 准备用于debug的代码准备一个RestController用于接收请求，最后可以">
+<meta name="twitter:title" content="java 小技巧 (一)-- 远程 debug">
+<meta name="twitter:description" content="该系列介绍一些 java 开发中常用的一些小技巧，多小呢，从不会到会只需要一篇文章这么小。这一篇介绍如何使用 jdk 自带的扩展包配合 Intellij IDEA 实现远程 debug。 项目中经常会有出现这样的问题，会令程序员抓狂：关键代码段没有打印日志，本地环境正常生产环境却又问题… 这时候，远程 debug 可能会启动作用。 1 准备用于 debug 的代码准备一个 RestControll">
 <meta name="twitter:image" content="http://kirito.iocoder.cn/maven_install.png">
     
 
@@ -219,7 +219,7 @@ ga('send', 'pageview');
                 
     
         <h1 class="article-title" itemprop="name">
-            java小技巧(一)--远程debug
+            java 小技巧 (一)-- 远程 debug
         </h1>
     
 
@@ -267,31 +267,31 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>该系列介绍一些java开发中常用的一些小技巧，多小呢，从不会到会只需要一篇文章这么小。这一篇介绍如何使用jdk自带的扩展包配合Intellij IDEA实现远程debug。</p>
-<p>项目中经常会有出现这样的问题，会令程序员抓狂：关键代码段没有打印日志，本地环境正常生产环境却又问题…这时候，远程debug可能会启动作用。</p>
-<h2 id="1-准备用于debug的代码"><a href="#1-准备用于debug的代码" class="headerlink" title="1 准备用于debug的代码"></a>1 准备用于debug的代码</h2><p>准备一个RestController用于接收请求，最后可以通过本地断点验证是否成功开启了远程debug</p>
+            <p>该系列介绍一些 java 开发中常用的一些小技巧，多小呢，从不会到会只需要一篇文章这么小。这一篇介绍如何使用 jdk 自带的扩展包配合 Intellij IDEA 实现远程 debug。</p>
+<p>项目中经常会有出现这样的问题，会令程序员抓狂：关键代码段没有打印日志，本地环境正常生产环境却又问题… 这时候，远程 debug 可能会启动作用。</p>
+<h2 id="1-准备用于-debug-的代码"><a href="#1-准备用于-debug-的代码" class="headerlink" title="1 准备用于 debug 的代码"></a>1 准备用于 debug 的代码</h2><p>准备一个 RestController 用于接收请求，最后可以通过本地断点验证是否成功开启了远程 debug</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(<span class="string">"/test"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Integer <span class="title">test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">        i++;</span><br><span class="line">        i++;</span><br><span class="line">        i++;</span><br><span class="line">        i++;</span><br><span class="line">        i++;</span><br><span class="line">        <span class="keyword">return</span> i;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>项目使用springboot和maven构建，依赖就省略了，使用springboot提供的maven打包插件，方便我们打包成可运行的jar。</p>
+<p>项目使用 springboot 和 maven 构建，依赖就省略了，使用 springboot 提供的 maven 打包插件，方便我们打包成可运行的 jar。</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">executable</span>&gt;</span>true<span class="tag">&lt;/<span class="name">executable</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-compiler-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">source</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">target</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h2 id="2-使用maven插件打包成jar"><a href="#2-使用maven插件打包成jar" class="headerlink" title="2 使用maven插件打包成jar"></a>2 使用maven插件打包成jar</h2><p><img src="http://kirito.iocoder.cn/maven_install.png" alt="maven插件"></p>
+<h2 id="2-使用-maven-插件打包成-jar"><a href="#2-使用-maven-插件打包成-jar" class="headerlink" title="2 使用 maven 插件打包成 jar"></a>2 使用 maven 插件打包成 jar</h2><p><img src="http://kirito.iocoder.cn/maven_install.png" alt="maven 插件"></p>
 <h2 id="3-准备启动脚本"><a href="#3-准备启动脚本" class="headerlink" title="3 准备启动脚本"></a>3 准备启动脚本</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=64057 remote-debug-1.0-SNAPSHOT.jar</span><br></pre></td></tr></table></figure>
 <ol>
-<li>使用java -jar的方式启动程序，并且添加了一串特殊的参数，这是我们能够开启远程debug的关键，以<code>-</code>开头的参数是jvm的标准启动参数，关于jvm启动参数相关的知识可以先去其他博客了解。</li>
-<li>-agentlib:libname[=options], 用于装载本地lib包。在这条指令中便是加载了jdwp(Java Debug Wire Protocol)这个用于远程调试java的扩展包。而<code>transport=dt_socket,server=y,suspend=n,address=64057</code>这些便是jdwp装载时的定制参数，详细的参数作用可以搜索jdwp进行了解。我们需要关心的只有address=64057这个参数选项，本地调试程序使用64057端口与其通信，从而远程调试。</li>
+<li>使用 java -jar 的方式启动程序，并且添加了一串特殊的参数，这是我们能够开启远程 debug 的关键，以 <code>-</code> 开头的参数是 jvm 的标准启动参数，关于 jvm 启动参数相关的知识可以先去其他博客了解。</li>
+<li>-agentlib:libname[=options], 用于装载本地 lib 包。在这条指令中便是加载了 jdwp(Java Debug Wire Protocol) 这个用于远程调试 java 的扩展包。而 <code>transport=dt_socket,server=y,suspend=n,address=64057</code> 这些便是 jdwp 装载时的定制参数，详细的参数作用可以搜索 jdwp 进行了解。我们需要关心的只有 address=64057 这个参数选项，本地调试程序使用 64057 端口与其通信，从而远程调试。</li>
 </ol>
-<h2 id="4-配置IDEA"><a href="#4-配置IDEA" class="headerlink" title="4 配置IDEA"></a>4 配置IDEA</h2><p><img src="http://kirito.iocoder.cn/%E8%BF%9C%E7%A8%8Bdebug_idea%E9%85%8D%E7%BD%AE.png" alt="IDEA配置"></p>
+<h2 id="4-配置-IDEA"><a href="#4-配置-IDEA" class="headerlink" title="4 配置 IDEA"></a>4 配置 IDEA</h2><p><img src="http://kirito.iocoder.cn/%E8%BF%9C%E7%A8%8Bdebug_idea%E9%85%8D%E7%BD%AE.png" alt="IDEA 配置"></p>
 <ol>
 <li>与脚本中的指令完全一致</li>
-<li>远程jar包运行的host，由于我的jar运行在本地，所以使用的是localhost，一般线上环境自然是修改为线上的地址</li>
-<li>与远程jar包进行交互的端口号，idea会根据指令自动帮我们输入</li>
-<li>选择与远程jar包一致的本地代码</li>
+<li>远程 jar 包运行的 host，由于我的 jar 运行在本地，所以使用的是 localhost，一般线上环境自然是修改为线上的地址</li>
+<li>与远程 jar 包进行交互的端口号，idea 会根据指令自动帮我们输入</li>
+<li>选择与远程 jar 包一致的本地代码</li>
 </ol>
-<p><strong>请务必保证远程jar包的代码与本地代码一致！！！</strong></p>
-<h2 id="5-验证"><a href="#5-验证" class="headerlink" title="5 验证"></a>5 验证</h2><p>保存第4步的配置后，先执行脚本让远程的jar包跑起来，再在IDEA中运行remote-debug</p>
-<p><img src="http://kirito.iocoder.cn/%E8%BF%90%E8%A1%8Cremote.png" alt="运行remote-jar"></p>
+<p><strong> 请务必保证远程 jar 包的代码与本地代码一致！！！</strong></p>
+<h2 id="5-验证"><a href="#5-验证" class="headerlink" title="5 验证"></a>5 验证</h2><p>保存第 4 步的配置后，先执行脚本让远程的 jar 包跑起来，再在 IDEA 中运行 remote-debug</p>
+<p><img src="http://kirito.iocoder.cn/%E8%BF%90%E8%A1%8Cremote.png" alt="运行 remote-jar"></p>
 <p>如上便代表连接运行成功了</p>
-<p>在本地打上断点，访问<code>localhost:8080/test</code></p>
-<p><img src="http://kirito.iocoder.cn/debug%E4%BF%A1%E6%81%AF%E5%B1%95%E7%A4%BA.png" alt="远程debug信息展示"></p>
+<p>在本地打上断点，访问 <code>localhost:8080/test</code></p>
+<p><img src="http://kirito.iocoder.cn/debug%E4%BF%A1%E6%81%AF%E5%B1%95%E7%A4%BA.png" alt="远程 debug 信息展示"></p>
 <p>可以在本地看到堆栈信息，大功告成。一行指令便完成了远程调试。</p>
 
         
@@ -303,7 +303,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/java-skill-1/" data-id="ck103so7j000ss89exkwm7u9g" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/java-skill-1/" data-id="ck10ijlst000ui59e9jom862v" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -382,7 +382,7 @@ ga('send', 'pageview');
             <strong class="article-nav-caption">上一篇</strong>
             <div class="article-nav-title">
                 
-                    Spring Data Redis（一）--解析RedisTemplate
+                    Spring Data Redis（一）-- 解析 RedisTemplate
                 
             </div>
         </a>
@@ -390,7 +390,7 @@ ga('send', 'pageview');
     
         <a href="/concurrent-2/" id="article-nav-older" class="article-nav-link-wrap">
             <strong class="article-nav-caption">下一篇</strong>
-            <div class="article-nav-title">浅析项目中的并发(二)</div>
+            <div class="article-nav-title">浅析项目中的并发 (二)</div>
         </a>
     
 </nav>
@@ -470,7 +470,7 @@ ga('send', 'pageview');
                         
                         <div class="item-inner">
                             <p class="item-category"><a class="article-category-link" href="/categories/随笔/">随笔</a></p>
-                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本东京游记||内含秋叶原、动漫打卡地攻略</a></p>
+                            <p class="item-title"><a href="/tokyo-travel/" class="title">日本东京游记 || 内含秋叶原、动漫打卡地攻略</a></p>
                             <p class="item-date"><time datetime="2019-09-02T12:19:23.000Z" itemprop="datePublished">2019-09-02</time></p>
                         </div>
                     </li>
@@ -522,7 +522,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA并发合集/">JAVA并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-并发合集/">JAVA 并发合集</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
         </div>
     </div>
 
@@ -540,7 +540,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB性能挑战赛/" style="font-size: 10px;">PolarDB性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件IO/" style="font-size: 10px;">文件IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
+            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 15px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JCTools/" style="font-size: 10px;">JCTools</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB-性能挑战赛/" style="font-size: 10px;">PolarDB 性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 16px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 17px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件-IO/" style="font-size: 10px;">文件 IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/队列/" style="font-size: 10px;">队列</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
         </div>
     </div>
 
