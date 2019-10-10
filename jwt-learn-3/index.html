@@ -15,7 +15,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://kirito.iocoder.cn/04081086-5158-489E-8EC2-B28795B99BD6.png">
 <meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:30.872Z">
+<meta property="og:updated_time" content="2019-10-10T08:54:55.359Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="理解 JWT 的使用场景和优劣">
 <meta name="twitter:description" content="经过前面两篇文章《JSON Web Token - 在 Web 应用间安全地传递信息》《八幅漫画理解使用 JSON Web Token 设计单点登录系统》的科普，相信大家应该已经知道了 JWT 协议是什么了。至少看到">
@@ -169,7 +169,7 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                120
+                121
                 <span>文章</span>
             </div>
             <div class="article-info-block">
@@ -265,7 +265,8 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>经过前面两篇文章《<a href="https://www.cnkirito.moe/2018/04/14/jwt-learn/" target="_blank" rel="noopener">JSON Web Token - 在 Web 应用间安全地传递信息</a>》《<a href="https://www.cnkirito.moe/2018/04/14/jwt-learn-2/" target="_blank" rel="noopener">八幅漫画理解使用 JSON Web Token 设计单点登录系统</a>》的科普，相信大家应该已经知道了 JWT 协议是什么了。至少看到<br><a id="more"></a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJxaWFubWlJZCI6InFtMTAzNTNzaEQiLCJpc3MiOiJhcHBfcW0xMDM1M3NoRCIsInBsYXRmb3JtIjoiYXBwIn0.cMNwyDTFVYMLL4e7ts50GFHTvlSJLDpePtHXzu7z9j4</span><br></pre></td></tr></table></figure></p>
+            <p>经过前面两篇文章《<a href="https://www.cnkirito.moe/jwt-learn/" target="_blank" rel="noopener">JSON Web Token - 在 Web 应用间安全地传递信息</a>》《<a href="https://www.cnkirito.moe/jwt-learn-2/" target="_blank" rel="noopener">八幅漫画理解使用 JSON Web Token 设计单点登录系统</a>》的科普，相信大家应该已经知道了 JWT 协议是什么了。至少看到<br><a id="more"></a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJxaWFubWlJZCI6InFtMTAzNTNzaEQiLCJpc3MiOiJhcHBfcW0xMDM1M3NoRCIsInBsYXRmb3JtIjoiYXBwIn0.cMNwyDTFVYMLL4e7ts50GFHTvlSJLDpePtHXzu7z9j4</span><br></pre></td></tr></table></figure>
 <p>这样形如 A.B.C 的字符串时能敏感地认出这是使用了 jwt。发了这两篇文章后，有不少读者在文末留言，表达了对 jwt 使用方式的一些疑惑，以及到底哪些场景适合使用 jwt。我并不是 jwt 方面的专家，和不少读者一样，起初研究时我也存在相同疑惑，甚至在逐渐接触后产生了更大的疑惑，经过这段时间项目中的使用和一些自己思考，把个人的总结整理成此文。</p>
 <h3 id="编码，签名，加密"><a href="#编码，签名，加密" class="headerlink" title="编码，签名，加密"></a>编码，签名，加密</h3><p>这些基础知识简单地介绍下，千万别搞混了三个概念。在 jwt 中恰好同时涉及了这三个概念，笔者用大白话来做下通俗的讲解（非严谨定义，供个人理解）</p>
 <h4 id="编码-encode-和解码-decode"><a href="#编码-encode-和解码-decode" class="headerlink" title="编码 (encode) 和解码(decode)"></a>编码 (encode) 和解码(decode)</h4><p>一般是编码解码是为了方便以字节的方式表示数据，便于存储和网络传输。整个 jwt 串会被置于 http 的 Header 或者 url 中，为了不出现乱码解析错误等意外，编码是有必要的。在 jwt 中以 <code>.</code> 分割的三个部分都经过 base64 编码 (secret 部分是否进行 base64 编码是可选的，header 和 payload 则是必须进行 base64 编码)。注意，编码的一个特点：编码和解码的整个过程是可逆的。得知编码方式后，整个 jwt 串便是明文了，随意找个网站验证下解码后的内容：</p>
@@ -300,7 +301,7 @@ ga('send', 'pageview');
 <ol>
 <li>使用 jwt 做单点登录 + 会话管理 (不推荐)</li>
 </ol>
-<p>在《<a href="https://www.cnkirito.moe/2018/04/14/jwt-learn-2/" target="_blank" rel="noopener">八幅漫画理解使用 JSON Web Token 设计单点登录系统</a>》一文中提及了使用 jwt 来完成单点登录，本文接下来的内容主要就是围绕这一点来进行讨论。如果你正在考虑使用 jwt+cookie 代替 session+cookie ，我强力不推荐你这么做。</p>
+<p>在《<a href="https://www.cnkirito.moe/jwt-learn-2/" target="_blank" rel="noopener">八幅漫画理解使用 JSON Web Token 设计单点登录系统</a>》一文中提及了使用 jwt 来完成单点登录，本文接下来的内容主要就是围绕这一点来进行讨论。如果你正在考虑使用 jwt+cookie 代替 session+cookie ，我强力不推荐你这么做。</p>
 <p>首先明确一点：使用 jwt 来设计单点登录系统是一个不太严谨的说法。首先 cookie+jwt 的方案前提是非跨域的单点登录 (cookie 无法被自动携带至其他域名)，其次单点登录系统包含了很多技术细节，至少包含了身份认证和会话管理，这还不涉及到权限管理。如果觉得比较抽象，不妨用传统的 session+cookie 单点登录方案来做类比，通常我们可以选择 spring security（身份认证和权限管理的安全框架）和 spring session（session 共享）来构建，而选择用 jwt 设计单点登录系统需要解决很多传统方案中同样存在和本不存在的问题，以下一一详细罗列。</p>
 <h3 id="jwt-token-泄露了怎么办？"><a href="#jwt-token-泄露了怎么办？" class="headerlink" title="jwt token 泄露了怎么办？"></a>jwt token 泄露了怎么办？</h3><p>前面的文章下有不少人留言提到这个问题，我则认为这不是问题。传统的 session+cookie 方案，如果泄露了 sessionId，别人同样可以盗用你的身份。扬汤止沸不如釜底抽薪，不妨来追根溯源一下，什么场景会导致你的 jwt 泄露。</p>
 <p>遵循如下的实践可以尽可能保护你的 jwt 不被泄露：使用 https 加密你的应用，返回 jwt 给客户端时设置 httpOnly=true 并且使用 cookie 而不是 LocalStorage 存储 jwt，这样可以防止 XSS 攻击和 CSRF 攻击（对这两种攻击感兴趣的童鞋可以看下 spring security 中对他们的介绍 <a href="https://docs.spring.io/spring-security/site/docs/current/reference/html/csrf.html" target="_blank" rel="noopener">CSRF</a>,<a href="https://docs.spring.io/spring-security/site/docs/current/reference/html/headers.html#headers-xss-protection" target="_blank" rel="noopener">XSS</a>）</p>
@@ -345,7 +346,7 @@ ga('send', 'pageview');
 <p>jwt 和 oauth2 都可以用于 restful 的认证，就我个人的使用经验来看，spring security oauth2 可以很好的使用多种认证模式：client 模式，password 模式，implicit 模式（authorization code 模式不算单纯的接口认证模式），也可以很方便的实现权限控制，什么样的 api 需要什么样的权限，什么样的资源需要什么样的 scope…而 jwt 我只用它来实现过身份认证，功能较为单一（可能是我没发现更多用法）。</p>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>在 web 应用中，使用 jwt 代替 session 存在不小的风险，你至少得解决本文中提及的那些问题，绝大多数情况下，传统的 cookie-session 机制工作得更好。jwt 适合做简单的 restful api 认证，颁发一个固定有效期的 jwt，降低 jwt 暴露的风险，不要对 jwt 做服务端的状态管理，这样才能体现出 jwt 无状态的优势。</p>
 <p>可能对 jwt 的使用场景还有一些地方未被我察觉，后续会研究下 spring security oauth jwt 的源码，不知到时会不会有新发现。</p>
-<p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
+<p><strong>欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
 <p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
@@ -357,7 +358,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/jwt-learn-3/" data-id="ck1j5ffm30083cp9e46yiqqaj" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/jwt-learn-3/" data-id="ck1kgwcw7009lws9etczjg2g6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -475,6 +476,25 @@ ga('send', 'pageview');
                     <li>
                         
                         <!-- <div class="item-thumbnail">
+                            <a href="/live2d/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/live2d/" class="title">手把手教你给个人博客添加一个萌妹子</a></p>
+                            <p class="item-date"><time datetime="2019-10-09T11:01:38.000Z" itemprop="datePublished">2019-10-09</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
                             <a href="/dubbo-gracefully-shutdown/" class="thumbnail">
     
     
@@ -548,25 +568,6 @@ ga('send', 'pageview');
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <!-- <div class="item-thumbnail">
-                            <a href="/dubbo-http-protocol/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div> -->
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
-                            <p class="item-title"><a href="/dubbo-http-protocol/" class="title">Dubbo 中的 http 协议</a></p>
-                            <p class="item-date"><time datetime="2019-07-16T11:13:06.000Z" itemprop="datePublished">2019-07-16</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -585,7 +586,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">一月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">一月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
         </div>
     </div>
 
@@ -683,5 +684,5 @@ ga('send', 'pageview');
 <script src="/js/main.js"></script>
 
     </div>
-<script src="/node_modules/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"node_modules/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/node_modules/assets/z16.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7},"log":false});</script></body>
+<script src="/node_modules/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"node_modules/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/node_modules/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7},"log":false});</script></body>
 </html>
