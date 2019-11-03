@@ -155,7 +155,7 @@ ga('send', 'pageview');
         <div class="base-info profile-block">
             <img id="avatar" src="/css/images/avatar.png">
             <h2 id="name">徐靖峰</h2>
-            <h3 id="title">software engineer</h3>
+            <h3 id="title">阿里巴巴中间件研发</h3>
             <span id="location"><i class="fa fa-map-marker"></i>中国，杭州</span>
             <a id="follow" target="_blank" href="https://github.com/lexburner">关注我</a>
         </div>
@@ -268,7 +268,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubbo-metadata/" data-id="ck2inrxti000ibm9eweavsb6p" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/dubbo-metadata/" data-id="ck2io5180000gps9emgk271jy" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -416,7 +416,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/live2d/" data-id="ck2inrxu1001jbm9ejtsc9k2x" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/live2d/" data-id="ck2io518u001pps9eq4dy6lfu" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -547,8 +547,7 @@ ga('send', 'pageview');
         
         <div class="article-entry" itemprop="articleBody">
         
-            
-            <h1 id="Linux-环境写文件如何稳定跑满磁盘-I-O-带宽"><a href="#Linux-环境写文件如何稳定跑满磁盘-I-O-带宽" class="headerlink" title="Linux 环境写文件如何稳定跑满磁盘 I/O 带宽?"></a>Linux 环境写文件如何稳定跑满磁盘 I/O 带宽?</h1><ul>
+            <p><ul>
 <li>准备<ul>
 <li>要求</li>
 <li>机器配置</li>
@@ -560,55 +559,10 @@ ga('send', 'pageview');
 <li>实验三: mmap 写入</li>
 <li>实验四: 改进的 mmap 写入</li>
 <li>结论</li>
-</ul>
-<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><h3 id="要求"><a href="#要求" class="headerlink" title="要求"></a>要求</h3><p>在 <strong> 限制内存 </strong> 的情况下，假定我们每次写入 4k 的数据，如何保证 <code>kill -9</code> 不丢数据的情况下，仍然稳定的跑满磁盘的 IO？因为需要保证 <code>kill -9</code> 不丢数据，所以 <code>fwrite()</code> 就不在我们的考虑范围之内了. 又因为限制内存，所以直观的想法是直接 Direct IO, 但 Direct IO 能否跑满磁盘 IO 呢?</p>
-<h3 id="机器配置"><a href="#机器配置" class="headerlink" title="机器配置"></a>机器配置</h3><p><strong>CPU</strong>: 64 核 Intel(R) Xeon(R) CPU E5-2682 v4 @ 2.50GHz</p>
-<p><strong> 磁盘 </strong>: Intel Optane SSD</p>
-<h3 id="测试磁盘-IO-性能"><a href="#测试磁盘-IO-性能" class="headerlink" title="测试磁盘 IO 性能"></a>测试磁盘 IO 性能</h3><p>官方称读 / 写带宽是 <code>2400/2000 MB/s</code>, 我们利用 <code>fio</code> 来进行实测:</p>
-<p>顺序读性能:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo fio --filename=test -iodepth=64 -ioengine=libaio --direct=1 --rw=read --bs=2m --size=2g --numjobs=4 --runtime=10 --group_reporting --name=test-read</span><br></pre></td></tr></table></figure>
-<p>结果:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">READ: bw=2566MiB/s (2691MB/s), 2566MiB/s-2566MiB/s (2691MB/s-2691MB/s), io=8192MiB (8590MB), run=3192-3192msec</span><br></pre></td></tr></table></figure>
-<p>顺序写性能:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo fio --filename=test -iodepth=64 -ioengine=libaio -direct=1 -rw=write -bs=1m -size=2g -numjobs=4 -runtime=20 -group_reporting -name=test-write</span><br></pre></td></tr></table></figure>
-<p>结果:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WRITE: bw=2181MiB/s (2287MB/s), 2181MiB/s-2181MiB/s (2287MB/s-2287MB/s), io=8192MiB (8590MB), run=3756-3756msec</span><br></pre></td></tr></table></figure>
-<p>实测读写带宽: <strong>2566/2181 MB/s</strong></p>
-<h2 id="实验一-Buffer-IO-写入"><a href="#实验一-Buffer-IO-写入" class="headerlink" title="实验一: Buffer IO 写入"></a>实验一: Buffer IO 写入</h2><p>因为是限制内存，所以 Buffer IO 不在我们的考虑范围内，但是我们先来测试一下 Buffer IO 的具体性能到底如何? 我们使用最简单的方法，因为我们的 CPU 核数是 64，所以直接 64 线程单次 <code>4K</code> 字节 Buffer IO 写入, 即通过操作系统的 Page Cache 的策略来缓存，刷盘:</p>
-<p><strong> 代码片段 </strong>: <a href="https://gist.github.com/Leviathan1995/640bb1631001409c828ca19d40c7b7f6" target="_blank" rel="noopener">完整代码</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">static char data[4096] attribute((aligned(4096))) = &#123;&apos;a&apos;&#125;; </span><br><span class="line"></span><br><span class="line">void writer(int index) &#123; </span><br><span class="line">	std::string fname = &quot;data&quot; + std::to_string(index); </span><br><span class="line">	int data_fd = ::open(fname.c_str(), O_RDWR | O_CREAT | O_APPEND, 0645); </span><br><span class="line">	for (int32_t i = 0; i &lt; 1000000; i++) &#123; </span><br><span class="line">		::write(data_fd, data, 4096); </span><br><span class="line">	&#125; </span><br><span class="line">	close(data_fd); </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">int main() &#123; </span><br><span class="line">	std::vectorstd::thread threads; </span><br><span class="line">	for(int i = 0; i &lt; 64; i++) &#123; </span><br><span class="line">		std::thread worker(writer, i); </span><br><span class="line">		threads.push_back(std::move(worker)); </span><br><span class="line">	&#125; </span><br><span class="line">	for (int i = 0; i &lt; 64; i++) &#123; </span><br><span class="line">		threads[i].join(); </span><br><span class="line">	&#125; </span><br><span class="line">	return 0; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>我们通过 <code>O_APPEND</code> 单次 4k 追加写入，之后通过 <code>vmstat</code> 来保留 <code>120s</code> 的写入带宽:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vmstat 1 120 &gt; buffer_io</span><br></pre></td></tr></table></figure>
-<p>经过最后的测试数据整理，我们发现 Buffer IO 的性能基本能稳定跑满带宽, 其中只有一次 I/O 抖动:</p>
-<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/buffer_io.png" alt="buffer_io"></p>
-<h2 id="实验二-4K-单次-Direct-IO-写入"><a href="#实验二-4K-单次-Direct-IO-写入" class="headerlink" title="实验二: 4K 单次 Direct IO 写入"></a>实验二: 4K 单次 Direct IO 写入</h2><p>Buffer IO 利用 Page Cache 帮助我们缓存了大量的数据，其实必然提高了写入带宽，但假如在限制内存的情况下，Buffer IO 就不是正确的解决方案了，这次我们绕过 Page Cache, 直接 Direct IO 单次 <code>4K</code> 写入:</p>
-<p><strong> 代码片段 </strong>: <a href="https://gist.github.com/Leviathan1995/048f89fb679ef1ecc13978029b20643c" target="_blank" rel="noopener">完整代码</a></p>
-<p>唯一需要修改的地方就是在 <code>open()</code> 中加入 <code>O_DIRECT</code> 标志:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int data_fd = ::open(fname.c_str(), O_RDWR | O_CREAT | O_APPEND | O_DIRECT, 0645);</span><br></pre></td></tr></table></figure>
-<p>通过 <code>vmstat</code> 获取写入带宽数据, 整理如下:</p>
-<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/direct_io.png" alt="direct_io"></p>
-<p>通过数据我们发现，单次 4k 的 Direct IO 写入无法跑满磁盘的 I/O 带宽，仅仅只有 <code>800MB/S</code></p>
-<h2 id="实验三-mmap-写入"><a href="#实验三-mmap-写入" class="headerlink" title="实验三: mmap 写入"></a>实验三: mmap 写入</h2><p>通过前面这两个实验我们发现，Buffer IO 是可以跑满磁盘 I/O 的，那我们可以尝试模拟 Buffer IO 的写入方式，使用较少的内存来达到 Buffer IO 的写入效果.</p>
-<p>我们使用 <code>mmap</code> 来实现 Buffer IO 写入，通过限定的 Buffer Block 来模拟 Page Cache 的聚合效果, 实验中我们使用 <code>memcpy</code> 来完成数据拷贝，Buffer Block 我们设定为 <code>4K * 4</code>, 与 Direct IO 的不同，我们这次限定即 <code>16KB</code> 的单次写入:</p>
-<p><strong>代码片段</strong>: <a href="https://gist.github.com/Leviathan1995/9c54f76bc22668289126a7898562a86d" target="_blank" rel="noopener">完整代码</a></p>
-<p><code>main()</code> 函数不变，修改线程的 <code>writer()</code> 函数:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">static char data[4096] attribute((aligned(4096))) = &#123;&apos;a&apos;&#125;;</span><br><span class="line">static int32_t map_size = 4096 * 4;</span><br><span class="line"></span><br><span class="line">void MapRegion(int fd, uint64_t file_offset, char** base) &#123; </span><br><span class="line">	void* ptr = mmap(nullptr, map_size, PROT_READ | PROT_WRITE, </span><br><span class="line">					MAP_SHARED, </span><br><span class="line">					fd, </span><br><span class="line">					file_offset); </span><br><span class="line">	if (unlikely(ptr == MAP_FAILED)) &#123; </span><br><span class="line">		*base = nullptr; </span><br><span class="line">		return; </span><br><span class="line">	&#125;</span><br><span class="line">	base = reinterpret_cast&lt;char&gt;(ptr); </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">void UnMapRegion(char* base) &#123; </span><br><span class="line">	munmap(base, map_size); </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">void writer(int index) &#123; </span><br><span class="line">	std::string fname = &quot;data&quot; + std::to_string(index); </span><br><span class="line">	char* base = nullptr; </span><br><span class="line">	char* cursor = nullptr; </span><br><span class="line">	uint64_t mmap_offset = 0, file_offset = 0; </span><br><span class="line">	int data_fd = ::open(fname.c_str(), O_RDWR | O_CREAT, 0645); </span><br><span class="line">	posix_fallocate(data_fd, 0, (4096UL * 1000000)); </span><br><span class="line">	MapRegion(data_fd, 0, &amp;base); </span><br><span class="line">	if (unlikely(base == nullptr)) &#123; </span><br><span class="line">		return; </span><br><span class="line">	&#125; </span><br><span class="line">	cursor = base; </span><br><span class="line">	file_offset += map_size; </span><br><span class="line">	for (int32_t i = 0; i &lt; 1000000; i++) &#123; </span><br><span class="line">		if (unlikely(mmap_offset &gt;= map_size)) &#123; </span><br><span class="line">			UnMapRegion(base); </span><br><span class="line">			MapRegion(data_fd, file_offset, &amp;base); </span><br><span class="line">			if (unlikely(base == nullptr)) &#123; </span><br><span class="line">				return; </span><br><span class="line">			&#125; </span><br><span class="line">			cursor = base; </span><br><span class="line">			file_offset += map_size; </span><br><span class="line">			mmap_offset = 0; </span><br><span class="line">		&#125; </span><br><span class="line">		memcpy(cursor, data, 4096); </span><br><span class="line">		cursor += 4096; </span><br><span class="line">		mmap_offset += 4096; </span><br><span class="line">	&#125; </span><br><span class="line">	UnMapRegion(base); </span><br><span class="line">	close(data_fd); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>我们通过 <code>vmstat</code> 来获取写入带宽数据，我们发现 <code>mmap</code> 的 <code>16K</code> 写入可以跑满磁盘带宽，但 I/O 抖动较大，无法类似于 Buffer IO 稳定的写入.</p>
-<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/mmap_io.png" alt="mmap_io"></p>
-<p>我们通过 <code>perf</code> 生成火焰图分析:</p>
-<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/perf.png" alt="mmap_perf"></p>
-<p>通过 <code>pref</code> 生成分析瓶颈时发现，写入 <code>writer()</code> 时触发了大量的 <code>Page Fault</code>, 即缺页中断，而 <code>mmap()</code> 本身的调用也有一定的消耗 (关于 <code>mmap()</code> 的源码分析，我们在后面的文章会详细分析 )，我们实验三的思路是: 首先 <code>fallocate</code> 一个大文件，然后 <code>mmap()</code> 内存映射 <code>16k</code> 的 Block, <code>memcpy()</code> 写满之后，游标右移重新 <code>mmap()</code>，以此循环.</p>
-<h2 id="实验四-改进的-mmap-写入"><a href="#实验四-改进的-mmap-写入" class="headerlink" title="实验四: 改进的 mmap 写入"></a>实验四: 改进的 mmap 写入</h2><p>为了避免 <code>mmap()</code> 的开销，我们使用临时文件在写入之前 <code>mmap()</code> 映射，之后循环利用这 <code>16K</code> 的 Block, 避免 <code>mmap()</code> 的巨大开销:</p>
-<p><strong>代码片段</strong>: <a href="https://gist.github.com/Leviathan1995/9c54f76bc22668289126a7898562a86d" target="_blank" rel="noopener">完整代码</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">void MapRegion(int fd, uint64_t file_offset, char** base) &#123;</span><br><span class="line">  void* ptr = mmap(nullptr, map_size, PROT_READ | PROT_WRITE,</span><br><span class="line">		   MAP_SHARED,</span><br><span class="line">		   fd,</span><br><span class="line">		   file_offset);</span><br><span class="line">  if (unlikely(ptr == MAP_FAILED)) &#123;</span><br><span class="line">    *base = nullptr;</span><br><span class="line">    return;</span><br><span class="line">  &#125;</span><br><span class="line">  *base = reinterpret_cast&lt;char*&gt;(ptr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void UnMapRegion(char* base) &#123;</span><br><span class="line">  munmap(base, map_size);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void writer(int index) &#123;</span><br><span class="line">  std::string fname = &quot;data&quot; + std::to_string(index);</span><br><span class="line">  std::string batch = &quot;batch&quot; + std::to_string(index);</span><br><span class="line"></span><br><span class="line">  char* base = nullptr;</span><br><span class="line">  char* cursor = nullptr;</span><br><span class="line">  uint64_t mmap_offset = 0, file_offset = 0;</span><br><span class="line"></span><br><span class="line">  int data_fd = ::open(fname.c_str(), O_RDWR | O_CREAT | O_DIRECT, 0645);</span><br><span class="line">  int batch_fd = ::open(batch.c_str(), O_RDWR | O_CREAT | O_DIRECT, 0645);</span><br><span class="line">  posix_fallocate(data_fd, 0, (4096UL * 1000000));</span><br><span class="line">  posix_fallocate(batch_fd, 0, map_size);</span><br><span class="line"></span><br><span class="line">  MapRegion(batch_fd, 0, &amp;base);</span><br><span class="line">  if (unlikely(base == nullptr)) &#123;</span><br><span class="line">    return;</span><br><span class="line">  &#125;</span><br><span class="line">  cursor = base;</span><br><span class="line">  file_offset += map_size;</span><br><span class="line"></span><br><span class="line">  for (int32_t i = 0; i &lt; 1000000; i++) &#123;</span><br><span class="line">    if (unlikely(mmap_offset &gt;= map_size)) &#123;</span><br><span class="line">      pwrite64(data_fd, base, map_size, file_offset);</span><br><span class="line">      cursor = base;</span><br><span class="line"></span><br><span class="line">      file_offset += map_size;</span><br><span class="line">      mmap_offset = 0;</span><br><span class="line">    &#125;</span><br><span class="line">    memcpy(cursor, data, 4096);</span><br><span class="line">    cursor += 4096;</span><br><span class="line">    mmap_offset += 4096;</span><br><span class="line">  &#125;</span><br><span class="line">  UnMapRegion(base);</span><br><span class="line"></span><br><span class="line">  close(data_fd);</span><br><span class="line">  close(batch_fd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>使用 <code>vmstat</code> 来获取写入速度的数据, 整理如下:</p>
-<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/mmap_batch_io.png" alt="mmap_batch_io"></p>
-<p>这次避免了 <code>mmap()</code> 的开销，写入速度可以稳定保持在 <code>2180 MB/S</code> 左右，且没有 I/O 抖动.</p>
-<p>内存使用也仅仅只有 <code>18000KB</code>, 大约 <code>18M</code>:</p>
-<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/mmap_io_mem_usage.png" alt="memory_usage"></p>
-<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>下面是四种方式的写入速度对比:</p>
-<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/summary.png" alt="summary"><br>在限制内存，且需要 <code>kill -9</code> 不丢数据的情况下，我们可以使用 <code>mmap()</code> 来模拟 Buffer IO，但为了避免频繁 <code>mmap()</code> 的开销，我们需要临时文件来做我们的内存映射. 这种方法可以保证我们的写入速度稳定且 <code>kill -9</code> 不至于丢失数据.</p>
-
+</ul></p>
+            <p class="article-more-link">
+                <a href="/linux-io-benchmark/#more">查看更多</a>
+            </p>
         
         </div>
         <footer class="article-footer">
@@ -618,7 +572,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/linux-io-benchmark/" data-id="ck2inry3a008fbm9evoiqdtgz" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/linux-io-benchmark/" data-id="ck2io51dh008fps9et9w70ldy" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -763,7 +717,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubbo-gracefully-shutdown/" data-id="ck2inry5y00c4bm9e59ii0a2x" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/dubbo-gracefully-shutdown/" data-id="ck2io51g800ccps9enqojcdjs" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -908,7 +862,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubbo-perf-benchmark/" data-id="ck2inry28006fbm9ez2ph71nz" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/dubbo-perf-benchmark/" data-id="ck2io51ch006kps9e9fo05e46" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1053,7 +1007,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/taurusdb-race/" data-id="ck2inry4900ambm9el6tktfe5" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/taurusdb-race/" data-id="ck2io51eh00amps9ezwnk7uka" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1197,7 +1151,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/tokyo-travel/" data-id="ck2inry8d00eebm9ed6abnql3" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/tokyo-travel/" data-id="ck2io51ho00e1ps9egedj22lq" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1342,7 +1296,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubbo-http-protocol/" data-id="ck2inry27006cbm9e0dq4taju" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/dubbo-http-protocol/" data-id="ck2io51cc006fps9eqm6o54b8" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1487,7 +1441,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/cloud-toolkit-benchmark/" data-id="ck2inry5y00c2bm9ex42jrc8q" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/cloud-toolkit-benchmark/" data-id="ck2io51g400c5ps9eynighz2u" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1632,7 +1586,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/network-interfaces/" data-id="ck2inry7f00dobm9ehwom3vb7" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/network-interfaces/" data-id="ck2io51hm00dtps9e7a74rjhc" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

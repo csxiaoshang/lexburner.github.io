@@ -5,13 +5,13 @@
     
     <title>Linux 环境写文件如何稳定跑满磁盘 I/O 带宽? | 徐靖峰|个人博客</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="Linux 环境写文件如何稳定跑满磁盘 I/O 带宽? 准备 要求 机器配置 测试磁盘 IO 性能   实验一: Buffer IO 写入 实验二: 4K 单次 Direct IO 写入 实验三: mmap 写入 实验四: 改进的 mmap 写入 结论  准备要求在  限制内存  的情况下，假定我们每次写入 4k 的数据，如何保证 kill -9 不丢数据的情况下，仍然稳定的跑满磁盘的 IO？因为">
+    <meta name="description" content="准备 要求 机器配置 测试磁盘 IO 性能   实验一: Buffer IO 写入 实验二: 4K 单次 Direct IO 写入 实验三: mmap 写入 实验四: 改进的 mmap 写入 结论">
 <meta name="keywords" content="文件 IO">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux 环境写文件如何稳定跑满磁盘 I&#x2F;O 带宽?">
 <meta property="og:url" content="http://lexburner.github.io/linux-io-benchmark/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
-<meta property="og:description" content="Linux 环境写文件如何稳定跑满磁盘 I/O 带宽? 准备 要求 机器配置 测试磁盘 IO 性能   实验一: Buffer IO 写入 实验二: 4K 单次 Direct IO 写入 实验三: mmap 写入 实验四: 改进的 mmap 写入 结论  准备要求在  限制内存  的情况下，假定我们每次写入 4k 的数据，如何保证 kill -9 不丢数据的情况下，仍然稳定的跑满磁盘的 IO？因为">
+<meta property="og:description" content="准备 要求 机器配置 测试磁盘 IO 性能   实验一: Buffer IO 写入 实验二: 4K 单次 Direct IO 写入 实验三: mmap 写入 实验四: 改进的 mmap 写入 结论">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/buffer_io.png">
 <meta property="og:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/direct_io.png">
@@ -20,10 +20,10 @@
 <meta property="og:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/mmap_batch_io.png">
 <meta property="og:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/mmap_io_mem_usage.png">
 <meta property="og:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/summary.png">
-<meta property="og:updated_time" content="2019-11-03T07:11:49.181Z">
+<meta property="og:updated_time" content="2019-11-03T07:20:20.636Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux 环境写文件如何稳定跑满磁盘 I&#x2F;O 带宽?">
-<meta name="twitter:description" content="Linux 环境写文件如何稳定跑满磁盘 I/O 带宽? 准备 要求 机器配置 测试磁盘 IO 性能   实验一: Buffer IO 写入 实验二: 4K 单次 Direct IO 写入 实验三: mmap 写入 实验四: 改进的 mmap 写入 结论  准备要求在  限制内存  的情况下，假定我们每次写入 4k 的数据，如何保证 kill -9 不丢数据的情况下，仍然稳定的跑满磁盘的 IO？因为">
+<meta name="twitter:description" content="准备 要求 机器配置 测试磁盘 IO 性能   实验一: Buffer IO 写入 实验二: 4K 单次 Direct IO 写入 实验三: mmap 写入 实验四: 改进的 mmap 写入 结论">
 <meta name="twitter:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/buffer_io.png">
     
 
@@ -168,7 +168,7 @@ ga('send', 'pageview');
         <div class="base-info profile-block">
             <img id="avatar" src="/css/images/avatar.png">
             <h2 id="name">徐靖峰</h2>
-            <h3 id="title">software engineer</h3>
+            <h3 id="title">阿里巴巴中间件研发</h3>
             <span id="location"><i class="fa fa-map-marker"></i>中国，杭州</span>
             <a id="follow" target="_blank" href="https://github.com/lexburner">关注我</a>
         </div>
@@ -270,7 +270,7 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <h1 id="Linux-环境写文件如何稳定跑满磁盘-I-O-带宽"><a href="#Linux-环境写文件如何稳定跑满磁盘-I-O-带宽" class="headerlink" title="Linux 环境写文件如何稳定跑满磁盘 I/O 带宽?"></a>Linux 环境写文件如何稳定跑满磁盘 I/O 带宽?</h1><ul>
+            <ul>
 <li>准备<ul>
 <li>要求</li>
 <li>机器配置</li>
@@ -283,6 +283,7 @@ ga('send', 'pageview');
 <li>实验四: 改进的 mmap 写入</li>
 <li>结论</li>
 </ul>
+<a id="more"></a>
 <h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><h3 id="要求"><a href="#要求" class="headerlink" title="要求"></a>要求</h3><p>在 <strong> 限制内存 </strong> 的情况下，假定我们每次写入 4k 的数据，如何保证 <code>kill -9</code> 不丢数据的情况下，仍然稳定的跑满磁盘的 IO？因为需要保证 <code>kill -9</code> 不丢数据，所以 <code>fwrite()</code> 就不在我们的考虑范围之内了. 又因为限制内存，所以直观的想法是直接 Direct IO, 但 Direct IO 能否跑满磁盘 IO 呢?</p>
 <h3 id="机器配置"><a href="#机器配置" class="headerlink" title="机器配置"></a>机器配置</h3><p><strong>CPU</strong>: 64 核 Intel(R) Xeon(R) CPU E5-2682 v4 @ 2.50GHz</p>
 <p><strong> 磁盘 </strong>: Intel Optane SSD</p>
@@ -340,7 +341,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/linux-io-benchmark/" data-id="ck2inry3a008fbm9evoiqdtgz" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://lexburner.github.io/linux-io-benchmark/" data-id="ck2io51dh008fps9et9w70ldy" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
