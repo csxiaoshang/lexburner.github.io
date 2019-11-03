@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>Linux 环境写文件如何稳定跑满磁盘 I/O 带宽? | 徐靖峰|个人博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="Linux 环境写文件如何稳定跑满磁盘 I/O 带宽? 准备 要求 机器配置 测试磁盘 IO 性能   实验一: Buffer IO 写入 实验二: 4K 单次 Direct IO 写入 实验三: mmap 写入 实验四: 改进的 mmap 写入 结论  准备要求在  限制内存  的情况下，假定我们每次写入 4k 的数据，如何保证 kill -9 不丢数据的情况下，仍然稳定的跑满磁盘的 IO？因为">
+<meta name="keywords" content="文件 IO">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux 环境写文件如何稳定跑满磁盘 I&#x2F;O 带宽?">
+<meta property="og:url" content="http://lexburner.github.io/linux-io-benchmark/index.html">
+<meta property="og:site_name" content="徐靖峰|个人博客">
+<meta property="og:description" content="Linux 环境写文件如何稳定跑满磁盘 I/O 带宽? 准备 要求 机器配置 测试磁盘 IO 性能   实验一: Buffer IO 写入 实验二: 4K 单次 Direct IO 写入 实验三: mmap 写入 实验四: 改进的 mmap 写入 结论  准备要求在  限制内存  的情况下，假定我们每次写入 4k 的数据，如何保证 kill -9 不丢数据的情况下，仍然稳定的跑满磁盘的 IO？因为">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/buffer_io.png">
+<meta property="og:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/direct_io.png">
+<meta property="og:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/mmap_io.png">
+<meta property="og:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/perf.png">
+<meta property="og:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/mmap_batch_io.png">
+<meta property="og:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/mmap_io_mem_usage.png">
+<meta property="og:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/summary.png">
+<meta property="og:updated_time" content="2019-11-03T07:11:49.181Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux 环境写文件如何稳定跑满磁盘 I&#x2F;O 带宽?">
+<meta name="twitter:description" content="Linux 环境写文件如何稳定跑满磁盘 I/O 带宽? 准备 要求 机器配置 测试磁盘 IO 性能   实验一: Buffer IO 写入 实验二: 4K 单次 Direct IO 写入 实验三: mmap 写入 实验四: 改进的 mmap 写入 结论  准备要求在  限制内存  的情况下，假定我们每次写入 4k 的数据，如何保证 kill -9 不丢数据的情况下，仍然稳定的跑满磁盘的 IO？因为">
+<meta name="twitter:image" content="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/buffer_io.png">
+    
+
+    
+        <link rel="alternate" href="/atom.xml" title="徐靖峰|个人博客" type="application/atom+xml">
+    
+
+    
+        <link rel="icon" href="/css/images/avatar.png">
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-118574570-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">徐靖峰|个人博客</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/categories">分类</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/about">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">分类</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/about">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile" class="profile-fixed">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png">
+            <h2 id="name">徐靖峰</h2>
+            <h3 id="title">software engineer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>中国，杭州</span>
+            <a id="follow" target="_blank" href="https://github.com/lexburner">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                122
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lexburner" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/css/images/kirito_wechat.jpg" target="_blank" title="wechat" class="tooltip">
+                            <i class="fa fa-wechat"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/atom.xml" target="_blank" title="rss" class="tooltip">
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-linux-io-benchmark" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Linux 环境写文件如何稳定跑满磁盘 I/O 带宽?
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        <!-- 增加文章类型 -->
+                        
+	
+	
+	
+		<div class="article-type">
+		    <span class="label label-warn" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">转载</span>
+		</div>
+	
+		
+	
+
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/linux-io-benchmark/">
+            <time datetime="2019-10-09T11:01:38.000Z" itemprop="datePublished">2019-10-09</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/数据库/">数据库</a>
+    </div>
+
+                        <!-- 不显示标签 -->
+                        <!-- 
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/文件-IO/">文件 IO</a>
+    </div>
+ -->
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h1 id="Linux-环境写文件如何稳定跑满磁盘-I-O-带宽"><a href="#Linux-环境写文件如何稳定跑满磁盘-I-O-带宽" class="headerlink" title="Linux 环境写文件如何稳定跑满磁盘 I/O 带宽?"></a>Linux 环境写文件如何稳定跑满磁盘 I/O 带宽?</h1><ul>
+<li>准备<ul>
+<li>要求</li>
+<li>机器配置</li>
+<li>测试磁盘 IO 性能</li>
+</ul>
+</li>
+<li>实验一: Buffer IO 写入</li>
+<li>实验二: 4K 单次 Direct IO 写入</li>
+<li>实验三: mmap 写入</li>
+<li>实验四: 改进的 mmap 写入</li>
+<li>结论</li>
+</ul>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><h3 id="要求"><a href="#要求" class="headerlink" title="要求"></a>要求</h3><p>在 <strong> 限制内存 </strong> 的情况下，假定我们每次写入 4k 的数据，如何保证 <code>kill -9</code> 不丢数据的情况下，仍然稳定的跑满磁盘的 IO？因为需要保证 <code>kill -9</code> 不丢数据，所以 <code>fwrite()</code> 就不在我们的考虑范围之内了. 又因为限制内存，所以直观的想法是直接 Direct IO, 但 Direct IO 能否跑满磁盘 IO 呢?</p>
+<h3 id="机器配置"><a href="#机器配置" class="headerlink" title="机器配置"></a>机器配置</h3><p><strong>CPU</strong>: 64 核 Intel(R) Xeon(R) CPU E5-2682 v4 @ 2.50GHz</p>
+<p><strong> 磁盘 </strong>: Intel Optane SSD</p>
+<h3 id="测试磁盘-IO-性能"><a href="#测试磁盘-IO-性能" class="headerlink" title="测试磁盘 IO 性能"></a>测试磁盘 IO 性能</h3><p>官方称读 / 写带宽是 <code>2400/2000 MB/s</code>, 我们利用 <code>fio</code> 来进行实测:</p>
+<p>顺序读性能:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo fio --filename=test -iodepth=64 -ioengine=libaio --direct=1 --rw=read --bs=2m --size=2g --numjobs=4 --runtime=10 --group_reporting --name=test-read</span><br></pre></td></tr></table></figure>
+<p>结果:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">READ: bw=2566MiB/s (2691MB/s), 2566MiB/s-2566MiB/s (2691MB/s-2691MB/s), io=8192MiB (8590MB), run=3192-3192msec</span><br></pre></td></tr></table></figure>
+<p>顺序写性能:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo fio --filename=test -iodepth=64 -ioengine=libaio -direct=1 -rw=write -bs=1m -size=2g -numjobs=4 -runtime=20 -group_reporting -name=test-write</span><br></pre></td></tr></table></figure>
+<p>结果:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WRITE: bw=2181MiB/s (2287MB/s), 2181MiB/s-2181MiB/s (2287MB/s-2287MB/s), io=8192MiB (8590MB), run=3756-3756msec</span><br></pre></td></tr></table></figure>
+<p>实测读写带宽: <strong>2566/2181 MB/s</strong></p>
+<h2 id="实验一-Buffer-IO-写入"><a href="#实验一-Buffer-IO-写入" class="headerlink" title="实验一: Buffer IO 写入"></a>实验一: Buffer IO 写入</h2><p>因为是限制内存，所以 Buffer IO 不在我们的考虑范围内，但是我们先来测试一下 Buffer IO 的具体性能到底如何? 我们使用最简单的方法，因为我们的 CPU 核数是 64，所以直接 64 线程单次 <code>4K</code> 字节 Buffer IO 写入, 即通过操作系统的 Page Cache 的策略来缓存，刷盘:</p>
+<p><strong> 代码片段 </strong>: <a href="https://gist.github.com/Leviathan1995/640bb1631001409c828ca19d40c7b7f6" target="_blank" rel="noopener">完整代码</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">static char data[4096] attribute((aligned(4096))) = &#123;&apos;a&apos;&#125;; </span><br><span class="line"></span><br><span class="line">void writer(int index) &#123; </span><br><span class="line">	std::string fname = &quot;data&quot; + std::to_string(index); </span><br><span class="line">	int data_fd = ::open(fname.c_str(), O_RDWR | O_CREAT | O_APPEND, 0645); </span><br><span class="line">	for (int32_t i = 0; i &lt; 1000000; i++) &#123; </span><br><span class="line">		::write(data_fd, data, 4096); </span><br><span class="line">	&#125; </span><br><span class="line">	close(data_fd); </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">int main() &#123; </span><br><span class="line">	std::vectorstd::thread threads; </span><br><span class="line">	for(int i = 0; i &lt; 64; i++) &#123; </span><br><span class="line">		std::thread worker(writer, i); </span><br><span class="line">		threads.push_back(std::move(worker)); </span><br><span class="line">	&#125; </span><br><span class="line">	for (int i = 0; i &lt; 64; i++) &#123; </span><br><span class="line">		threads[i].join(); </span><br><span class="line">	&#125; </span><br><span class="line">	return 0; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们通过 <code>O_APPEND</code> 单次 4k 追加写入，之后通过 <code>vmstat</code> 来保留 <code>120s</code> 的写入带宽:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vmstat 1 120 &gt; buffer_io</span><br></pre></td></tr></table></figure>
+<p>经过最后的测试数据整理，我们发现 Buffer IO 的性能基本能稳定跑满带宽, 其中只有一次 I/O 抖动:</p>
+<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/buffer_io.png" alt="buffer_io"></p>
+<h2 id="实验二-4K-单次-Direct-IO-写入"><a href="#实验二-4K-单次-Direct-IO-写入" class="headerlink" title="实验二: 4K 单次 Direct IO 写入"></a>实验二: 4K 单次 Direct IO 写入</h2><p>Buffer IO 利用 Page Cache 帮助我们缓存了大量的数据，其实必然提高了写入带宽，但假如在限制内存的情况下，Buffer IO 就不是正确的解决方案了，这次我们绕过 Page Cache, 直接 Direct IO 单次 <code>4K</code> 写入:</p>
+<p><strong> 代码片段 </strong>: <a href="https://gist.github.com/Leviathan1995/048f89fb679ef1ecc13978029b20643c" target="_blank" rel="noopener">完整代码</a></p>
+<p>唯一需要修改的地方就是在 <code>open()</code> 中加入 <code>O_DIRECT</code> 标志:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int data_fd = ::open(fname.c_str(), O_RDWR | O_CREAT | O_APPEND | O_DIRECT, 0645);</span><br></pre></td></tr></table></figure>
+<p>通过 <code>vmstat</code> 获取写入带宽数据, 整理如下:</p>
+<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/direct_io.png" alt="direct_io"></p>
+<p>通过数据我们发现，单次 4k 的 Direct IO 写入无法跑满磁盘的 I/O 带宽，仅仅只有 <code>800MB/S</code></p>
+<h2 id="实验三-mmap-写入"><a href="#实验三-mmap-写入" class="headerlink" title="实验三: mmap 写入"></a>实验三: mmap 写入</h2><p>通过前面这两个实验我们发现，Buffer IO 是可以跑满磁盘 I/O 的，那我们可以尝试模拟 Buffer IO 的写入方式，使用较少的内存来达到 Buffer IO 的写入效果.</p>
+<p>我们使用 <code>mmap</code> 来实现 Buffer IO 写入，通过限定的 Buffer Block 来模拟 Page Cache 的聚合效果, 实验中我们使用 <code>memcpy</code> 来完成数据拷贝，Buffer Block 我们设定为 <code>4K * 4</code>, 与 Direct IO 的不同，我们这次限定即 <code>16KB</code> 的单次写入:</p>
+<p><strong>代码片段</strong>: <a href="https://gist.github.com/Leviathan1995/9c54f76bc22668289126a7898562a86d" target="_blank" rel="noopener">完整代码</a></p>
+<p><code>main()</code> 函数不变，修改线程的 <code>writer()</code> 函数:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">static char data[4096] attribute((aligned(4096))) = &#123;&apos;a&apos;&#125;;</span><br><span class="line">static int32_t map_size = 4096 * 4;</span><br><span class="line"></span><br><span class="line">void MapRegion(int fd, uint64_t file_offset, char** base) &#123; </span><br><span class="line">	void* ptr = mmap(nullptr, map_size, PROT_READ | PROT_WRITE, </span><br><span class="line">					MAP_SHARED, </span><br><span class="line">					fd, </span><br><span class="line">					file_offset); </span><br><span class="line">	if (unlikely(ptr == MAP_FAILED)) &#123; </span><br><span class="line">		*base = nullptr; </span><br><span class="line">		return; </span><br><span class="line">	&#125;</span><br><span class="line">	base = reinterpret_cast&lt;char&gt;(ptr); </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">void UnMapRegion(char* base) &#123; </span><br><span class="line">	munmap(base, map_size); </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">void writer(int index) &#123; </span><br><span class="line">	std::string fname = &quot;data&quot; + std::to_string(index); </span><br><span class="line">	char* base = nullptr; </span><br><span class="line">	char* cursor = nullptr; </span><br><span class="line">	uint64_t mmap_offset = 0, file_offset = 0; </span><br><span class="line">	int data_fd = ::open(fname.c_str(), O_RDWR | O_CREAT, 0645); </span><br><span class="line">	posix_fallocate(data_fd, 0, (4096UL * 1000000)); </span><br><span class="line">	MapRegion(data_fd, 0, &amp;base); </span><br><span class="line">	if (unlikely(base == nullptr)) &#123; </span><br><span class="line">		return; </span><br><span class="line">	&#125; </span><br><span class="line">	cursor = base; </span><br><span class="line">	file_offset += map_size; </span><br><span class="line">	for (int32_t i = 0; i &lt; 1000000; i++) &#123; </span><br><span class="line">		if (unlikely(mmap_offset &gt;= map_size)) &#123; </span><br><span class="line">			UnMapRegion(base); </span><br><span class="line">			MapRegion(data_fd, file_offset, &amp;base); </span><br><span class="line">			if (unlikely(base == nullptr)) &#123; </span><br><span class="line">				return; </span><br><span class="line">			&#125; </span><br><span class="line">			cursor = base; </span><br><span class="line">			file_offset += map_size; </span><br><span class="line">			mmap_offset = 0; </span><br><span class="line">		&#125; </span><br><span class="line">		memcpy(cursor, data, 4096); </span><br><span class="line">		cursor += 4096; </span><br><span class="line">		mmap_offset += 4096; </span><br><span class="line">	&#125; </span><br><span class="line">	UnMapRegion(base); </span><br><span class="line">	close(data_fd); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们通过 <code>vmstat</code> 来获取写入带宽数据，我们发现 <code>mmap</code> 的 <code>16K</code> 写入可以跑满磁盘带宽，但 I/O 抖动较大，无法类似于 Buffer IO 稳定的写入.</p>
+<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/mmap_io.png" alt="mmap_io"></p>
+<p>我们通过 <code>perf</code> 生成火焰图分析:</p>
+<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/perf.png" alt="mmap_perf"></p>
+<p>通过 <code>pref</code> 生成分析瓶颈时发现，写入 <code>writer()</code> 时触发了大量的 <code>Page Fault</code>, 即缺页中断，而 <code>mmap()</code> 本身的调用也有一定的消耗 (关于 <code>mmap()</code> 的源码分析，我们在后面的文章会详细分析 )，我们实验三的思路是: 首先 <code>fallocate</code> 一个大文件，然后 <code>mmap()</code> 内存映射 <code>16k</code> 的 Block, <code>memcpy()</code> 写满之后，游标右移重新 <code>mmap()</code>，以此循环.</p>
+<h2 id="实验四-改进的-mmap-写入"><a href="#实验四-改进的-mmap-写入" class="headerlink" title="实验四: 改进的 mmap 写入"></a>实验四: 改进的 mmap 写入</h2><p>为了避免 <code>mmap()</code> 的开销，我们使用临时文件在写入之前 <code>mmap()</code> 映射，之后循环利用这 <code>16K</code> 的 Block, 避免 <code>mmap()</code> 的巨大开销:</p>
+<p><strong>代码片段</strong>: <a href="https://gist.github.com/Leviathan1995/9c54f76bc22668289126a7898562a86d" target="_blank" rel="noopener">完整代码</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">void MapRegion(int fd, uint64_t file_offset, char** base) &#123;</span><br><span class="line">  void* ptr = mmap(nullptr, map_size, PROT_READ | PROT_WRITE,</span><br><span class="line">		   MAP_SHARED,</span><br><span class="line">		   fd,</span><br><span class="line">		   file_offset);</span><br><span class="line">  if (unlikely(ptr == MAP_FAILED)) &#123;</span><br><span class="line">    *base = nullptr;</span><br><span class="line">    return;</span><br><span class="line">  &#125;</span><br><span class="line">  *base = reinterpret_cast&lt;char*&gt;(ptr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void UnMapRegion(char* base) &#123;</span><br><span class="line">  munmap(base, map_size);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void writer(int index) &#123;</span><br><span class="line">  std::string fname = &quot;data&quot; + std::to_string(index);</span><br><span class="line">  std::string batch = &quot;batch&quot; + std::to_string(index);</span><br><span class="line"></span><br><span class="line">  char* base = nullptr;</span><br><span class="line">  char* cursor = nullptr;</span><br><span class="line">  uint64_t mmap_offset = 0, file_offset = 0;</span><br><span class="line"></span><br><span class="line">  int data_fd = ::open(fname.c_str(), O_RDWR | O_CREAT | O_DIRECT, 0645);</span><br><span class="line">  int batch_fd = ::open(batch.c_str(), O_RDWR | O_CREAT | O_DIRECT, 0645);</span><br><span class="line">  posix_fallocate(data_fd, 0, (4096UL * 1000000));</span><br><span class="line">  posix_fallocate(batch_fd, 0, map_size);</span><br><span class="line"></span><br><span class="line">  MapRegion(batch_fd, 0, &amp;base);</span><br><span class="line">  if (unlikely(base == nullptr)) &#123;</span><br><span class="line">    return;</span><br><span class="line">  &#125;</span><br><span class="line">  cursor = base;</span><br><span class="line">  file_offset += map_size;</span><br><span class="line"></span><br><span class="line">  for (int32_t i = 0; i &lt; 1000000; i++) &#123;</span><br><span class="line">    if (unlikely(mmap_offset &gt;= map_size)) &#123;</span><br><span class="line">      pwrite64(data_fd, base, map_size, file_offset);</span><br><span class="line">      cursor = base;</span><br><span class="line"></span><br><span class="line">      file_offset += map_size;</span><br><span class="line">      mmap_offset = 0;</span><br><span class="line">    &#125;</span><br><span class="line">    memcpy(cursor, data, 4096);</span><br><span class="line">    cursor += 4096;</span><br><span class="line">    mmap_offset += 4096;</span><br><span class="line">  &#125;</span><br><span class="line">  UnMapRegion(base);</span><br><span class="line"></span><br><span class="line">  close(data_fd);</span><br><span class="line">  close(batch_fd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用 <code>vmstat</code> 来获取写入速度的数据, 整理如下:</p>
+<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/mmap_batch_io.png" alt="mmap_batch_io"></p>
+<p>这次避免了 <code>mmap()</code> 的开销，写入速度可以稳定保持在 <code>2180 MB/S</code> 左右，且没有 I/O 抖动.</p>
+<p>内存使用也仅仅只有 <code>18000KB</code>, 大约 <code>18M</code>:</p>
+<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/mmap_io_mem_usage.png" alt="memory_usage"></p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>下面是四种方式的写入速度对比:</p>
+<p><img src="http://www.leviathan.vip/2019/01/02/Linux%E7%8E%AF%E5%A2%83%E5%86%99%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E7%A8%B3%E5%AE%9A%E8%B7%91%E6%BB%A1%E7%A3%81%E7%9B%98I-O%E5%B8%A6%E5%AE%BD/summary.png" alt="summary"><br>在限制内存，且需要 <code>kill -9</code> 不丢数据的情况下，我们可以使用 <code>mmap()</code> 来模拟 Buffer IO，但为了避免频繁 <code>mmap()</code> 的开销，我们需要临时文件来做我们的内存映射. 这种方法可以保证我们的写入速度稳定且 <code>kill -9</code> 不至于丢失数据.</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="http://lexburner.github.io/linux-io-benchmark/" data-id="ck2inry3a008fbm9evoiqdtgz" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/live2d/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    一个看板娘入住你的个人博客只需要三步
+                
+            </div>
+        </a>
+    
+    
+        <a href="/dubbo-gracefully-shutdown/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">一文聊透 Dubbo 优雅停机</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+	<div id="commentContainer"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/dubbo-metadata/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
+                            <p class="item-title"><a href="/dubbo-metadata/" class="title">一文聊透 Dubbo 元数据中心</a></p>
+                            <p class="item-date"><time datetime="2019-11-03T07:05:50.000Z" itemprop="datePublished">2019-11-03</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/live2d/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/技术杂谈/">技术杂谈</a></p>
+                            <p class="item-title"><a href="/live2d/" class="title">一个看板娘入住你的个人博客只需要三步</a></p>
+                            <p class="item-date"><time datetime="2019-10-09T11:01:38.000Z" itemprop="datePublished">2019-10-09</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/linux-io-benchmark/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/数据库/">数据库</a></p>
+                            <p class="item-title"><a href="/linux-io-benchmark/" class="title">Linux 环境写文件如何稳定跑满磁盘 I/O 带宽?</a></p>
+                            <p class="item-date"><time datetime="2019-10-09T11:01:38.000Z" itemprop="datePublished">2019-10-09</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/dubbo-gracefully-shutdown/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
+                            <p class="item-title"><a href="/dubbo-gracefully-shutdown/" class="title">一文聊透 Dubbo 优雅停机</a></p>
+                            <p class="item-date"><time datetime="2019-09-29T14:46:55.000Z" itemprop="datePublished">2019-09-29</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/dubbo-perf-benchmark/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
+                            <p class="item-title"><a href="/dubbo-perf-benchmark/" class="title">使用 JMeter 进行 Dubbo 性能测试</a></p>
+                            <p class="item-date"><time datetime="2019-09-05T11:45:52.000Z" itemprop="datePublished">2019-09-05</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-并发合集/">JAVA 并发合集</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">十一月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">一月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11.11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11.11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 16.67px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12.22px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12.22px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB-性能挑战赛/" style="font-size: 10px;">PolarDB 性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 18.89px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 17.78px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12.22px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11.11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11.11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 15.56px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12.22px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13.33px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11.11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11.11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11.11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13.33px;">drools</a> <a href="/tags/live2d/" style="font-size: 10px;">live2d</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11.11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14.44px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 16.67px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12.22px;">数据库</a> <a href="/tags/文件-IO/" style="font-size: 11.11px;">文件 IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13.33px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11.11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13.33px;">规则引擎</a> <a href="/tags/领域驱动设计/" style="font-size: 11.11px;">领域驱动设计</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="https://ntzyz.io/">namespace_ntzyz</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://blog.didispace.com/">程序猿DD|博客</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://vip.iocoder.cn/">芋道源码</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.jiangxinlingdu.com/">匠心零度</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.liangsonghua.me">松花皮蛋的黑板报</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2019 徐靖峰<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+	<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+	<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+	<script>
+		var gitment = new Gitment({
+			owner: 'lexburner',
+			repo: 'lexburner.github.io',
+			oauth: {
+				client_id: 'd5fc3e1150477a0d433d',
+				client_secret: 'aa94acd5f130281051b9e703c19b4c6d878e90c4',
+			},
+		})
+		gitment.render('commentContainer')
+	</script>
+	
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script src="/node_modules/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"node_modules/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/node_modules/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7},"log":false});</script></body>
+</html>
