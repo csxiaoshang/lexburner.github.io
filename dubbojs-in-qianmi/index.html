@@ -9,20 +9,20 @@
 <meta name="keywords" content="RPC">
 <meta property="og:type" content="article">
 <meta property="og:title" content="【千米网】从跨语言调用到 dubbo2.js">
-<meta property="og:url" content="http://lexburner.github.io/dubbojs-in-qianmi/index.html">
+<meta property="og:url" content="https://lexburner.github.io/dubbojs-in-qianmi/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="dubbo2.js 是 千米网 贡献给 dubbo 社区的一款 nodejs dubbo 客户端，它提供了 nodejs 对原生 dubbo 协议的支持，使得 nodejs 和 java 这两种异构语言的 rpc 调用变得便捷，高效。  微服务跨语言调用微服务架构已成为目前互联网架构的趋势，关于微服务的讨论，几乎占据了各种技术大会的绝大多数版面。国内使用最多的服务治理框架非阿里开源的 dubbo">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180514173923709.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180515135449508.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180515143059683.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/359310b9-b980-3254-aed6-78aa6c482e53.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:31.430Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180514173923709.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180515135449508.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180515143059683.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/359310b9-b980-3254-aed6-78aa6c482e53.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:17:39.777Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="【千米网】从跨语言调用到 dubbo2.js">
 <meta name="twitter:description" content="dubbo2.js 是 千米网 贡献给 dubbo 社区的一款 nodejs dubbo 客户端，它提供了 nodejs 对原生 dubbo 协议的支持，使得 nodejs 和 java 这两种异构语言的 rpc 调用变得便捷，高效。  微服务跨语言调用微服务架构已成为目前互联网架构的趋势，关于微服务的讨论，几乎占据了各种技术大会的绝大多数版面。国内使用最多的服务治理框架非阿里开源的 dubbo">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/image-20180514173923709.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/image-20180514173923709.png">
     
 
     
@@ -293,7 +293,7 @@ ga('send', 'pageview');
 </ul>
 <p>这也关键的选型因素。我们做出的第一个尝试，便是在 RPC 协议上下功夫。</p>
 <h3 id="通用协议的跨语言支持"><a href="#通用协议的跨语言支持" class="headerlink" title="通用协议的跨语言支持"></a>通用协议的跨语言支持</h3><p><strong>springmvc 的美好时代 </strong></p>
-<p><img src="http://kirito.iocoder.cn/image-20180514173923709.png" alt="springmvc"></p>
+<p><img src="https://kirito.iocoder.cn/image-20180514173923709.png" alt="springmvc"></p>
 <p>在没有实现真正的跨语言调用之前，想要实现“跨语言”大多数方案是使用 http 协议做一层转换，最常见的手段莫过于借助 springmvc 提供的 controller/restController，间接调用 dubbo provider。这种方案的优势和劣势显而易见</p>
 <ul>
 <li>优势是简单，是最通俗的解决方案。</li>
@@ -307,12 +307,12 @@ ga('send', 'pageview');
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dubbo:protocol</span> <span class="attr">name</span>=<span class="string">"dubbo"</span> <span class="attr">port</span>=<span class="string">"20880"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dubbo:protocol</span> <span class="attr">name</span>=<span class="string">"jsonrpc"</span> <span class="attr">port</span>=<span class="string">"8080"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
 <p>dubbo 协议主要支持 java 间的相互调用，适配老接口；json-rpc 协议主要支持异构语言的调用。</p>
 <h3 id="定制协议的跨语言支持"><a href="#定制协议的跨语言支持" class="headerlink" title="定制协议的跨语言支持"></a>定制协议的跨语言支持</h3><p>微服务框架所谓的协议 (protocol) 可以简单理解为：报文格式和序列化方案。服务治理框架一般都提供了众多的协议配置项供使用者选择，除去上述两种通用协议，还存在一些定制化的协议，如 dubbo 框架的默认协议：dubbo 协议以及 motan 框架提供的跨语言协议：motan2。</p>
-<h4 id="motan2-协议的跨语言支持"><a href="#motan2-协议的跨语言支持" class="headerlink" title="motan2 协议的跨语言支持"></a>motan2 协议的跨语言支持</h4><p><img src="http://kirito.iocoder.cn/image-20180515135449508.png" alt="motan2"></p>
+<h4 id="motan2-协议的跨语言支持"><a href="#motan2-协议的跨语言支持" class="headerlink" title="motan2 协议的跨语言支持"></a>motan2 协议的跨语言支持</h4><p><img src="https://kirito.iocoder.cn/image-20180515135449508.png" alt="motan2"></p>
 <p>motan2 协议被设计用来满足跨语言的需求主要体现在两个细节中—MetaData 和 motan-go。在最初的 motan 协议中，协议报文仅由 Header+Body 组成，这样导致 path，param，group 等存储在 Body 中的数据需要反序列得到，这对异构语言来说是很不友好的，所以在 motan2 中修改了协议的组成；weibo 开源了 <a href="https://github.com/weibocom/motan-go/" target="_blank" rel="noopener">motan-go</a> ，<a href="https://github.com/weibocom/motan-php" target="_blank" rel="noopener">motan-php</a> ，<a href="https://github.com/weibocom/motan-openresty" target="_blank" rel="noopener">motan-openresty</a> , 并借助于 motan-go 充当了 agent 这一翻译官的角色，使用 simple 序列化方案来序列化协议报文的 Body 部分（simple 序列化是一种较弱的序列化方案）。</p>
-<p><img src="http://kirito.iocoder.cn/image-20180515143059683.png" alt="agent"></p>
+<p><img src="https://kirito.iocoder.cn/image-20180515143059683.png" alt="agent"></p>
 <p>仔细揣摩下可以发现这么做和双协议的配置区别并不是大，只不过这里的 agent 是隐式存在的，与主服务共生。明显的区别在于 agent 方案中异构语言并不直接交互。</p>
 <h3 id="dubbo-协议的跨语言支持"><a href="#dubbo-协议的跨语言支持" class="headerlink" title="dubbo 协议的跨语言支持"></a>dubbo 协议的跨语言支持</h3><p>dubbo 协议设计之初只考虑到了常规的 rpc 调用场景，它并不是为跨语言而设计，但跨语言支持从来不是只有支持、不支持两种选择，而是要按难易程度来划分。是的，dubbo 协议的跨语言调用可能并不好做，但并非无法实现。千米网便实现了这一点，nodejs 构建的前端业务是异构语言的主战场，最终实现了 dubbo2.js，打通了 nodejs 和原生 dubbo 协议。作为本文第二部分的核心内容，重点介绍下我们使用 dubbo2.js 干了什么事。</p>
-<h4 id="Dubbo-协议报文格式"><a href="#Dubbo-协议报文格式" class="headerlink" title="Dubbo 协议报文格式"></a>Dubbo 协议报文格式</h4><p><img src="http://kirito.iocoder.cn/359310b9-b980-3254-aed6-78aa6c482e53.png" alt="dubbo 协议"></p>
+<h4 id="Dubbo-协议报文格式"><a href="#Dubbo-协议报文格式" class="headerlink" title="Dubbo 协议报文格式"></a>Dubbo 协议报文格式</h4><p><img src="https://kirito.iocoder.cn/359310b9-b980-3254-aed6-78aa6c482e53.png" alt="dubbo 协议"></p>
 <p>dubbo 协议报文消息头详解：</p>
 <ul>
 <li>magic：类似 java 字节码文件里的魔数，用来判断是不是 dubbo 协议的数据包。魔数是常量 0xdabb</li>
@@ -367,7 +367,7 @@ ga('send', 'pageview');
 </ul>
 <h3 id="MORE-DETAILS"><a href="#MORE-DETAILS" class="headerlink" title="MORE DETAILS"></a>MORE DETAILS</h3><p>本文中的示例代码，提供在此处，<a href="https://github.com/lexburner/Dubbojs-Learning" target="_blank" rel="noopener">https://github.com/lexburner/Dubbojs-Learning</a> 。如果你对 dubbo 协议不慎了解，想要理解它的工作原理，项目中提供了一个子 moudle — java-socket-consumer，使用面向过程的思路实现了 java-socket-consumer，完成了原生 socket 发送 dubbo 协议报文，完成方法调用，并获取响应的全流程。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -378,7 +378,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubbojs-in-qianmi/" data-id="ck2kho76d006vif9er2jiwgpg" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/dubbojs-in-qianmi/" data-id="ck2kil4p4006sug9e94oaj0es" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

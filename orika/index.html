@@ -9,17 +9,17 @@
 <meta name="keywords" content="JAVA">
 <meta property="og:type" content="article">
 <meta property="og:title" content="打开 orika 的正确方式">
-<meta property="og:url" content="http://lexburner.github.io/orika/index.html">
+<meta property="og:url" content="https://lexburner.github.io/orika/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="缘起架构分层开发分布式的项目时，DO 持久化对象和 DTO 传输对象的转换是不可避免的。集中式项目中，DO-DAO-SERVICE-WEB 的分层再寻常不过，但分布式架构（或微服务架构）需要拆分模块时，不得不思考一个问题：WEB 层能不能出现 DAO 或者 DO 对象？我给出的答案是否定的。  这张图曾出现在我过去的文章中，其强调了一个分层的要素：服务层 (应用层) 和表现层应当解耦，后者不应当触">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/52029421305_2.gif">
-<meta property="og:image" content="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720171117093043.png">
-<meta property="og:updated_time" content="2019-09-26T09:45:30.407Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/52029421305_2.gif">
+<meta property="og:image" content="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720171117093043.png">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.787Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="打开 orika 的正确方式">
 <meta name="twitter:description" content="缘起架构分层开发分布式的项目时，DO 持久化对象和 DTO 传输对象的转换是不可避免的。集中式项目中，DO-DAO-SERVICE-WEB 的分层再寻常不过，但分布式架构（或微服务架构）需要拆分模块时，不得不思考一个问题：WEB 层能不能出现 DAO 或者 DO 对象？我给出的答案是否定的。  这张图曾出现在我过去的文章中，其强调了一个分层的要素：服务层 (应用层) 和表现层应当解耦，后者不应当触">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/52029421305_2.gif">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/52029421305_2.gif">
     
 
     
@@ -271,7 +271,7 @@ ga('send', 'pageview');
         
             
             <h2 id="缘起"><a href="#缘起" class="headerlink" title="缘起"></a>缘起</h2><h3 id="架构分层"><a href="#架构分层" class="headerlink" title="架构分层"></a>架构分层</h3><p>开发分布式的项目时，DO 持久化对象和 DTO 传输对象的转换是不可避免的。集中式项目中，DO-DAO-SERVICE-WEB 的分层再寻常不过，但分布式架构（或微服务架构）需要拆分模块时，不得不思考一个问题：WEB 层能不能出现 DAO 或者 DO 对象？我给出的答案是否定的。</p>
-<p><img src="http://kirito.iocoder.cn/52029421305_2.gif" alt="新的项目分层结构"></p>
+<p><img src="https://kirito.iocoder.cn/52029421305_2.gif" alt="新的项目分层结构"></p>
 <p>这张图曾出现在我过去的文章中，其强调了一个分层的要素：服务层 (应用层) 和表现层应当解耦，后者不应当触碰到任何持久化对象，其所有的数据来源，均应当由前者提供。</p>
 <h3 id="DTO-的位置"><a href="#DTO-的位置" class="headerlink" title="DTO 的位置"></a>DTO 的位置</h3><p>就系统的某一个模块，可以大致分成领域层 model，接口定义层 api，接口实现层 / 服务层 service，表现层 web。</p>
 <ul>
@@ -344,7 +344,7 @@ ga('send', 'pageview');
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericTest2</span><span class="params">()</span></span>&#123;</span><br><span class="line">    MapperFactory mapperFactory = <span class="keyword">new</span> DefaultMapperFactory.Builder().build();</span><br><span class="line">    Response&lt;Person&gt; response = <span class="keyword">new</span> Response&lt;&gt;();</span><br><span class="line">    Person person = <span class="keyword">new</span> Person();</span><br><span class="line">    person.setName(<span class="string">"test generic"</span>);</span><br><span class="line">    response.setData(person);</span><br><span class="line">    Response&lt;PersonDto&gt; responseDto = mapperFactory.getMapperFacade().map(response, Response.class);</span><br><span class="line">    Assert.assertFalse(responseDto.getData() <span class="keyword">instanceof</span> PersonDto);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>Response 中的 String 和 PersonDto 在运行时 (Runtime) 泛型擦除这一特性难住了不少人，那么，Orika 如何解决泛型映射呢？</p>
 <p>我们可以发现 MapperFacade 的具有一系列的重载方法，对各种类型的泛型拷贝进行支持</p>
-<p><img src="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720171117093043.png" alt="泛型支持"></p>
+<p><img src="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720171117093043.png" alt="泛型支持"></p>
 <p>可以看到几乎每个方法都传入了一个 Type，用于获取拷贝类的真实类型，而不是传入.class 字节码，下面介绍正确的打开姿势：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericTest1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    MapperFactory mapperFactory = <span class="keyword">new</span> DefaultMapperFactory.Builder().build();</span><br><span class="line">    Response&lt;String&gt; response = <span class="keyword">new</span> Response&lt;&gt;();</span><br><span class="line">    response.setData(<span class="string">"test generic"</span>);</span><br><span class="line">    Type&lt;Response&lt;String&gt;&gt; fromType = <span class="keyword">new</span> TypeBuilder&lt;Response&lt;String&gt;&gt;()&#123;&#125;.build();</span><br><span class="line">    Type&lt;ResponseDto&lt;String&gt;&gt; toType = <span class="keyword">new</span> TypeBuilder&lt;ResponseDto&lt;String&gt;&gt;()&#123;&#125;.build();</span><br><span class="line">    ResponseDto&lt;String&gt; responseDto = mapperFactory.getMapperFacade().map(response, fromType, toType);</span><br><span class="line">    Assert.assertTrue(<span class="string">"test generic"</span>.equals(responseDto.getData()));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericTest2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    MapperFactory mapperFactory = <span class="keyword">new</span> DefaultMapperFactory.Builder().build();</span><br><span class="line">    Response&lt;Person&gt; response = <span class="keyword">new</span> Response&lt;&gt;();</span><br><span class="line">    Person person = <span class="keyword">new</span> Person();</span><br><span class="line">    person.setName(<span class="string">"test generic"</span>);</span><br><span class="line">    response.setData(person);</span><br><span class="line">    Type&lt;Response&lt;Person&gt;&gt; fromType = <span class="keyword">new</span> TypeBuilder&lt;Response&lt;Person&gt;&gt;()&#123;&#125;.build();</span><br><span class="line">    Type&lt;Response&lt;PersonDto&gt;&gt; toType = <span class="keyword">new</span> TypeBuilder&lt;Response&lt;PersonDto&gt;&gt;()&#123;&#125;.build();</span><br><span class="line">    Response&lt;PersonDto&gt; responseDto = mapperFactory.getMapperFacade().map(response, fromType, toType);</span><br><span class="line">    Assert.assertEquals(<span class="string">"test generic"</span> , responseDto.getData().getName());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -363,7 +363,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/orika/" data-id="ck2kho771008kif9eoalbgpgu" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/orika/" data-id="ck2kil4pj008mug9e0vvbnobn" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

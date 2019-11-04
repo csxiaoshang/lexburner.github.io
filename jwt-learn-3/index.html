@@ -9,17 +9,17 @@
 <meta name="keywords" content="JWT">
 <meta property="og:type" content="article">
 <meta property="og:title" content="理解 JWT 的使用场景和优劣">
-<meta property="og:url" content="http://lexburner.github.io/jwt-learn-3/index.html">
+<meta property="og:url" content="https://lexburner.github.io/jwt-learn-3/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="经过前面两篇文章《JSON Web Token - 在 Web 应用间安全地传递信息》《八幅漫画理解使用 JSON Web Token 设计单点登录系统》的科普，相信大家应该已经知道了 JWT 协议是什么了。至少看到">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/04081086-5158-489E-8EC2-B28795B99BD6.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-10-10T08:54:55.359Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/04081086-5158-489E-8EC2-B28795B99BD6.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:47.406Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="理解 JWT 的使用场景和优劣">
 <meta name="twitter:description" content="经过前面两篇文章《JSON Web Token - 在 Web 应用间安全地传递信息》《八幅漫画理解使用 JSON Web Token 设计单点登录系统》的科普，相信大家应该已经知道了 JWT 协议是什么了。至少看到">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/04081086-5158-489E-8EC2-B28795B99BD6.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/04081086-5158-489E-8EC2-B28795B99BD6.png">
     
 
     
@@ -275,7 +275,7 @@ ga('send', 'pageview');
 <p>这样形如 A.B.C 的字符串时能敏感地认出这是使用了 jwt。发了这两篇文章后，有不少读者在文末留言，表达了对 jwt 使用方式的一些疑惑，以及到底哪些场景适合使用 jwt。我并不是 jwt 方面的专家，和不少读者一样，起初研究时我也存在相同疑惑，甚至在逐渐接触后产生了更大的疑惑，经过这段时间项目中的使用和一些自己思考，把个人的总结整理成此文。</p>
 <h3 id="编码，签名，加密"><a href="#编码，签名，加密" class="headerlink" title="编码，签名，加密"></a>编码，签名，加密</h3><p>这些基础知识简单地介绍下，千万别搞混了三个概念。在 jwt 中恰好同时涉及了这三个概念，笔者用大白话来做下通俗的讲解（非严谨定义，供个人理解）</p>
 <h4 id="编码-encode-和解码-decode"><a href="#编码-encode-和解码-decode" class="headerlink" title="编码 (encode) 和解码(decode)"></a>编码 (encode) 和解码(decode)</h4><p>一般是编码解码是为了方便以字节的方式表示数据，便于存储和网络传输。整个 jwt 串会被置于 http 的 Header 或者 url 中，为了不出现乱码解析错误等意外，编码是有必要的。在 jwt 中以 <code>.</code> 分割的三个部分都经过 base64 编码 (secret 部分是否进行 base64 编码是可选的，header 和 payload 则是必须进行 base64 编码)。注意，编码的一个特点：编码和解码的整个过程是可逆的。得知编码方式后，整个 jwt 串便是明文了，随意找个网站验证下解码后的内容：</p>
-<p><img src="http://kirito.iocoder.cn/04081086-5158-489E-8EC2-B28795B99BD6.png" alt="base64"></p>
+<p><img src="https://kirito.iocoder.cn/04081086-5158-489E-8EC2-B28795B99BD6.png" alt="base64"></p>
 <p>所以注意一点，<strong>payload 是一定不能够携带敏感数据如密码等信息的 </strong>。</p>
 <h4 id="签名-signature"><a href="#签名-signature" class="headerlink" title="签名 (signature)"></a>签名 (signature)</h4><p>签名的目的主要是为了验证我是“我”。jwt 中常用的签名算法是 HS256，可能大多数人对这个签名算法不熟悉，但 md5,sha 这样的签名算法肯定是为人熟知的，签名算法共同的特点是整个过程是不可逆的。由于签名之前的主体内容 (header,payload) 会携带在 jwt 字符串中，所以需要使用带有密钥 (yuè) 的签名算法，密钥是服务器和签发者共享的。header 部分和 payload 部分如果被篡改，由于篡改者不知道密钥是什么，也无法生成新的 signature 部分，服务端也就无法通过，在 jwt 中，消息体是透明的，使用签名可以保证消息不被篡改。</p>
 <blockquote>
@@ -352,7 +352,7 @@ ga('send', 'pageview');
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>在 web 应用中，使用 jwt 代替 session 存在不小的风险，你至少得解决本文中提及的那些问题，绝大多数情况下，传统的 cookie-session 机制工作得更好。jwt 适合做简单的 restful api 认证，颁发一个固定有效期的 jwt，降低 jwt 暴露的风险，不要对 jwt 做服务端的状态管理，这样才能体现出 jwt 无状态的优势。</p>
 <p>可能对 jwt 的使用场景还有一些地方未被我察觉，后续会研究下 spring security oauth jwt 的源码，不知到时会不会有新发现。</p>
 <p><strong>欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -363,7 +363,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/jwt-learn-3/" data-id="ck2kho76x0086if9ecw97dhr3" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/jwt-learn-3/" data-id="ck2kil4pf0088ug9ev1rqohb6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

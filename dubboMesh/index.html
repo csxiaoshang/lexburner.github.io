@@ -9,22 +9,22 @@
 <meta name="keywords" content="RPC">
 <meta property="og:type" content="article">
 <meta property="og:title" content="天池中间件大赛 dubboMesh 优化总结（qps 从 1000 到 6850）">
-<meta property="og:url" content="http://lexburner.github.io/dubboMesh/index.html">
+<meta property="og:url" content="https://lexburner.github.io/dubboMesh/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="天池中间件大赛的初赛在今早终于正式结束了，公众号停更了一个月，主要原因就是博主的空余时间几乎全花在这个比赛上，第一赛季结束，做下参赛总结，总的来说，收获不小。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180619190732570.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180619190732570.png">
 <meta property="og:image" content="https://work.alibaba-inc.com/aliwork_tfs/g01_alibaba-inc_com/tfscom/TB1ctUkXwZC2uNjSZFnXXaxZpXa.tfsprivate.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180619200219464.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180619200219464.png">
 <meta property="og:image" content="https://cdn.yuque.com/yuque/0/2018/png/101192/1525856256886-9eefdf3f-9dd5-471b-94bb-1b76dcdd3bb3.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180619214121418.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180619214121418.png">
 <meta property="og:image" content="https://cdn.yuque.com/yuque/0/2018/png/101192/1525856636255-170ec5a4-a826-47f6-b9f2-e2cc2b1acc59.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:30.168Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:17:52.570Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="天池中间件大赛 dubboMesh 优化总结（qps 从 1000 到 6850）">
 <meta name="twitter:description" content="天池中间件大赛的初赛在今早终于正式结束了，公众号停更了一个月，主要原因就是博主的空余时间几乎全花在这个比赛上，第一赛季结束，做下参赛总结，总的来说，收获不小。">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/image-20180619190732570.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/image-20180619190732570.png">
     
 
     
@@ -276,7 +276,7 @@ ga('send', 'pageview');
         
             
             <p>天池中间件大赛的初赛在今早终于正式结束了，公众号停更了一个月，主要原因就是博主的空余时间几乎全花在这个比赛上，第一赛季结束，做下参赛总结，总的来说，收获不小。</p>
-<p><img src="http://kirito.iocoder.cn/image-20180619190732570.png" alt="最终排名"><br><a id="more"></a><br>先说结果，最终榜单排名是第 15 名（除去前排大佬的两个小号，加上作弊的第一名，勉强能算是第 12 名），说实话是挺满意的成绩。这篇文章主要是分享给以下读者：比赛中使用了 netty 却没有达到理想 qps 的朋友，netty 刚入门的朋友，对 dubbo mesh 感兴趣的朋友。</p>
+<p><img src="https://kirito.iocoder.cn/image-20180619190732570.png" alt="最终排名"><br><a id="more"></a><br>先说结果，最终榜单排名是第 15 名（除去前排大佬的两个小号，加上作弊的第一名，勉强能算是第 12 名），说实话是挺满意的成绩。这篇文章主要是分享给以下读者：比赛中使用了 netty 却没有达到理想 qps 的朋友，netty 刚入门的朋友，对 dubbo mesh 感兴趣的朋友。</p>
 <p>在比赛之前我个人对 netty 的认识也仅仅停留在了解的层面，在之前解读 RPC 原理的系列文章中涉及到 netty 传输时曾了解过一二，基本可以算零基础使用 netty 参赛，所以我会更多地站在一个小白的视角来阐述自己的优化历程，一步步地提高 qps，也不会绕开那些自己踩过的坑以及负优化。另一方面，由于自己对 netty 的理解并不是很深，所以文中如果出现错误，敬请谅解，欢迎指正。</p>
 <h3 id="Dubbo-Mesh-是什么？"><a href="#Dubbo-Mesh-是什么？" class="headerlink" title="Dubbo Mesh 是什么？"></a>Dubbo Mesh 是什么？</h3><p>为了照顾那些不太了解这次比赛内容的读者，我先花少量的篇幅介绍下这次阿里举办的天池中间件大赛到底比的是个什么东西，那就不得不先介绍下 Dubbo Mesh 这个概念。</p>
 <p>如果你用过 dubbo，并且对 service mesh 有所了解，那么一定可以秒懂 Dubbo Mesh 是为了解决什么问题。说白了，dubbo 原先是为了 java 语言而准备的，没有考虑到跨语言的问题，这意味着 nodejs，python，go 要想无缝使用 dubbo 服务，要么借助于各自语言的 dubbo 客户端，例如：node-dubbo-client，python-dubbo-client，go-dubbo-client；要么就是借助于 service mesh 的解决方案，让 dubbo 自己提供跨语言的解决方案，来屏蔽不同语言的处理细节，于是乎，dubbo 生态的跨语言 service mesh 解决方案就被命名为了 dubbo mesh。一图胜千言：</p>
@@ -285,7 +285,7 @@ ga('send', 'pageview');
 <h3 id="赛题剖析"><a href="#赛题剖析" class="headerlink" title="赛题剖析"></a>赛题剖析</h3><p>这次比赛的主要考察点在于高并发下网络通信模型的实现，可以涵盖以下几个关键点：reactor 模型，负载均衡，线程，锁，io 通信，阻塞与非阻塞，零拷贝，序列化，http/tcp/udp 与自定义协议，批处理，垃圾回收，服务注册发现等。它们对最终程序的 qps 起着或大或小的影响，对它们的理解越深，越能够编写出高性能的 dubbo mesh 方案。</p>
 <p>语言的选择，初赛结束后的感受，大家主要还是在 java，c++，go 中进行了抉择。语言的选择考虑到了诸多的因素，通用性，轻量级，性能，代码量和 qps 的性价比，选手的习惯等等。虽然前几名貌似都是 c++，但总体来说，排名 top 10 之外，绝不会是因为语言特性在从中阻挠。c++ 选手高性能的背后，可能是牺牲了 600 多行代码在自己维护一个 etcd-lib（比赛限制使用 etcd，但据使用 c++ 的选手说，c++ 没有提供 etcd 的 lib）；且这次比赛提供了预热环节，java 党也露出了欣慰的笑容。java 的主流框架还是在 nio，akka，netty 之间的抉择，netty 应该是众多 java 选手中较为青睐的，博主也选择了 netty 作为 dubbo mesh 的实现；go 的协程和网络库也是两把利器，并不比 java 弱，加上其进程轻量级的特性，也作为了一个选择。</p>
 <p>官方提供了一个 qps 并不是很高的 demo，来方便选手们理解题意，可以说是非常贴心了，来回顾一下最简易的 dubbo mesh 实现：</p>
-<p><img src="http://kirito.iocoder.cn/image-20180619200219464.png" alt="dubbo mesh 初始方案"></p>
+<p><img src="https://kirito.iocoder.cn/image-20180619200219464.png" alt="dubbo mesh 初始方案"></p>
 <p>如上图所示，是整个初始 dubbo mesh 的架构图，其中 consumer 和 provider 以灰色表示，因为选手是不能修改其实现的，绿色部分的 agent 是可以由选手们自由发挥的部分。比赛中 consumer，consumer-agent 为 单个实例，provider、provider-agent 分别启动了三个性能不一的实例：small，medium，large，这点我没有在图中表示出来，大家自行脑补。所以所有选手都需要完成以下几件事：</p>
 <ol>
 <li>consumer-agent 需要启动一个 http 服务器，接收来自 consumer 的 http 请求</li>
@@ -326,7 +326,7 @@ ga('send', 'pageview');
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 入站服务端的 eventLoopGroup</span></span><br><span class="line"><span class="keyword">private</span> EventLoopGroup workerGroup;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 为出站客户端预先创建好的 channel</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initThreadBoundClient</span><span class="params">(EventLoopGroup workerGroup)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (EventExecutor eventExecutor : eventLoopGroup) &#123;</span><br><span class="line">        <span class="keyword">if</span> (eventExecutor <span class="keyword">instanceof</span> EventLoop) &#123;</span><br><span class="line">            ConsumerAgentClient consumerAgentClient = <span class="keyword">new</span> ConsumerAgentClient((EventLoop) eventExecutor);</span><br><span class="line">            consumerAgentClient.init();</span><br><span class="line">            ConsumerAgentClient.put(eventExecutor, consumerAgentClient);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>使用入站服务端的 eventLoopGroup 为出站客户端预先创建好 channel，这样可以达到复用 eventLoop 的目的。并且此时还有一个伴随的优化点，就是将存储 Map&lt;requestId,Promise&gt; 的数据结构，从 concurrentHashMap 替换为了 ThreadLocal<hashmap> , 因为入站线程和出站线程都是相同的线程，省去一个 concurrentHashMap 可以进一步降低锁的竞争。</hashmap></p>
 <p>到了这一步，整体架构已经清晰了，c-&gt;ca，ca-&gt;pa，pa-&gt;p 都实现了异步非阻塞的 reactor 模型，qps 在 256 并发下，也达到了 4400 qps。</p>
-<p><img src="http://kirito.iocoder.cn/image-20180619214121418.png" alt="优化后的 dubbo mesh 方案"></p>
+<p><img src="https://kirito.iocoder.cn/image-20180619214121418.png" alt="优化后的 dubbo mesh 方案"></p>
 <h3 id="正式赛-512-连接带来的新格局"><a href="#正式赛-512-连接带来的新格局" class="headerlink" title="正式赛 512 连接带来的新格局"></a>正式赛 512 连接带来的新格局</h3><p>上述这份代码在预热赛 256 并发下表现尚可，但正式赛为了体现出大家的差距，将最高并发数直接提升了一倍，但 qps 却并没有得到很好的提升，卡在了 5400 qps。和 256 连接下同样 4400 的朋友交流过后，发现我们之间的差距主要体现在 ca 和 pa 的 io 线程数，以及 pa 到 p 的连接数上。5400 qps 显然低于我的预期，为了降低连接数，我修改了原来 provider-agent 的设计。从以下优化开始，是正式赛 512 连接下的优化，预热赛只有 256 连接。</p>
 <p><strong>Qps 5400 到 5800 (降低连接数)</strong></p>
 <p>对 netty 中 channel 的优化搜了很多文章，依旧不是很确定连接数到底是不是影响我代码的关键因素，在和小伙伴沟通之后实在找不到 qps 卡在 5400 的原因，于是乎抱着试试的心态修改了下 provider-agent 的设计，采用了和 consumer-agent 一样的设计，预先拿到 provder-agent 入站服务器的 woker 线程组，创建出站请求的 channel，将原来的 4 个线程，4 个 channel 降低到了 1 个线程，一个 channel。其他方面未做任何改动，qps 顺利达到了 5800。</p>
@@ -380,7 +380,7 @@ ga('send', 'pageview');
 <p><a href="https://code.aliyun.com/250577914/agent-demo.git" target="_blank" rel="noopener">https://code.aliyun.com/250577914/agent-demo.git</a></p>
 <p>最后帮队友 @闪电侠推广下他的 netty 视频教程，比赛中两个比较难的优化点，都是由他进行的改造。imooc.com 搜索 Netty，可以获取 netty 源码分析视频。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -391,7 +391,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubboMesh/" data-id="ck2kho7a100dkif9et1owq7id" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/dubboMesh/" data-id="ck2kil4rp00dkug9e8ir44l1g" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

@@ -9,16 +9,16 @@
 <meta name="keywords" content="Spring Cloud">
 <meta property="og:type" content="article">
 <meta property="og:title" content="从 Feign 使用注意点到 RESTFUL 接口设计规范">
-<meta property="og:url" content="http://lexburner.github.io/feign-1/index.html">
+<meta property="og:url" content="https://lexburner.github.io/feign-1/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="最近项目中大量使用了 Spring Cloud Feign 来对接 http 接口，踩了不少坑，也产生了一些对 RESTFUL 接口设计的想法，特此一篇记录下。 [TOC] SpringMVC 的请求参数绑定机制了解 Feign 历史的朋友会知道，Feign 本身是 Netflix 的产品，Spring Cloud Feign 是在原生 Feign 的基础上进行了封装，引入了大量的 SpringM">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/feignlog.png">
-<meta property="og:updated_time" content="2019-09-26T09:45:30.912Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/feignlog.png">
+<meta property="og:updated_time" content="2019-11-04T14:18:18.739Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从 Feign 使用注意点到 RESTFUL 接口设计规范">
 <meta name="twitter:description" content="最近项目中大量使用了 Spring Cloud Feign 来对接 http 接口，踩了不少坑，也产生了一些对 RESTFUL 接口设计的想法，特此一篇记录下。 [TOC] SpringMVC 的请求参数绑定机制了解 Feign 历史的朋友会知道，Feign 本身是 Netflix 的产品，Spring Cloud Feign 是在原生 Feign 的基础上进行了封装，引入了大量的 SpringM">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/feignlog.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/feignlog.png">
     
 
     
@@ -287,7 +287,7 @@ ga('send', 'pageview');
 <p>我们按照写 SpringMVC 的 RestController 的习惯写了一个 FeignClient，按照我们的一开始的想法，由于指定了请求方式是 GET，那么 name 应该会作为 QueryString 拼接到 Url 中吧？发出一个这样的 GET 请求：</p>
 <figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/hello?name=xxx</span> HTTP/1.1</span><br><span class="line"><span class="attribute">Host</span>: localhost:8080</span><br></pre></td></tr></table></figure>
 <p>而实际上，RestController 并没有接收到，我们在 RestController 一侧的应用中获得了一些提示：</p>
-<p><img src="http://kirito.iocoder.cn/feignlog.png" alt="服务端 DEBUG 信息"></p>
+<p><img src="https://kirito.iocoder.cn/feignlog.png" alt="服务端 DEBUG 信息"></p>
 <ul>
 <li>并没有按照期望使用 GET 方式发送请求，而是 POST 方式</li>
 <li>name 参数没有被封装，获得了一个 null 值</li>
@@ -338,7 +338,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/feign-1/" data-id="ck2kho76i0079if9ep3nkm4hx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/feign-1/" data-id="ck2kil4p70076ug9eqcrx25w4" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

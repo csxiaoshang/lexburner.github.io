@@ -9,19 +9,19 @@
 <meta name="keywords" content="PolarDB 性能挑战赛">
 <meta property="og:type" content="article">
 <meta property="og:title" content="文件 IO 操作的一些最佳实践">
-<meta property="og:url" content="http://lexburner.github.io/file-io-best-practise/index.html">
+<meta property="og:url" content="https://lexburner.github.io/file-io-best-practise/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="背景已经过去的中间件性能挑战赛，和正在进行中的 第一届 PolarDB 数据性能大赛 都涉及到了文件操作，合理地设计架构以及正确地压榨机器的读写性能成了比赛中获取较好成绩的关键。正在参赛的我收到了几位公众号读者朋友的反馈，他们大多表达出了这样的烦恼：“对比赛很感兴趣，但不知道怎么入门”，“能跑出成绩，但相比前排的选手，成绩相差 10 倍有余”…为了能让更多的读者参与到之后相类似的比赛中来，我简单整">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180714180739936.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/1364556742_9652.gif">
-<meta property="og:image" content="http://kirito.iocoder.cn/linux-io.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:30.439Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180714180739936.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/1364556742_9652.gif">
+<meta property="og:image" content="https://kirito.iocoder.cn/linux-io.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:18:26.704Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="文件 IO 操作的一些最佳实践">
 <meta name="twitter:description" content="背景已经过去的中间件性能挑战赛，和正在进行中的 第一届 PolarDB 数据性能大赛 都涉及到了文件操作，合理地设计架构以及正确地压榨机器的读写性能成了比赛中获取较好成绩的关键。正在参赛的我收到了几位公众号读者朋友的反馈，他们大多表达出了这样的烦恼：“对比赛很感兴趣，但不知道怎么入门”，“能跑出成绩，但相比前排的选手，成绩相差 10 倍有余”…为了能让更多的读者参与到之后相类似的比赛中来，我简单整">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/image-20180714180739936.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/image-20180714180739936.png">
     
 
     
@@ -285,7 +285,7 @@ ga('send', 'pageview');
 <h3 id="FileChannel-读写"><a href="#FileChannel-读写" class="headerlink" title="FileChannel 读写"></a>FileChannel 读写</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 写</span></span><br><span class="line"><span class="keyword">byte</span>[] data = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4096</span>];</span><br><span class="line"><span class="keyword">long</span> position = <span class="number">1024L</span>;</span><br><span class="line"><span class="comment">// 指定 position 写入 4kb 的数据</span></span><br><span class="line">fileChannel.write(ByteBuffer.wrap(data), position);</span><br><span class="line"><span class="comment">// 从当前文件指针的位置写入 4kb 的数据</span></span><br><span class="line">fileChannel.write(ByteBuffer.wrap(data));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 读</span></span><br><span class="line">ByteBuffer buffer = ByteBuffer.allocate(<span class="number">4096</span>);</span><br><span class="line"><span class="keyword">long</span> position = <span class="number">1024L</span>;</span><br><span class="line"><span class="comment">// 指定 position 读取 4kb 的数据</span></span><br><span class="line">fileChannel.read(buffer,position)；</span><br><span class="line"><span class="comment">// 从当前文件指针的位置读取 4kb 的数据</span></span><br><span class="line">fileChannel.read(buffer);</span><br></pre></td></tr></table></figure>
 <p>FileChannel 大多数时候是和 ByteBuffer 这个类打交道，你可以将它理解为一个 byte[] 的封装类，提供了丰富的 API 去操作字节，不了解的同学可以去熟悉下它的 API。值得一提的是，write 和 read 方法均是 <strong> 线程安全 </strong> 的，FileChannel 内部通过一把 <code>private final Object positionLock = new Object();</code> 锁来控制并发。</p>
 <p>FileChannel 为什么比普通 IO 要快呢？这么说可能不严谨，因为你要用对它，FileChannel 只有在一次写入 4kb 的整数倍时，才能发挥出实际的性能，这得益于 FileChannel 采用了 ByteBuffer 这样的内存缓冲区，让我们可以非常精准的控制写盘的大小，这是普通 IO 无法实现的。4kb 一定快吗？也不严谨，这主要取决你机器的磁盘结构，并且受到操作系统，文件系统，CPU 的影响，例如中间件性能挑战赛时的那块盘，一次至少写入 64kb 才能发挥出最高的 IOPS。</p>
-<p><img src="http://kirito.iocoder.cn/image-20180714180739936.png" alt="中间件性能挑战复赛的盘"></p>
+<p><img src="https://kirito.iocoder.cn/image-20180714180739936.png" alt="中间件性能挑战复赛的盘"></p>
 <p>然而 PolarDB 这块盘就完全不一样了，可谓是异常彪悍，具体是如何的表现由于比赛仍在进行中，不予深究，但凭借着 benchmark everyting 的技巧，我们完全可以测出来。</p>
 <p>另外一点，成就了 FileChannel 的高效，介绍这点之前，我想做一个提问：FileChannel 是直接把 ByteBuffer 中的数据写入到磁盘吗？思考几秒…答案是：NO。ByteBuffer 中的数据和磁盘中的数据还隔了一层，这一层便是 PageCache，是用户内存和磁盘之间的一层缓存。我们都知道磁盘 IO 和内存 IO 的速度可是相差了好几个数量级。我们可以认为 filechannel.write 写入 PageCache 便是完成了落盘操作，但实际上，操作系统最终帮我们完成了 PageCache 到磁盘的最终写入，理解了这个概念，你就应该能够理解 FileChannel 为什么提供了一个 force() 方法，用于通知操作系统进行及时的刷盘。</p>
 <p>同理，当我们使用 FileChannel 进行读操作时，同样经历了：磁盘 -&gt;PageCache-&gt; 用户内存这三个阶段，对于日常使用者而言，你可以忽略掉 PageCache，但作为挑战者参赛，PageCache 在调优过程中是万万不能忽视的，关于读操作这里不做过多的介绍，我们再下面的小结中还会再次提及，这里当做是引出 PageCache 的概念。</p>
@@ -316,7 +316,7 @@ ga('send', 'pageview');
 <p>时序 3：thread2 write position[4096~8194)</p>
 <p>所以并不是完全的“顺序写”。不过你也别担心加锁会导致性能下降，我们会在下面的小结介绍一个优化：通过文件分片来减少多线程读写时锁的冲突。</p>
 <p>在来分析原理，顺序读为什么会比随机读要快？顺序写为什么比随机写要快？这两个对比其实都是一个东西在起作用：PageCache，前面我们已经提到了，它是位于 application buffer(用户内存) 和 disk file(磁盘) 之间的一层缓存。</p>
-<p><img src="http://kirito.iocoder.cn/1364556742_9652.gif" alt="PageCache"></p>
+<p><img src="https://kirito.iocoder.cn/1364556742_9652.gif" alt="PageCache"></p>
 <p>以顺序读为例，当用户发起一个 fileChannel.read(4kb) 之后，实际发生了两件事</p>
 <ol>
 <li>操作系统从磁盘加载了 16kb 进入 PageCache，这被称为预读</li>
@@ -381,14 +381,14 @@ ga('send', 'pageview');
 <p>至于 UNSAFE 还有那些黑科技，可以专门去了解下，我这里就不过多赘述了。</p>
 <h3 id="文件分区"><a href="#文件分区" class="headerlink" title="文件分区"></a>文件分区</h3><p>前面已经提到了顺序读写时我们需要对 write，read 加锁，并且我一再强调的一点是：加锁并不可怕，文件 IO 操作并没有那么依赖多线程。但是加锁之后的顺序读写必然无法打满磁盘 IO，如今系统强劲的 CPU 总不能不压榨吧？我们可以采用文件分区的方式来达到一举两得的效果：既满足了顺序读写，又减少了锁的冲突。</p>
 <p>那么问题又来了，分多少合适呢？文件多了，锁冲突变降低了；文件太多了，碎片化太过严重，单个文件的值太少，缓存也就不容易命中，这样的 trade off 如何平衡？没有理论答案，benchmark everything~</p>
-<h3 id="Direct-IO"><a href="#Direct-IO" class="headerlink" title="Direct IO"></a>Direct IO</h3><p><img src="http://kirito.iocoder.cn/linux-io.png" alt="linux io"></p>
+<h3 id="Direct-IO"><a href="#Direct-IO" class="headerlink" title="Direct IO"></a>Direct IO</h3><p><img src="https://kirito.iocoder.cn/linux-io.png" alt="linux io"></p>
 <p>最后我们来探讨一下之前从没提到的一种 IO 方式，Direct IO，什么，Java 还有这东西？博主你骗我？之前怎么告诉我只有三种 IO 方式！别急着骂我，严谨来说，这并不是 JAVA 原生支持的方式，但可以通过 JNA/JNI 调用 native 方法做到。从上图我们可以看到 ：Direct IO 绕过了 PageCache，但我们前面说到过，PageCache 可是个好东西啊，干嘛不用他呢？再仔细推敲一下，还真有一些场景下，Direct IO 可以发挥作用，没错，那就是我们前面没怎么提到的：<strong> 随机读 </strong>。当使用 fileChannel.read() 这类会触发 PageCache 预读的 IO 方式时，我们其实并不希望操作系统帮我们干太多事，除非真的踩了狗屎运，随机读都能命中 PageCache，但几率可想而知。Direct IO 虽然被 Linus 无脑喷过，但在随机读的场景下，依旧存在其价值，减少了 Block IO Layed（近似理解为磁盘） 到 Page Cache 的 overhead。</p>
 <p>话说回来，Java 怎么用 Direct IO 呢？有没有什么限制呢？前面说过，Java 目前原生并不支持，但也有好心人封装好了 Java 的 JNA 库，实现了 Java 的 Direct IO，github 地址：<a href="https://github.com/smacke/jaydio" target="_blank" rel="noopener">https://github.com/smacke/jaydio</a></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> bufferSize = <span class="number">20</span> * <span class="number">1024</span> * <span class="number">1024</span>;</span><br><span class="line">DirectRandomAccessFile directFile = <span class="keyword">new</span> DirectRandomAccessFile(<span class="keyword">new</span> File(<span class="string">"dio.data"</span>), <span class="string">"rw"</span>, bufferSize);</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i= <span class="number">0</span>;i&lt; bufferSize / <span class="number">4096</span>;i++)&#123;</span><br><span class="line">    <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * <span class="number">1024</span>];</span><br><span class="line">    directFile.read(buffer);</span><br><span class="line">    directFile.readFully(buffer);</span><br><span class="line">&#125;</span><br><span class="line">directFile.close();</span><br></pre></td></tr></table></figure>
 <p>但需要注意的是，<strong> 只有 Linux 系统才支持 DIO</strong>! 所以，少年，是时候上手装一台 linux 了。值得一提的是，据说在 Jdk10 发布之后，Direct IO 将会得到原生的支持，让我们拭目以待吧！</p>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>以上均是个人的实践积累而来的经验，有部分结论没有找到文献的支撑，所以如有错误，欢迎指正。关于 PolarDB 数据性能大赛的比赛分析，等复赛结束后我会专门另起一篇文章，分析下具体如何使用这些优化点，当然这些小技巧其实很多人都知道，决定最后成绩的还是整体设计的架构，以及对文件 IO，操作系统，文件系统，CPU 和语言特性的理解。虽然 JAVA 搞这种性能挑战赛并不吃香，但依旧是乐趣无穷，希望这些文件 IO 的知识能够帮助你，等下次比赛时看到你的身影 ~</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -399,7 +399,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/file-io-best-practise/" data-id="ck2kho79900cgif9e294eeae7" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/file-io-best-practise/" data-id="ck2kil4r200cdug9egglsoamx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

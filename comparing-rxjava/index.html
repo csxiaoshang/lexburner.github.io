@@ -9,21 +9,21 @@
 <meta name="keywords" content="RxJava,Reactor">
 <meta property="og:type" content="article">
 <meta property="og:title" content="八个层面比较 Java 8, RxJava, Reactor">
-<meta property="og:url" content="http://lexburner.github.io/comparing-rxjava/index.html">
+<meta property="og:url" content="https://lexburner.github.io/comparing-rxjava/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="前言这是一篇译文，原文出处 戳这里。其实很久以前我就看完了这篇文章，只不过个人对响应式编程研究的不够深入，羞于下笔翻译，在加上这类译文加了原创还有争议性，所以一直没有动力。恰逢今天交流群里两个大佬对响应式编程的话题辩得不可开交，趁印象还算深刻，借机把这篇文章翻译一下。说道辩论的点，不妨也在这里抛出来：  响应式编程在单机环境下是否鸡肋？  结论是：没有结论，我觉得只能抱着怀疑的眼光审视这个问题了。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/backpressure.jpg">
-<meta property="og:image" content="http://kirito.iocoder.cn/7fec27a062235dff88ef1d56ee2ce483.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/6d4b0b357777b8caa2f87283027206ff.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/fac526768bed14d11933464646eb6471.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/5a57f2b1b694cc0f41320763a0cb1c0a.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:31.052Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/backpressure.jpg">
+<meta property="og:image" content="https://kirito.iocoder.cn/7fec27a062235dff88ef1d56ee2ce483.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/6d4b0b357777b8caa2f87283027206ff.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/fac526768bed14d11933464646eb6471.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/5a57f2b1b694cc0f41320763a0cb1c0a.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.788Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="八个层面比较 Java 8, RxJava, Reactor">
 <meta name="twitter:description" content="前言这是一篇译文，原文出处 戳这里。其实很久以前我就看完了这篇文章，只不过个人对响应式编程研究的不够深入，羞于下笔翻译，在加上这类译文加了原创还有争议性，所以一直没有动力。恰逢今天交流群里两个大佬对响应式编程的话题辩得不可开交，趁印象还算深刻，借机把这篇文章翻译一下。说道辩论的点，不妨也在这里抛出来：  响应式编程在单机环境下是否鸡肋？  结论是：没有结论，我觉得只能抱着怀疑的眼光审视这个问题了。">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/backpressure.jpg">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/backpressure.jpg">
     
 
     
@@ -358,7 +358,7 @@ ga('send', 'pageview');
 <li>支持回压的前提是 pipeline 必须是推模型。*</li>
 </ul>
 <p><strong>Backpressure（回压）</strong> 描述了 pipeline 中的一种场景：某些异步阶段的处理速度跟不上，需要告诉上游生产者放慢速度。直接失败是不能接受的，这会导致大量数据的丢失。</p>
-<p><img src="http://kirito.iocoder.cn/backpressure.jpg" alt="backpressure.jpg"></p>
+<p><img src="https://kirito.iocoder.cn/backpressure.jpg" alt="backpressure.jpg"></p>
 <p><strong>Stream &amp; Optional</strong> - 不支持回压，因为它们是拉模型。</p>
 <p><strong>CompletableFuture</strong> - 不存在这个问题，因为它只产生 0 个或者 1 个结果。</p>
 <p><strong>Observable(RxJava 1), Flowable, Flux</strong> - 支持。常用策略如下：</p>
@@ -377,18 +377,18 @@ ga('send', 'pageview');
 <h3 id="8-Operator-fusion（操作融合）"><a href="#8-Operator-fusion（操作融合）" class="headerlink" title="8. Operator fusion（操作融合）"></a>8. Operator fusion（操作融合）</h3><p>操作融合的内涵在于，它使得生命周期的不同点上的执行阶段得以改变，从而消除类库的架构因素所造成的系统开销。所有这些优化都在内部被处理完毕，从而让外部用户觉得这一切都是透明的。</p>
 <p>只有 RxJava 2 和 Reactor 支持这个特性，但支持的方式不同。总的来说，有两种类型的优化：</p>
 <p><strong>Macro-fusion</strong> - 用一个操作替换 2 个或更多的相继的操作</p>
-<p><img src="http://kirito.iocoder.cn/7fec27a062235dff88ef1d56ee2ce483.png" alt="macro-fusion_.png"></p>
+<p><img src="https://kirito.iocoder.cn/7fec27a062235dff88ef1d56ee2ce483.png" alt="macro-fusion_.png"></p>
 <p><strong>Micro-fusion</strong> - 一个输出队列的结束操作，和在一个输入队列的开始操作，能够共享一个队列的实例。比如说，与其调用 <code>request(1)</code> 然后处理 onNext()`：</p>
-<p><img src="http://kirito.iocoder.cn/6d4b0b357777b8caa2f87283027206ff.png" alt="micro-fusion-1_1.png"></p>
+<p><img src="https://kirito.iocoder.cn/6d4b0b357777b8caa2f87283027206ff.png" alt="micro-fusion-1_1.png"></p>
 <p>不然让订阅者直接从父 <code>observable</code> 拉取值。</p>
-<p><img src="http://kirito.iocoder.cn/fac526768bed14d11933464646eb6471.png" alt="micro-fusion-2.png"></p>
+<p><img src="https://kirito.iocoder.cn/fac526768bed14d11933464646eb6471.png" alt="micro-fusion-2.png"></p>
 <p>更多信息可以参考 <a href="http://akarnokd.blogspot.com/2016/03/operator-fusion-part-1.html" target="_blank" rel="noopener">Part1</a> 和 <a href="http://akarnokd.blogspot.com/2016/04/operator-fusion-part-2-final.html" target="_blank" rel="noopener">Part2</a></p>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>一图胜千言</p>
-<p><img src="http://kirito.iocoder.cn/5a57f2b1b694cc0f41320763a0cb1c0a.png" alt="2018-04-12_20-38-07.png"></p>
+<p><img src="https://kirito.iocoder.cn/5a57f2b1b694cc0f41320763a0cb1c0a.png" alt="2018-04-12_20-38-07.png"></p>
 <p><code>Stream</code>，<code>CompletableFuture</code> 和 <code>Optional</code> 这些类的创建，都是为了解决特定的问题。 并且他们非常适合用于解决这些问题。 如果它们满足你的需求，你可以立马使用它们。</p>
 <p>然而，不同的问题具有不同的复杂度，并且某些问题只有新技术才能很好的解决，新技术的出现也是为了解决那些高复杂度的问题。 RxJava 和 Reactor 是通用的工具，它们帮助你以声明方式来解决问题，而不是使用那些不够专业的工具，生搬硬套的使用其他的工具来解决响应式编程的问题，只会让你的解决方案变成一种 hack 行为。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -399,7 +399,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/comparing-rxjava/" data-id="ck2kho75q005qif9ek34p9w82" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/comparing-rxjava/" data-id="ck2kil4oo005pug9e5r2g7knp" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

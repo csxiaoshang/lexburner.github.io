@@ -9,18 +9,18 @@
 <meta name="keywords" content="Spring Security">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Spring Security(一)--Architecture Overview">
-<meta property="og:url" content="http://lexburner.github.io/spring-security-1/index.html">
+<meta property="og:url" content="https://lexburner.github.io/spring-security-1/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="一直以来我都想写一写 Spring Security 系列的文章，但是整个 Spring Security 体系强大却又繁杂。陆陆续续从最开始的 guides 接触它，到项目中看了一些源码，到最近这个月为了写一写这个系列的文章，阅读了好几遍文档，最终打算尝试一下，写一个较为完整的系列文章。 较为简单或者体量较小的技术，完全可以参考着 demo 直接上手，但系统的学习一门技术则不然。以我的认知，一般">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170919204228.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/spring%20security%20architecture.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:30.301Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170919204228.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/spring%20security%20architecture.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.786Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Spring Security(一)--Architecture Overview">
 <meta name="twitter:description" content="一直以来我都想写一写 Spring Security 系列的文章，但是整个 Spring Security 体系强大却又繁杂。陆陆续续从最开始的 guides 接触它，到项目中看了一些源码，到最近这个月为了写一写这个系列的文章，阅读了好几遍文档，最终打算尝试一下，写一个较为完整的系列文章。 较为简单或者体量较小的技术，完全可以参考着 demo 直接上手，但系统的学习一门技术则不然。以我的认知，一般">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170919204228.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170919204228.png">
     
 
     
@@ -304,7 +304,7 @@ ga('send', 'pageview');
 <p><code>ProviderManager</code> 中的 List<authenticationprovider>，会依照次序去认证，认证成功则立即返回，若认证失败则返回 null，下一个 AuthenticationProvider 会继续尝试认证，如果所有认证器都无法认证成功，则 <code>ProviderManager</code> 会抛出一个 ProviderNotFoundException 异常。</authenticationprovider></p>
 <p>到这里，如果不纠结于 AuthenticationProvider 的实现细节以及安全相关的过滤器，认证相关的核心类其实都已经介绍完毕了：身份信息的存放容器 SecurityContextHolder，身份信息的抽象 Authentication，身份认证器 AuthenticationManager 及其认证流程。姑且在这里做一个分隔线。下面来介绍下 AuthenticationProvider 接口的具体实现。</p>
 <h3 id="1-4-DaoAuthenticationProvider"><a href="#1-4-DaoAuthenticationProvider" class="headerlink" title="1.4 DaoAuthenticationProvider"></a>1.4 DaoAuthenticationProvider</h3><p>AuthenticationProvider 最最最常用的一个实现便是 DaoAuthenticationProvider。顾名思义，Dao 正是数据访问层的缩写，也暗示了这个身份认证器的实现思路。由于本文是一个 Overview，姑且只给出其 UML 类图：</p>
-<p><img src="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170919204228.png" alt="DaoAuthenticationProvider UML"></p>
+<p><img src="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170919204228.png" alt="DaoAuthenticationProvider UML"></p>
 <p>按照我们最直观的思路，怎么去认证一个用户呢？用户前台提交了用户名和密码，而数据库中保存了用户名和密码，认证便是负责比对同一个用户名，提交的密码和保存的密码是否相同便是了。在 Spring Security 中。提交的用户名和密码，被封装成了 UsernamePasswordAuthenticationToken，而根据用户名加载用户的任务则是交给了 UserDetailsService，在 DaoAuthenticationProvider 中，对应的方法便是 retrieveUser，虽然有两个参数，但是 retrieveUser 只有第一个参数起主要作用，返回一个 UserDetails。还需要完成 UsernamePasswordAuthenticationToken 和 UserDetails 密码的比对，这便是交给 additionalAuthenticationChecks 方法完成的，如果这个 void 方法没有抛异常，则认为比对成功。比对密码的过程，用到了 PasswordEncoder 和 SaltSource，密码加密和盐的概念相信不用我赘述了，它们为保障安全而设计，都是比较基础的概念。</p>
 <p>如果你已经被这些概念搞得晕头转向了，不妨这么理解 DaoAuthenticationProvider：它获取用户提交的用户名和密码，比对其正确性，如果正确，返回一个数据库中的用户信息（假设用户信息被保存在数据库中）。</p>
 <h3 id="1-5-UserDetails-与-UserDetailsService"><a href="#1-5-UserDetails-与-UserDetailsService" class="headerlink" title="1.5 UserDetails 与 UserDetailsService"></a>1.5 UserDetails 与 UserDetailsService</h3><p>上面不断提到了 UserDetails 这个接口，它代表了最详细的用户信息，这个接口涵盖了一些必要的用户信息字段，具体的实现类对它进行了扩展。</p>
@@ -313,10 +313,10 @@ ga('send', 'pageview');
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserDetailsService</span> </span>&#123;</span><br><span class="line">   <span class="function">UserDetails <span class="title">loadUserByUsername</span><span class="params">(String username)</span> <span class="keyword">throws</span> UsernameNotFoundException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>UserDetailsService 和 AuthenticationProvider 两者的职责常常被人们搞混，关于他们的问题在文档的 FAQ 和 issues 中屡见不鲜。记住一点即可，敲黑板！！！UserDetailsService 只负责从特定的地方（通常是数据库）加载用户信息，仅此而已，记住这一点，可以避免走很多弯路。UserDetailsService 常见的实现类有 JdbcDaoImpl，InMemoryUserDetailsManager，前者从数据库加载用户，后者从内存中加载用户，也可以自己实现 UserDetailsService，通常这更加灵活。</p>
 <h3 id="1-6-架构概览图"><a href="#1-6-架构概览图" class="headerlink" title="1.6 架构概览图"></a>1.6 架构概览图</h3><p>为了更加形象的理解上述我介绍的这些核心类，附上一张按照我的理解，所画出 Spring Security 的一张非典型的 UML 图</p>
-<p><img src="http://kirito.iocoder.cn/spring%20security%20architecture.png" alt="架构概览图"></p>
+<p><img src="https://kirito.iocoder.cn/spring%20security%20architecture.png" alt="架构概览图"></p>
 <p>如果对 Spring Security 的这些概念感到理解不能，不用担心，因为这是 Architecture First 导致的必然结果，先过个眼熟。后续的文章会秉持 Code First 的理念，陆续详细地讲解这些实现类的使用场景，源码分析，以及最基本的：如何配置 Spring Security，在后面的文章中可以不时翻看这篇文章，找到具体的类在整个架构中所处的位置，这也是本篇文章的定位。另外，一些 Spring Security 的过滤器还未囊括在架构概览中，如将表单信息包装成 UsernamePasswordAuthenticationToken 的过滤器，考虑到这些虽然也是架构的一部分，但是真正重写他们的可能性较小，所以打算放到后面的章节讲解。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -327,7 +327,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-security-1/" data-id="ck2kho79n00d3if9eizcro730" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/spring-security-1/" data-id="ck2kil4rd00d3ug9evtm3apqc" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

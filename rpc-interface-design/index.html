@@ -9,18 +9,18 @@
 <meta name="keywords" content="RPC">
 <meta property="og:type" content="article">
 <meta property="og:title" content="设计 RPC 接口时，你有考虑过这些吗？">
-<meta property="og:url" content="http://lexburner.github.io/rpc-interface-design/index.html">
+<meta property="og:url" content="https://lexburner.github.io/rpc-interface-design/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="RPC 框架的讨论一直是各个技术交流群中的热点话题，阿里的 dubbo，新浪微博的 motan，谷歌的 grpc，以及不久前蚂蚁金服开源的 sofa，都是比较出名的 RPC 框架。RPC 框架，或者一部分人习惯称之为服务治理框架，更多的讨论是存在于其技术架构，比如 RPC 的实现原理，RPC 各个分层的意义，具体 RPC 框架的源码分析…但却并没有太多话题和“如何设计 RPC 接口”这样的业务架构">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180627182932069.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180628103929293.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:30.804Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180627182932069.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180628103929293.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.787Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="设计 RPC 接口时，你有考虑过这些吗？">
 <meta name="twitter:description" content="RPC 框架的讨论一直是各个技术交流群中的热点话题，阿里的 dubbo，新浪微博的 motan，谷歌的 grpc，以及不久前蚂蚁金服开源的 sofa，都是比较出名的 RPC 框架。RPC 框架，或者一部分人习惯称之为服务治理框架，更多的讨论是存在于其技术架构，比如 RPC 的实现原理，RPC 各个分层的意义，具体 RPC 框架的源码分析…但却并没有太多话题和“如何设计 RPC 接口”这样的业务架构">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/image-20180627182932069.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/image-20180627182932069.png">
     
 
     
@@ -271,7 +271,7 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>RPC 框架的讨论一直是各个技术交流群中的热点话题，阿里的 dubbo，新浪微博的 motan，谷歌的 grpc，以及不久前蚂蚁金服开源的 sofa，都是比较出名的 RPC 框架。RPC 框架，或者一部分人习惯称之为服务治理框架，更多的讨论是存在于其技术架构，比如 RPC 的实现原理，RPC 各个分层的意义，具体 RPC 框架的源码分析…但却并没有太多话题和“如何设计 RPC 接口”这样的业务架构相关。<br><a id="more"></a><br><img src="http://kirito.iocoder.cn/image-20180627182932069.png" alt="段子"></p>
+            <p>RPC 框架的讨论一直是各个技术交流群中的热点话题，阿里的 dubbo，新浪微博的 motan，谷歌的 grpc，以及不久前蚂蚁金服开源的 sofa，都是比较出名的 RPC 框架。RPC 框架，或者一部分人习惯称之为服务治理框架，更多的讨论是存在于其技术架构，比如 RPC 的实现原理，RPC 各个分层的意义，具体 RPC 框架的源码分析…但却并没有太多话题和“如何设计 RPC 接口”这样的业务架构相关。<br><a id="more"></a><br><img src="https://kirito.iocoder.cn/image-20180627182932069.png" alt="段子"></p>
 <p>可能很多小公司程序员还是比较关心这个问题的，这篇文章主要分享下一些个人眼中 RPC 接口设计的最佳实践。</p>
 <h3 id="初识-RPC-接口设计"><a href="#初识-RPC-接口设计" class="headerlink" title="初识 RPC 接口设计"></a>初识 RPC 接口设计</h3><p>由于 RPC 中的术语每个程序员的理解可能不同，所以文章开始，先统一下 RPC 术语，方便后续阐述。</p>
 <p>大家都知道共享接口是 RPC 最典型的一个特点，每个服务对外暴露自己的接口，该模块一般称之为 api；外部模块想要实现对该模块的远程调用，则需要依赖其 api；每个服务都需要有一个应用来负责实现自己的 api，一般体现为一个独立的进程，该模块一般称之为 app。</p>
@@ -325,7 +325,7 @@ ga('send', 'pageview');
 <li>有利于 TestNg 集成测试</li>
 </ul>
 <p>自动生成 TestNG 集成测试代码和缺省测试用例，这使得服务端接口集成测试变得异常简单，程序员更能集中精力设计业务用例，结合缺省用例、JPA 自动建表和 PowerMock 模拟外部依赖接口实现本机环境。</p>
-<p><img src="http://kirito.iocoder.cn/image-20180628103929293.png" alt="TestNg 自动化测试"></p>
+<p><img src="https://kirito.iocoder.cn/image-20180628103929293.png" alt="TestNg 自动化测试"></p>
 <p>这块涉及到了公司内部的代码，只做下简单介绍，我们一般通过内部项目 com.qianmi.codegenerator:api-dubbo-2-restful ，com.qianmi.codegenerator:api-request-json 生成自动化的测试用例，方便测试。而这些自动化工具中大量使用了反射，而由于单参数的设计，反射用起来比较方便。</p>
 <h3 id="2-接口异常设计"><a href="#2-接口异常设计" class="headerlink" title="2. 接口异常设计"></a>2. 接口异常设计</h3><p>首先肯定一点，RPC 框架是可以封装异常的，Exception 也是返回值的一部分。在 go 语言中可能更习惯于返回 err,res 的组合，但 JAVA 中我个人更偏向于 try catch 的方法捕获异常。RPC 接口设计中的异常设计也是一个注意点。</p>
 <p><strong> 初始方案 </strong></p>
@@ -373,7 +373,7 @@ ga('send', 'pageview');
 </ul>
 <p>解决方案：Checked Exception+ 正确异常处理姿势，使得代码更加优雅，降低了调用方不处理异常带来的风险。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -384,7 +384,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/rpc-interface-design/" data-id="ck2kho79m00czif9eiktofy8a" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/rpc-interface-design/" data-id="ck2kil4rc00czug9e9oa31s4c" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

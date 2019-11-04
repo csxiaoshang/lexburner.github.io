@@ -9,16 +9,16 @@
 <meta name="keywords" content="TCP,心跳">
 <meta property="og:type" content="article">
 <meta property="og:title" content="一种心跳，两种设计">
-<meta property="og:url" content="http://lexburner.github.io/heartbeat-design/index.html">
+<meta property="og:url" content="https://lexburner.github.io/heartbeat-design/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="1 前言在前一篇文章 《聊聊 TCP 长连接和心跳那些事》 中，我们已经聊过了 TCP 中的 KeepAlive，以及在应用层设计心跳的意义，但却对长连接心跳的设计方案没有做详细地介绍。事实上，设计一个好的心跳机制并不是一件容易的事，就我所熟知的几个 RPC 框架，它们的心跳机制可以说大相径庭，这篇文章我将探讨一下  如何设计一个优雅的心跳机制，主要从 Dubbo 的现有方案以及一个改进方案来做分">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:29.612Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:18:49.117Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="一种心跳，两种设计">
 <meta name="twitter:description" content="1 前言在前一篇文章 《聊聊 TCP 长连接和心跳那些事》 中，我们已经聊过了 TCP 中的 KeepAlive，以及在应用层设计心跳的意义，但却对长连接心跳的设计方案没有做详细地介绍。事实上，设计一个好的心跳机制并不是一件容易的事，就我所熟知的几个 RPC 框架，它们的心跳机制可以说大相径庭，这篇文章我将探讨一下  如何设计一个优雅的心跳机制，主要从 Dubbo 的现有方案以及一个改进方案来做分">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
     
 
     
@@ -432,7 +432,7 @@ ga('send', 'pageview');
 <p>去除处理重连和断连的定时任务，Dubbo 可以判断心跳请求是否响应失败，可以借鉴改进方案的设计，在连接级别维护一个心跳失败次数的标记，任意响应成功，清除标记；连续心跳失败 n 次，客户端发起重连。这样可以减少一个不必要的定时器，任何轮询的方式，都是不优雅的。</p>
 <p>最后再聊聊可扩展性这个话题。其实我是建议把定时器交给更加底层的 Netty 去做，也就是完全使用 <code>IdleStateHandler</code> ，其他通信层组件各自实现自己的空闲检测逻辑，但是 Dubbo 中 mina，grizzy 的兼容问题囿住了我的拳脚，但试问一下，如今的 2019 年，又有多少人在使用 mina 和 grizzy？因为一些不太可能用的特性，而限制了主流用法的优化，这肯定不是什么好事。抽象，功能，可扩展性并不是越多越好，开源产品的人力资源是有限的，框架使用者的理解能力也是有限的，能解决大多数人问题的设计，才是好的设计。哎，谁让我不会 mina，grizzy，还懒得去学呢 [摊手]。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -443,7 +443,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/heartbeat-design/" data-id="ck2kho79c00cnif9etiahxdp1" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/heartbeat-design/" data-id="ck2kil4r900cnug9eqtyz7i0i" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

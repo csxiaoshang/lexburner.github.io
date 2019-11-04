@@ -9,19 +9,19 @@
 <meta name="keywords" content="JAVA">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Java 并发计数器探秘">
-<meta property="og:url" content="http://lexburner.github.io/java-concurrent-counter/index.html">
+<meta property="og:url" content="https://lexburner.github.io/java-concurrent-counter/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="前言一提到线程安全的并发计数器，AtomicLong 必然是第一个被联想到的工具。Atomic* 一系列的原子类以及它们背后的 CAS 无锁算法，常常是高性能，高并发的代名词。本文将会阐释，在并发场景下，使用 AtomicLong 来充当并发计数器将会是一个糟糕的设计，实际上存在不少 AtomicLong 之外的计数器方案。近期我研究了一些 Jdk1.8 以及 JCTools 的优化方案，并将它们">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/LongAdder.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/LongAdder-layer.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/ConcurrentAutoTable.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:29.996Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/LongAdder.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/LongAdder-layer.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/ConcurrentAutoTable.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:19:06.768Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java 并发计数器探秘">
 <meta name="twitter:description" content="前言一提到线程安全的并发计数器，AtomicLong 必然是第一个被联想到的工具。Atomic* 一系列的原子类以及它们背后的 CAS 无锁算法，常常是高性能，高并发的代名词。本文将会阐释，在并发场景下，使用 AtomicLong 来充当并发计数器将会是一个糟糕的设计，实际上存在不少 AtomicLong 之外的计数器方案。近期我研究了一些 Jdk1.8 以及 JCTools 的优化方案，并将它们">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/LongAdder.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/LongAdder.png">
     
 
     
@@ -351,7 +351,7 @@ ga('send', 'pageview');
 <h3 id="认识-LongAdder"><a href="#认识-LongAdder" class="headerlink" title="认识 LongAdder"></a>认识 LongAdder</h3><p>Doug Lea 在 JDK1.8 中找到了一个上述问题的解决方案，他实现了一个 LongAdder 类。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@since</span> <span class="number">1.8</span></span><br><span class="line"><span class="meta">@author</span> Doug Lea</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LongAdder</span> <span class="keyword">extends</span> <span class="title">Striped64</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
 <p>LongAdder 的 API 如下</p>
-<p><img src="http://kirito.iocoder.cn/LongAdder.png" alt="LongAdder"></p>
+<p><img src="https://kirito.iocoder.cn/LongAdder.png" alt="LongAdder"></p>
 <p>你应当发现，LongAdder 和 AtomicLong 明显的区别在于，increment 是一个 void 方法。直接来看看 LongAdder 的性能表现如何。(LA = LongAdder, AL = AtomicLong, 单位  ns/op)</p>
 <table>
 <thead>
@@ -406,7 +406,7 @@ ga('send', 'pageview');
 <ol>
 <li>Cell 设计减少并发修改时的冲突</li>
 </ol>
-<p><img src="http://kirito.iocoder.cn/LongAdder-layer.png" alt="LongAdder"></p>
+<p><img src="https://kirito.iocoder.cn/LongAdder-layer.png" alt="LongAdder"></p>
 <p>在 LongAdder 的父类 Striped64 中存在一个 <code>volatile Cell[] cells;</code> 数组，其长度是 2 的幂次方，每个 Cell 都填充了一个 @Contended 的 Long 字段，为了避免伪共享问题。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@sun</span>.misc.Contended <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Cell</span> </span>&#123;</span><br><span class="line">    <span class="keyword">volatile</span> <span class="keyword">long</span> value;</span><br><span class="line">    Cell(<span class="keyword">long</span> x) &#123;value = x;&#125;</span><br><span class="line">    <span class="comment">// ... ignore</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>LongAdder 通过一系列算法，将计数结果分散在了多个 Cell 中，Cell 会随着并发量升高时发生扩容，最坏情况下 Cell == CPU core 的数量。Cell 也是 LongAdder 高效的关键，它将计数的总值分散在了各个 Cell 中，例如 5 = 3 + 2，下一刻，某个线程完成了 3 + (2 + 1) = 6 的操作，而不是在 5 的基础上完成直接相加操作。通过 LongAdder 的 sum() 方法可以直观的感受到这一点（LongAdder 不存在 get 方法）</p>
@@ -427,7 +427,7 @@ ga('send', 'pageview');
 <blockquote>
 <p>An auto-resizing table of longs, supporting low-contention CAS operations.Updates are done with CAS’s to no particular table element.The intent is to support <strong>highly scalable counters</strong>, r/w locks, and other structures where the updates are associative, loss-free (no-brainer), and otherwise happen at such a high volume that the cache contention for CAS’ing a single word is unacceptable.</p>
 </blockquote>
-<p><img src="http://kirito.iocoder.cn/ConcurrentAutoTable.png" alt="ConcurrentAutoTable"></p>
+<p><img src="https://kirito.iocoder.cn/ConcurrentAutoTable.png" alt="ConcurrentAutoTable"></p>
 <p>在最后的测评中，我们将 JCTools 的 ConcurrentAutoTable 也作为一个参考对象。</p>
 <h3 id="最终测评"><a href="#最终测评" class="headerlink" title="最终测评"></a>最终测评</h3><p>Jdk1.7 的 AtomicLong，Jdk1.8 的 AtomicLong，Jdk 1.8 的 LongAdder，Metrics 的 LongAdder，JCTools 的 ConcurrentAutoTable，我对这五种类型的计数器使用 JMH 进行基准测试。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Counter</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">inc</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">long</span> <span class="title">get</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -446,7 +446,7 @@ ga('send', 'pageview');
 <p>在前面提到的性能监控框架 <a href="https://github.com/dropwizard/metrics" target="_blank" rel="noopener">Metrics</a>，以及著名的熔断框架 <a href="https://github.com/Netflix/Hystrix" target="_blank" rel="noopener">Hystrix</a> 中，都存在 LongAdder 的使用场景，有兴趣的朋友快去实践一下 LongAdder 吧。</p>
 <p>本文所有的 JMH 测试代码，均可在我的 github 中获得：<a href="https://github.com/lexburner/JMH-samples.git" target="_blank" rel="noopener">https://github.com/lexburner/JMH-samples.git</a></p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -457,7 +457,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/java-concurrent-counter/" data-id="ck2kho76o007lif9en3zpbn28" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/java-concurrent-counter/" data-id="ck2kil4pb007pug9eyrw6gi64" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

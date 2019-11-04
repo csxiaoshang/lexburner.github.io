@@ -9,16 +9,16 @@
 <meta name="keywords" content="JAVA">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JAVA 拾遗 --Instrument 机制">
-<meta property="og:url" content="http://lexburner.github.io/instrument/index.html">
+<meta property="og:url" content="https://lexburner.github.io/instrument/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="最近在研究 skywalking，发现其作为一个 APM 框架，比起作为 trace 框架的 zipkin 多了一个监控维度：对 JVM 的监控。而 skywalking 集成进系统的方式也和传统的框架不太一样，由于其需要对 JVM 进行无侵入式的监控，所以借助了 JAVA5 提供的 Instrument 机制。关于“Instrument”这个单词，没找到准确的翻译，个人理解为“增强，装配”。 如">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720180204235047.png">
-<meta property="og:updated_time" content="2019-09-26T09:45:30.856Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720180204235047.png">
+<meta property="og:updated_time" content="2019-11-04T14:18:59.333Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JAVA 拾遗 --Instrument 机制">
 <meta name="twitter:description" content="最近在研究 skywalking，发现其作为一个 APM 框架，比起作为 trace 框架的 zipkin 多了一个监控维度：对 JVM 的监控。而 skywalking 集成进系统的方式也和传统的框架不太一样，由于其需要对 JVM 进行无侵入式的监控，所以借助了 JAVA5 提供的 Instrument 机制。关于“Instrument”这个单词，没找到准确的翻译，个人理解为“增强，装配”。 如">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720180204235047.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720180204235047.png">
     
 
     
@@ -295,7 +295,7 @@ ga('send', 'pageview');
 <p>完成上述的配置，使用 maven install 即可得到一个 agent.jar，到这儿一切的准备工作就完成了。</p>
 <h2 id="使用代理运行-Main-方法"><a href="#使用代理运行-Main-方法" class="headerlink" title="使用代理运行 Main 方法"></a>使用代理运行 Main 方法</h2><p>如果不使用代理运行 Main 方法，毫无疑问我们只会得到一行 <code>wow wow~</code>。</p>
 <p>如果你使用的 IDEA，eclipse，只需要添加一行启动参数即可：</p>
-<p><img src="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720180204235047.png" alt="启动参数"></p>
+<p><img src="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720180204235047.png" alt="启动参数"></p>
 <p>-javaagent:jar_path=[options] 其中的 jar_path 为 agent.jar 的路径，options 是一个可选参数，其值会被 premain 方法的第一个参数接收 public static void premain(String options, Instrumentation ins).</p>
 <p>当需要装配多个 agent.jar 时，重复书写多次即可 -javaagent:C:\Users\xujingfeng\Desktop\agent.jar=hello -javaagent:C:\Users\xujingfeng\Desktop\agent.jar=hello2 …</p>
 <p>运行 Main.jar 的话就是这样的形式：java -javaagent:C:\Users\xujingfeng\Desktop\agent.jar=hello Main</p>
@@ -342,7 +342,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/instrument/" data-id="ck2kho76n007hif9e9pgl0bzk" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/instrument/" data-id="ck2kil4p9007eug9ez08w2drl" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

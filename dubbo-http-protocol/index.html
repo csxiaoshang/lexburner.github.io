@@ -9,20 +9,20 @@
 <meta name="keywords" content="Dubbo">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Dubbo 中的 http 协议">
-<meta property="og:url" content="http://lexburner.github.io/dubbo-http-protocol/index.html">
+<meta property="og:url" content="https://lexburner.github.io/dubbo-http-protocol/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="太阳红彤彤，花儿五颜六色，各位读者朋友好，又来到了分享 Dubbo 知识点的时候了。说到 Dubbo 框架支持的协议，你的第一反应是什么？大概会有 Dubbo 默认支持的 dubbo 协议，以及老生常谈的由当当贡献给 Dubbo 的     rest 协议，或者是今天的主角 http。截止到目前，Dubbo 最新版本演进到了 2.7.3，已经支持了：dubbo，hessain，http，injvm">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20190717185724385.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20190717193241396.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20190717193339739.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20190717194908741.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:30.214Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20190717185724385.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20190717193241396.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20190717193339739.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20190717194908741.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:15:52.831Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Dubbo 中的 http 协议">
 <meta name="twitter:description" content="太阳红彤彤，花儿五颜六色，各位读者朋友好，又来到了分享 Dubbo 知识点的时候了。说到 Dubbo 框架支持的协议，你的第一反应是什么？大概会有 Dubbo 默认支持的 dubbo 协议，以及老生常谈的由当当贡献给 Dubbo 的     rest 协议，或者是今天的主角 http。截止到目前，Dubbo 最新版本演进到了 2.7.3，已经支持了：dubbo，hessain，http，injvm">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/image-20190717185724385.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/image-20190717185724385.png">
     
 
     
@@ -285,7 +285,7 @@ ga('send', 'pageview');
 </blockquote>
 <h2 id="http-协议的底层原理"><a href="#http-协议的底层原理" class="headerlink" title="http 协议的底层原理"></a>http 协议的底层原理</h2><p>从默认的 dubbo 协议改为 http 协议是非常简单的一件事，上面便是使用者视角所看到的全部的内容了，接下来我们将会探讨其底层实现原理。</p>
 <p>翻看 Dubbo 的源码，找到 HttpProtocol 的实现，你可能会吃惊，基本就依靠 HttpProtocol 一个类，就实现了 http 协议</p>
-<p><img src="http://kirito.iocoder.cn/image-20190717185724385.png" alt="image-20190717185724385"></p>
+<p><img src="https://kirito.iocoder.cn/image-20190717185724385.png" alt="image-20190717185724385"></p>
 <p>要知道实现自定义的 dubbo 协议，有近 30 个类！http 协议实现的如此简单，背后主要原因有两点：</p>
 <ol>
 <li>remoting 层使用 http 通信，不需要自定义编解码</li>
@@ -312,11 +312,11 @@ ga('send', 'pageview');
 </ol>
 <h3 id="调用细节分析"><a href="#调用细节分析" class="headerlink" title="调用细节分析"></a>调用细节分析</h3><p>对于 Spring HttpInvoker 的底层实现，就没必要深究了，但大家肯定还是会好奇一些细节：dubbo 中的 http 报文体是怎么组织的？如何序列化对象的？</p>
 <p>我们使用 wireshark 可以抓取到客户端发送的请求以及服务端响应的报文。</p>
-<p><img src="http://kirito.iocoder.cn/image-20190717193241396.png" alt="image-20190717193241396"></p>
+<p><img src="https://kirito.iocoder.cn/image-20190717193241396.png" alt="image-20190717193241396"></p>
 <p>追踪报文流，可以看到详细的请求和响应内容</p>
-<p><img src="http://kirito.iocoder.cn/image-20190717193339739.png" alt="image-20190717193339739"></p>
+<p><img src="https://kirito.iocoder.cn/image-20190717193339739.png" alt="image-20190717193339739"></p>
 <p>从 <code>ContentType: application/x-java-serialized-object</code> 和报文 Body 部分的 ASCII 码可以看出，使用的是 Java Serialize 序列化。我们将 Body 部分导出成文件，使用 Java Serialize 反序列化响应，来验证一下它的庐山真面目：</p>
-<p><img src="http://kirito.iocoder.cn/image-20190717194908741.png" alt="image-20190717194908741"></p>
+<p><img src="https://kirito.iocoder.cn/image-20190717194908741.png" alt="image-20190717194908741"></p>
 <p>使用 Java Serialize 可以正常反序列化报文，得到结果是 Spring 内置的包装类 RemoteInvocationResult，里面装饰着实际的业务返回结果。</p>
 <h2 id="http-协议的意义"><a href="#http-协议的意义" class="headerlink" title="http 协议的意义"></a>http 协议的意义</h2><p>Dubbo 提供的众多协议有各自适用的场景，例如</p>
 <ul>
@@ -331,7 +331,7 @@ ga('send', 'pageview');
 <p>当然，我说了不算，最终还是要看 dubbo 社区的决策，如果你对这个迁移方案感兴趣，想要参与讨论，欢迎大家在 dubbo 社区的邮件列表中发表你的见解</p>
 <p>Topic：[Proposal] replace the protocol=”http” with protocol=”jsonrpc”</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -342,7 +342,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/dubbo-http-protocol/" data-id="ck2kho75z006aif9elulshfug" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/dubbo-http-protocol/" data-id="ck2kil4p0006aug9e8uhuooat" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

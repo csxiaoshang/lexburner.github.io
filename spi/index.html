@@ -9,16 +9,16 @@
 <meta name="keywords" content="JAVA">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JAVA 拾遗 -- 关于 SPI 机制">
-<meta property="og:url" content="http://lexburner.github.io/spi/index.html">
+<meta property="og:url" content="https://lexburner.github.io/spi/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="JDK 提供的 SPI(Service Provider Interface)机制，可能很多人不太熟悉，因为这个机制是针对厂商或者插件的，也可以在一些框架的扩展中看到。其核心类 java.util.ServiceLoader 可以在 jdk1.8 的文档中看到详细的介绍。虽然不太常见，但并不代表它不常用，恰恰相反，你无时无刻不在用它。玄乎了，莫急，思考一下你的项目中是否有用到第三方日志包，是否有用">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/spi_%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84.png">
-<meta property="og:updated_time" content="2019-09-26T09:45:30.265Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/spi_%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84.png">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.788Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JAVA 拾遗 -- 关于 SPI 机制">
 <meta name="twitter:description" content="JDK 提供的 SPI(Service Provider Interface)机制，可能很多人不太熟悉，因为这个机制是针对厂商或者插件的，也可以在一些框架的扩展中看到。其核心类 java.util.ServiceLoader 可以在 jdk1.8 的文档中看到详细的介绍。虽然不太常见，但并不代表它不常用，恰恰相反，你无时无刻不在用它。玄乎了，莫急，思考一下你的项目中是否有用到第三方日志包，是否有用">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/spi_%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/spi_%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84.png">
     
 
     
@@ -271,7 +271,7 @@ ga('send', 'pageview');
             
             <p>JDK 提供的 SPI(Service Provider Interface)机制，可能很多人不太熟悉，因为这个机制是针对厂商或者插件的，也可以在一些框架的扩展中看到。其核心类 <code>java.util.ServiceLoader</code> 可以在 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html" target="_blank" rel="noopener">jdk1.8</a> 的文档中看到详细的介绍。虽然不太常见，但并不代表它不常用，恰恰相反，你无时无刻不在用它。玄乎了，莫急，思考一下你的项目中是否有用到第三方日志包，是否有用到数据库驱动？其实这些都和 SPI 有关。再来思考一下，现代的框架是如何加载日志依赖，加载数据库驱动的，你可能会对 class.forName(“com.mysql.jdbc.Driver”)这段代码不陌生，这是每个 java 初学者必定遇到过的，但如今的数据库驱动仍然是这样加载的吗？你还能找到这段代码吗？这一切的疑问，将在本篇文章结束后得到解答。</p>
 <p>首先介绍 SPI 机制是个什么东西</p>
-<h2 id="实现一个自定义的-SPI"><a href="#实现一个自定义的-SPI" class="headerlink" title="实现一个自定义的 SPI"></a>实现一个自定义的 SPI</h2><h3 id="1-项目结构"><a href="#1-项目结构" class="headerlink" title="1 项目结构"></a>1 项目结构</h3><p><img src="http://kirito.iocoder.cn/spi_%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84.png" alt="SPI 项目结构"></p>
+<h2 id="实现一个自定义的-SPI"><a href="#实现一个自定义的-SPI" class="headerlink" title="实现一个自定义的 SPI"></a>实现一个自定义的 SPI</h2><h3 id="1-项目结构"><a href="#1-项目结构" class="headerlink" title="1 项目结构"></a>1 项目结构</h3><p><img src="https://kirito.iocoder.cn/spi_%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84.png" alt="SPI 项目结构"></p>
 <ol>
 <li>invoker 是我们的用来测试的主项目。</li>
 <li>interface 是针对厂商和插件商定义的接口项目，只提供接口，不提供实现。</li>
@@ -349,7 +349,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spi/" data-id="ck2kho77d009fif9e7dt808xg" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/spi/" data-id="ck2kil4ps009kug9eystkzet4" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

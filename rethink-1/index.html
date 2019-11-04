@@ -9,16 +9,16 @@
 <meta name="keywords" content="技术杂谈">
 <meta property="og:type" content="article">
 <meta property="og:title" content="上一个电商项目的反思">
-<meta property="og:url" content="http://lexburner.github.io/rethink-1/index.html">
+<meta property="og:url" content="https://lexburner.github.io/rethink-1/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="加入中科软已经有了一个年头，从去年实习到今年转正，陆陆续续接触了大概四个项目。有电商类，互联网保险类，也经历过管理系统。幸运的是，这些项目都是从零开始，避免了让我去维护不堪入目的老旧系统。而这么多项目中令我印象最深刻的，就要属上一个电商项目了。这也是我接触到的真正意义的第一个微服务项目，到今天回首去看曾经的这个项目，有很多突破性地尝试，同时不可避免地也踩入了一些坑点，毕竟摸着石头过河。今天想聊聊我">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/52029421305_2.gif">
-<meta property="og:updated_time" content="2019-09-26T09:45:29.459Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/52029421305_2.gif">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.786Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="上一个电商项目的反思">
 <meta name="twitter:description" content="加入中科软已经有了一个年头，从去年实习到今年转正，陆陆续续接触了大概四个项目。有电商类，互联网保险类，也经历过管理系统。幸运的是，这些项目都是从零开始，避免了让我去维护不堪入目的老旧系统。而这么多项目中令我印象最深刻的，就要属上一个电商项目了。这也是我接触到的真正意义的第一个微服务项目，到今天回首去看曾经的这个项目，有很多突破性地尝试，同时不可避免地也踩入了一些坑点，毕竟摸着石头过河。今天想聊聊我">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/52029421305_2.gif">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/52029421305_2.gif">
     
 
     
@@ -278,7 +278,7 @@ ga('send', 'pageview');
 <li>模块维度：基础架构层（如公用 util），领域层，接口层，服务层，表现层的拆分。</li>
 </ul>
 <p>在项目的初期，我们错误地认为微服务的拆分仅仅是系统维度的拆分，如商品系统和订单系统，而在模块维度上，缺少拆分的意识，如订单模块的表现层和服务层，我们虽然做了隔离（两个独立的 tomcat）。但在后来，业务添加了一个新的需求：商城增加积分支持，让用户可以使用积分购买商品。我们突然发现，所谓的服务层和表现层严重的耦合，仅仅是在物理上进行了隔离，逻辑层面并没有拆分，这导致新的积分服务模块从原先的订单服务层拷贝了大量的代码。吸取了这个教训后，我们新的项目中采取了如下的分层方式：</p>
-<p><img src="http://kirito.iocoder.cn/52029421305_2.gif" alt="新的架构分层"></p>
+<p><img src="https://kirito.iocoder.cn/52029421305_2.gif" alt="新的架构分层"></p>
 <p>其中比较关键的一点便是表现层与应用层的完全分离，交互完全使用 DTO 对象。不少同事产生了困惑，抱怨在表现层不能访问数据库，这让他们获取数据变得十分“麻烦”，应用层和表现层还多了一次数据拷贝的工作，用于将 DO 持久化对象转换成 DTO 对象。但这样的好处从长远来看，是不言而喻的。总结为以下几点：</p>
 <p>1 应用层高度重用，没有表现形式的阻碍，PC 端，移动端，外部服务都可以同时接入，需要组装什么样的数据，请自行组装。</p>
 <p>2 应用层和领域层可以交由经验较为丰富的程序员负责，避免了一些低性能的数据操作，错误的并发控制等等。</p>
@@ -309,7 +309,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/rethink-1/" data-id="ck2kho775008rif9e775oitdo" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/rethink-1/" data-id="ck2kil4pl008tug9e38bn3tyg" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

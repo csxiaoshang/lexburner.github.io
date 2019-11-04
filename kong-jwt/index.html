@@ -9,17 +9,17 @@
 <meta name="keywords" content="Kong,网关">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Kong 集成 Jwt 插件">
-<meta property="og:url" content="http://lexburner.github.io/kong-jwt/index.html">
+<meta property="og:url" content="https://lexburner.github.io/kong-jwt/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="上一篇文章使用 Kong 完成了负载均衡的配置，本文介绍下在此基础上如何集成 jwt 插件来保护内部服务的安全。前置知识点：Jwt 基础概念。推荐阅读：">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/9ADA76C8-6704-4C6A-A7D5-E6EF91D5225D.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:29.767Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/9ADA76C8-6704-4C6A-A7D5-E6EF91D5225D.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:47.406Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Kong 集成 Jwt 插件">
 <meta name="twitter:description" content="上一篇文章使用 Kong 完成了负载均衡的配置，本文介绍下在此基础上如何集成 jwt 插件来保护内部服务的安全。前置知识点：Jwt 基础概念。推荐阅读：">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/9ADA76C8-6704-4C6A-A7D5-E6EF91D5225D.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/9ADA76C8-6704-4C6A-A7D5-E6EF91D5225D.png">
     
 
     
@@ -285,7 +285,7 @@ ga('send', 'pageview');
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"total"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">"data"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"created_at"</span>: <span class="number">1523432449000</span>,</span><br><span class="line">            <span class="attr">"id"</span>: <span class="string">"cb01a6cf-7371-4f23-8193-fa69a0bb070c"</span>,</span><br><span class="line">            <span class="attr">"algorithm"</span>: <span class="string">"HS256"</span>,</span><br><span class="line">            <span class="attr">"key"</span>: <span class="string">"vcnvYSFzTIGyMxzKSgnNU0uvxixdYWB9"</span>,</span><br><span class="line">            <span class="attr">"secret"</span>: <span class="string">"qQ9tSqIYjilnJmKuZXvJpgNo4ZqJDrim"</span>,</span><br><span class="line">            <span class="attr">"consumer_id"</span>: <span class="string">"7d34e6bc-89ea-4f33-9346-9c10600e4afd"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>重点关注三个值 algorithm，key，secret，他们和 Jwt 算法的参数密切相关</p>
 <h3 id="生成-Jwt"><a href="#生成-Jwt" class="headerlink" title="生成 Jwt"></a>生成 Jwt</h3><p>使用 jwt 官网 (jwt.io) 提供的 Debugger 功能可以很方便的生成 jwt。</p>
-<p><img src="http://kirito.iocoder.cn/9ADA76C8-6704-4C6A-A7D5-E6EF91D5225D.png" alt="jwt 官网"></p>
+<p><img src="https://kirito.iocoder.cn/9ADA76C8-6704-4C6A-A7D5-E6EF91D5225D.png" alt="jwt 官网"></p>
 <p>HEADER 部分声明了验证方式为 JWT，加密算法为 HS256</p>
 <p>PAYLOAD 部分原本有 5 个参数</p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"iss"</span>: <span class="string">"kirito"</span>,</span><br><span class="line">    <span class="attr">"iat"</span>: <span class="number">1441593502</span>,</span><br><span class="line">    <span class="attr">"exp"</span>: <span class="number">1441594722</span>,</span><br><span class="line">    <span class="attr">"aud"</span>: <span class="string">"cnkirito.moe"</span>,</span><br><span class="line">    <span class="attr">"sub"</span>: <span class="string">"250577914@qq.com"</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -323,7 +323,7 @@ ga('send', 'pageview');
 </ol>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">String jwt = Jwts.builder()</span><br><span class="line">        .setHeaderParam(<span class="string">"typ"</span>,<span class="string">"jwt"</span>)</span><br><span class="line">        .setHeaderParam(<span class="string">"alg"</span>,<span class="string">"HS256"</span>)</span><br><span class="line">        .setIssuer(<span class="string">"kirito"</span>)</span><br><span class="line">        .signWith(SignatureAlgorithm.HS256, Base64.getEncoder().encodeToString(<span class="string">"YmxvYiBkYXRh"</span>.getBytes(Charset.forName(<span class="string">"utf-8"</span>))))</span><br><span class="line">        .compact();</span><br></pre></td></tr></table></figure>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -334,7 +334,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/kong-jwt/" data-id="ck2kho73k001hif9e2dk26ey1" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/kong-jwt/" data-id="ck2kil4mq001bug9ecvo2b6fk" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

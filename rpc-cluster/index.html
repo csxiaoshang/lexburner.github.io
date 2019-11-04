@@ -9,16 +9,16 @@
 <meta name="keywords" content="RPC">
 <meta property="og:type" content="article">
 <meta property="og:title" content="深入理解 RPC 之集群篇">
-<meta property="og:url" content="http://lexburner.github.io/rpc-cluster/index.html">
+<meta property="og:url" content="https://lexburner.github.io/rpc-cluster/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="上一篇文章分析了服务的注册与发现，这一篇文章着重分析下 RPC 框架都会用到的集群的相关知识。 集群 (Cluster) 本身并不具备太多知识点，在分布式系统中，集群一般涵盖了负载均衡（LoadBalance），高可用（HA），路由（Route）等等概念，每个 RPC 框架对集群支持的程度不同，本文着重分析前两者 – 负载均衡和高可用。 集群概述在此之前的《深入理解 RPC》系列文章，对 RPC">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/TIM%E5%9B%BE%E7%89%8720180227151838.png">
-<meta property="og:updated_time" content="2019-09-26T09:45:29.714Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/TIM%E5%9B%BE%E7%89%8720180227151838.png">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.786Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解 RPC 之集群篇">
 <meta name="twitter:description" content="上一篇文章分析了服务的注册与发现，这一篇文章着重分析下 RPC 框架都会用到的集群的相关知识。 集群 (Cluster) 本身并不具备太多知识点，在分布式系统中，集群一般涵盖了负载均衡（LoadBalance），高可用（HA），路由（Route）等等概念，每个 RPC 框架对集群支持的程度不同，本文着重分析前两者 – 负载均衡和高可用。 集群概述在此之前的《深入理解 RPC》系列文章，对 RPC">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/TIM%E5%9B%BE%E7%89%8720180227151838.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/TIM%E5%9B%BE%E7%89%8720180227151838.png">
     
 
     
@@ -277,7 +277,7 @@ ga('send', 'pageview');
 <p>在概述中，我们只关心 Cluster 接口中的两个方法，它揭示了 Cluster 在服务治理中的地位</p>
 <p><1> 指定负载均衡算法</1></p>
 <p><2> 指定高可用策略（容错机制） </2></p>
-<p><img src="http://kirito.iocoder.cn/TIM%E5%9B%BE%E7%89%8720180227151838.png" alt="http://kirito.iocoder.cn/TIM%E5%9B%BE%E7%89%8720180227151838.png"></p>
+<p><img src="https://kirito.iocoder.cn/TIM%E5%9B%BE%E7%89%8720180227151838.png" alt="https://kirito.iocoder.cn/TIM%E5%9B%BE%E7%89%8720180227151838.png"></p>
 <p>我们需要对所谓的负载均衡策略和高可用策略有一定的理解，才能够搞清楚集群是如何运作的。</p>
 <h2 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h2><p>说到负载均衡，大多数人可能立刻联想到了 nginx。负载均衡可以分为服务端负载均衡和客户端负载均衡，而服务端负载均衡又按照实现方式的不同可以划分为软件负载均衡和硬件负载均衡，nginx 便是典型的软件负载均衡。而我们今天所要介绍的 RPC 中的负载均衡则主要是客户端负载均衡。如何区分也很简单，用笔者自己的话来描述下</p>
 <blockquote>
@@ -437,7 +437,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/rpc-cluster/" data-id="ck2kho778008yif9eg28rrl3d" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/rpc-cluster/" data-id="ck2kil4pl008wug9euzrbb8rd" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

@@ -9,20 +9,20 @@
 <meta name="keywords" content="数据库">
 <meta property="og:type" content="article">
 <meta property="og:title" content="PolarDB 数据库性能大赛 Java 选手分享">
-<meta property="og:url" content="http://lexburner.github.io/polardb-race/index.html">
+<meta property="og:url" content="https://lexburner.github.io/polardb-race/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="1 前言 国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大 (当然，主要还是前者 Q">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20181210184521001.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/KiritoDB.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20181210204156199.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20181210215200345.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:31.456Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20181210184521001.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/KiritoDB.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20181210204156199.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20181210215200345.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.789Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="PolarDB 数据库性能大赛 Java 选手分享">
 <meta name="twitter:description" content="1 前言 国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大 (当然，主要还是前者 Q">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/image-20181210184521001.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/image-20181210184521001.png">
     
 
     
@@ -273,7 +273,7 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <h3 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h3><p><img src="http://kirito.iocoder.cn/image-20181210184521001.png" alt="排名"></p>
+            <h3 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h3><p><img src="https://kirito.iocoder.cn/image-20181210184521001.png" alt="排名"></p>
 <p>国际惯例，先报成绩，熬了无数个夜晚，最后依旧被绝杀出了第一页，最终排名第 21 名。前十名的成绩分布为 413.69~416.94，我最终的耗时是 422.43。成绩虽然不是特别亮眼，但与众多参赛选手使用 C++ 作为参赛语言不同，我使用的是 Java，一方面是我 C++ 的能力早已荒废，另一方面是我想验证一下使用 Java 编写存储引擎是否与 C++ 差距巨大 (当然，主要还是前者 QAQ)。所以在本文中，我除了介绍整体的架构之外，还会着重笔墨来探讨 Java 编写存储类型应用的一些最佳实践，文末会给出 github 的开源地址。</p>
 <a id="more"></a>
 <h3 id="2-赛题概览"><a href="#2-赛题概览" class="headerlink" title="2 赛题概览"></a>2 赛题概览</h3><p>比赛总体分成了初赛和复赛两个阶段，整体要求实现一个简化、高效的 kv 存储引擎</p>
@@ -305,9 +305,9 @@ ga('send', 'pageview');
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * using high ten bit of the given key to determine which file it hits.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HighTenPartitioner</span> <span class="keyword">implements</span> <span class="title">Partitionable</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getPartition</span><span class="params">(<span class="keyword">byte</span>[] key)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ((key[<span class="number">0</span>] &amp; <span class="number">0xff</span>)&lt;&lt; <span class="number">2</span>) | ((key[<span class="number">1</span>] &amp; <span class="number">0xff</span>)&gt;&gt; <span class="number">6</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>明确了高位分区的前提再来看整体的架构就变得明朗了</p>
 <p><strong> 全局视角 </strong></p>
-<p><img src="http://kirito.iocoder.cn/KiritoDB.png" alt="全局视角"></p>
+<p><img src="https://kirito.iocoder.cn/KiritoDB.png" alt="全局视角"></p>
 <p><strong> 分区视角 </strong></p>
-<p><img src="http://kirito.iocoder.cn/image-20181210204156199.png" alt="分区视角"></p>
+<p><img src="https://kirito.iocoder.cn/image-20181210204156199.png" alt="分区视角"></p>
 <p><strong> 内存视角 </strong></p>
 <p>内存中仅仅维护有序的 <code>key[1024][625000]</code> 数组和 <code>offset[1024][625000]</code> 数组。</p>
 <p>上述两张图对整体的架构进行了一个很好的诠释，利用数据分布均匀的特性，可以将全局数据 hash 成 1024 个分区，在每个分区中存放两类文件：索引文件和数据文件。在随机写入阶段，根据 key 获得该数据对应分区位置，并按照时序，顺序追加到文件末尾，将全局随机写转换为局部顺序写。利用索引和数据一一对应的特性，我们也不需要将 data 的逻辑偏移量落盘，在 recover 阶段可以按照恢复 key 的次序，反推出 value 的逻辑偏移量。</p>
@@ -323,7 +323,7 @@ ga('send', 'pageview');
 <h3 id="7-随机读流程"><a href="#7-随机读流程" class="headerlink" title="7 随机读流程"></a>7 随机读流程</h3><p>随机读流程没有太大的优化点，优化空间实在有限，实现思路便是先根据 key 定位到分区，之后在有序的 key 数据中二分查找到 key/offset，拿到 data 的逻辑偏移和分区编号，便可以愉快的随机读了，随机读阶段没有太大的优化点，但仍然比 cpp 选手慢了 2-3s，可能是语言无法越过的差距。</p>
 <h3 id="8-顺序读流程"><a href="#8-顺序读流程" class="headerlink" title="8 顺序读流程"></a>8 顺序读流程</h3><p>Range 环节是整个比赛的大头，也是拉开差距的分水岭。前面我们已经大概提到了 Range 的整体思路是一个生产者消费者模型，n 个生成者负责从磁盘读数据进入内存（n 作为变量，通过 benchmark 来确定多少合适，最终实测 n 为 4 时效果最佳），64 个消费者负责调用 visit 回调，来验证数据，visit 过程就是随机读内存的过程。在 Range 阶段，剩余的内存还有大概 1G 左右，所以我分配了 4 个堆外缓冲，一个 256M，从而可以缓存 4 个分区的数据，并且，我为每一个分区分配了一个读盘线程，负责 load 数据进入缓存，供 64 个消费者消费。</p>
 <p>具体的顺序读架构可以参见下图：</p>
-<p><img src="http://kirito.iocoder.cn/image-20181210215200345.png" alt="range"></p>
+<p><img src="https://kirito.iocoder.cn/image-20181210215200345.png" alt="range"></p>
 <p>大体来看，便是 4 个 fetch 线程负责读盘，fetch thread n 负责 <code>partitionNo % 4 == n</code> 编号的分区，完成后通知 visit 消费。这中间充斥着比较多的互斥等待逻辑，并未在图中体现出来，大体如下：</p>
 <ol>
 <li>fetch thread 1~4 加载磁盘数据进入缓存是并发的</li>
@@ -360,7 +360,7 @@ ga('send', 'pageview');
 <p>说回 FileChannel，MMAP，最容易想到的是 RocketMQ 之中对两者灵活的运用，不知道在其他 Java 实现的存储引擎之中，是不是可以考虑使用 Direct IO 来提升存储引擎的性能呢？我们可以设想一下，利用有限并且少量的 PageCache 来保证一致性，在主流程中使用 Direct IO 配合顺序读写是不是一种可以配套使用的方案，不仅仅 PolarDB，算作是参加本次比赛给予我的一个启发。</p>
 <p>虽然无缘决赛，但使用 Java 取得这样的成绩还算不是特别难过，在 6400w 数据随机写，随机读，顺序读的场景下，Java 可以做到仅仅相差 C++ 不到 10s 的 overhead，我倒是觉得完全是可以接受的，哈哈。还有一些小的优化点就不在此赘述了，欢迎留言与我交流优化点和比赛感悟。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -371,7 +371,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/polardb-race/" data-id="ck2kho79l00cwif9e2dk5rikz" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/polardb-race/" data-id="ck2kil4rb00cwug9efkgz6qw3" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

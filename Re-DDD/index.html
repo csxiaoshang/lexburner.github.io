@@ -9,18 +9,18 @@
 <meta name="keywords" content="领域驱动设计">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Re：从零开始的领域驱动设计">
-<meta property="og:url" content="http://lexburner.github.io/Re-DDD/index.html">
+<meta property="og:url" content="https://lexburner.github.io/Re-DDD/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="前言领域驱动的火爆程度不用我赘述，但是即便其如此得耳熟能详，但大多数人对其的认识，还只是停留在知道它的缩写是 DDD，知道它是一种软件思想，或者知道它和微服务有千丝万缕的关系。Eric Evans 对 DDD 的诠释是那么地惜字如金，而我所认识的领域驱动设计的专家又都是行业中的资深前辈，他们擅长于对软件设计进行高屋建瓴的论述，如果没有丰富的互联网从业经验，是不能从他们的分享中获取太多的营养的，可以">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/20170728033004279.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/20170728031939418.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:31.204Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/20170728033004279.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/20170728031939418.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.789Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Re：从零开始的领域驱动设计">
 <meta name="twitter:description" content="前言领域驱动的火爆程度不用我赘述，但是即便其如此得耳熟能详，但大多数人对其的认识，还只是停留在知道它的缩写是 DDD，知道它是一种软件思想，或者知道它和微服务有千丝万缕的关系。Eric Evans 对 DDD 的诠释是那么地惜字如金，而我所认识的领域驱动设计的专家又都是行业中的资深前辈，他们擅长于对软件设计进行高屋建瓴的论述，如果没有丰富的互联网从业经验，是不能从他们的分享中获取太多的营养的，可以">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/20170728033004279.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/20170728033004279.png">
     
 
     
@@ -283,7 +283,7 @@ ga('send', 'pageview');
 <p>诚然如标题所示，本文是领域驱动设计的一个入门文章，或者更多的是一个个人理解的笔记，笔者也正在学习 DDD 的路上，可能会有很多的疏漏。如有理解有偏颇的地方，还望各位指摘。</p>
 <a id="more"></a>
 <h2 id="认识领域驱动设计的意义"><a href="#认识领域驱动设计的意义" class="headerlink" title="认识领域驱动设计的意义"></a>认识领域驱动设计的意义</h2><p>领域驱动设计并不会绝对地提高项目的开发效率。</p>
-<p><img src="http://kirito.iocoder.cn/20170728033004279.png" alt="领域驱动设计复杂性比较"> 遵循领域驱动设计的规范使得项目初期的开发甚至不如不使用它来的快，原因有很多，程序员的素质，代码的规范，限界上下文的划分… 甚至需求修改后导致需要重新建模。但是遵循领域驱动设计的规范，在项目越来越复杂之后，可以不至于让项目僵死。这也是为什么很多系统不断迭代着，最终就黄了。书名的副标题“软件核心复杂性应对之道”正是阐释了这一点</p>
+<p><img src="https://kirito.iocoder.cn/20170728033004279.png" alt="领域驱动设计复杂性比较"> 遵循领域驱动设计的规范使得项目初期的开发甚至不如不使用它来的快，原因有很多，程序员的素质，代码的规范，限界上下文的划分… 甚至需求修改后导致需要重新建模。但是遵循领域驱动设计的规范，在项目越来越复杂之后，可以不至于让项目僵死。这也是为什么很多系统不断迭代着，最终就黄了。书名的副标题“软件核心复杂性应对之道”正是阐释了这一点</p>
 <h2 id="模式：-smart-ui-是个反模式"><a href="#模式：-smart-ui-是个反模式" class="headerlink" title="模式： smart ui 是个反模式"></a>模式： smart ui 是个反模式</h2><p>可能很多读者还不知道 smart ui 是什么，但是在这本书写作期间，这种设计风格是非常流行的。在与一位领域驱动设计方面的资深专家的交谈中，他如下感慨到软件发展的历史：</p>
 <blockquote>
 <p>2003 年时，正是 delphi，vb 一类的 smart ui 程序大行其道，java 在那个年代，还在使用 jsp 来完成大量的业务逻辑操作，4000 行的 jsp 是常见的事；2005 年 spring hibernate 替换了 EJB，社区一片欢呼，所有人开始拥护 action，service，dao 这样的贫血模型（充血模型，贫血模型会在下文论述）；2007 年，Rails 兴起，有人发现了 Rails 的 activeRecord 是涨血模型，引起了一片混战；直到现在的 2017 年，微服务成为主流系统架构。</p>
@@ -300,7 +300,7 @@ ga('send', 'pageview');
 <p>在这个例子中，Order 和 Product 都是 entity，而 OrderItem 则是 value object（想想之前的定义，OrderItem 作为一个类，的确是描述了 Order 这个 entity 的一个属性集合）。关于标识，我的理解是有两层含义，第一个是作为数据本身存储于数据库，主键 id 是一个标识，第二是作为领域对象本身，orderNo 是一个标识，对于人而言，身份证是一个标识。而 OrderItem 中的 productId，id 不能称之为标识，因为整个 OrderItem 对象是依托于 Order 存在的，Order 不存在，则 OrderItem 没有意义。</p>
 <p>例子 2： 汽车和轮胎的关系是 entity 和 value object 吗？<br>这个例子其实是一个陷阱题，因为他没有交代限界上下文（BC），场景不足以判断。对于用户领域而言，的确可以成立，汽车报废之后，很少有人会关心轮胎。轮胎和发动机，雨刮器，座椅地位一样，只是构成汽车的一些部件，和用户最紧密相关的，只有汽车这个 entity，轮胎只是描述这个汽车的属性（value object）；场景切换到汽修厂，无论是汽车，还是轮胎，都是汽修厂密切关心的，每个轮胎都有自己的编号，一辆车报废了，可以安置到其他车上，这里，他们都是 entity。</p>
 <p>这个例子是在说明这么一个道理，同样的事物，在不同的领域中，会有不同的地位。</p>
-<p><img src="http://kirito.iocoder.cn/20170728031939418.png" alt="通过 value object 优化数据库"></p>
+<p><img src="https://kirito.iocoder.cn/20170728031939418.png" alt="通过 value object 优化数据库"></p>
 <p>在单体应用中，可能会有人指出，这直接违背了数据库范式，但是领域驱动设计的思想正如他的名字那样，不是基于数据库的，而是基于领域的。微服务使得数据库发生了隔离，这样的设计思想可以更好的指导我们优化数据库。</p>
 <h2 id="模式：-Repository"><a href="#模式：-Repository" class="headerlink" title="模式： Repository"></a>模式： Repository</h2><blockquote>
 <p>哲学家分析自然规律得出规范，框架编写者根据规范制定框架。有些框架，可能大家一直在用，但是却不懂其中蕴含的哲学。  </p>
@@ -340,7 +340,7 @@ ga('send', 'pageview');
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://github.com/JoeCao/JoeCao.github.io/issues/1" target="_blank" rel="noopener">多研究些架构，少谈些框架 —- 曹祖鹏</a></p>
 <p><a href="http://www.cnblogs.com/netfocus/archive/2011/10/10/2204949.html" target="_blank" rel="noopener">DDD 领域驱动设计基本理论知识总结 - netfocus</a></p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -351,7 +351,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/Re-DDD/" data-id="ck2kho79300c2if9e41i3s5g5" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/Re-DDD/" data-id="ck2kil4qx00c2ug9e0bsz537f" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

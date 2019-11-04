@@ -9,17 +9,17 @@
 <meta name="keywords" content="Kong">
 <meta property="og:type" content="article">
 <meta property="og:title" content="选择 Kong 作为你的 API 网关">
-<meta property="og:url" content="http://lexburner.github.io/kong-introduction/index.html">
+<meta property="og:url" content="https://lexburner.github.io/kong-introduction/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="Kong（https://github.com/Kong/kong）是一个云原生，高效，可扩展的分布式 API 网关。 自 2015 年在 github 开源后，广泛受到关注，目前已收获 1.68w+ 的 star，其核心价值在于高性能和可扩展性。">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://camo.githubusercontent.com/d4d0dcb22c223db0bf2e301aab0dddb3015f1729/68747470733a2f2f6b6f6e6768712e636f6d2f77702d636f6e74656e742f75706c6f6164732f323031382f30352f6b6f6e672d62656e65666974732d6769746875622d726561646d652e706e67">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180712184740981.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180712192742718.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180712184740981.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180712192742718.png">
 <meta property="og:image" content="http://blog.didispace.com/content/images/posts/hzf-ms-apigateway-2-9.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180712200520739.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:30.055Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180712200520739.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:47.406Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="选择 Kong 作为你的 API 网关">
 <meta name="twitter:description" content="Kong（https://github.com/Kong/kong）是一个云原生，高效，可扩展的分布式 API 网关。 自 2015 年在 github 开源后，广泛受到关注，目前已收获 1.68w+ 的 star，其核心价值在于高性能和可扩展性。">
@@ -301,7 +301,7 @@ ga('send', 'pageview');
 </ul>
 <p>上面这些特性中，反复提及了 Kong 背后的 OpenResty，实际上，使用 Kong 之后，Nginx 可以完全摒弃，Kong 的功能是 Nginx 的父集。</p>
 <p>而 Zuul 除了基础的路由特性以及其本身和 SpringCloud 结合较为紧密之外，并无任何优势。</p>
-<h3 id="Kong-的架构"><a href="#Kong-的架构" class="headerlink" title="Kong 的架构"></a>Kong 的架构</h3><p><img src="http://kirito.iocoder.cn/image-20180712184740981.png" alt="image-20180712184740981"></p>
+<h3 id="Kong-的架构"><a href="#Kong-的架构" class="headerlink" title="Kong 的架构"></a>Kong 的架构</h3><p><img src="https://kirito.iocoder.cn/image-20180712184740981.png" alt="image-20180712184740981"></p>
 <p>从技术的角度讲，Kong 可以认为是一个 OpenResty 应用程序。 OpenResty 运行在 Nginx 之上，使用 Lua 扩展了 Nginx。 Lua 是一种非常容易使用的脚本语言，可以让你在 Nginx 中编写一些逻辑操作。之前我们提到过一个概念 Kong = OpenResty + Nginx + Lua，但想要从全局视角了解 Kong 的工作原理，还是直接看源码比较直接。我们定位到本地的 Kong 文件夹，按照上图中的目录层级来识识 Kong 的庐山真面目。</p>
 <ol>
 <li>Kong 文件下包含了全部源码和必要组件，分析他们，我们便得到了 Kong 的架构。0.13.x 是目前 Kong 的最新版本。</li>
@@ -311,7 +311,7 @@ ga('send', 'pageview');
 <li>plugins 文件夹包含了上一节提到的 Kong 的诸多插件功能，如权限控制插件，跨域插件，jwt 插件，oauth2 插件… 如果需要自定义插件，则需要将代码置于此处。</li>
 </ol>
 <p>从上述文件夹浏览下来，大概可以看到它和 Nginx 的相似之处，并在此基础之上借助于 Lua 对自身的功能进行了拓展，除了 nginx.conf 中的配置，和相对固定的文件层级，Kong 还需要连接一个数据库来管理路由配置，服务配置，upstream 配置等信息，是的，由于 Kong 支持动态路由的特性，所以几乎所有动态的配置都不是配置在文件中，而是借助于 Postgres 或者 Cassandra 进行管理。</p>
-<p><img src="http://kirito.iocoder.cn/image-20180712192742718.png" alt="postgres"></p>
+<p><img src="https://kirito.iocoder.cn/image-20180712192742718.png" alt="postgres"></p>
 <p>Kong 对外暴露了 Restful API，最终的配置便是落地在了数据库之中。</p>
 <h3 id="Kong-的管理方式"><a href="#Kong-的管理方式" class="headerlink" title="Kong 的管理方式"></a>Kong 的管理方式</h3><p>通过文件夹结构的分析，以及数据库中的表结构，我们已经对 Kong 的整体架构有了一个基本的认识，但肯定还存在一个疑问：我会配置 Nginx 来控制路由，但这个 Kong 应当怎么配置才能达到相同的目的呢？莫急，下面来看看 Kong 如何管理配置。</p>
 <p>Kong 简单易用的背后，便是因为其所有的操作都是基于 HTTP Restful API 来进行的。</p>
@@ -339,14 +339,14 @@ ga('send', 'pageview');
 <p>同理，插件也可以安装在 route 之上</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST http://localhost:8001/routes/&#123;routeId&#125;/plugins \</span><br><span class="line">--data "name=rate-limiting" \</span><br><span class="line">--data "config.second=50"</span><br><span class="line"></span><br><span class="line">curl -X POST http://localhost:8001/routes/&#123;routeId&#125;/plugins \</span><br><span class="line">--data "name=jwt"</span><br></pre></td></tr></table></figure>
 <p>在官方文档中，我们可以获取全部的插件 <a href="https://konghq.com/plugins/，部分插件需要收费的企业版才可使用。" target="_blank" rel="noopener">https://konghq.com/plugins/，部分插件需要收费的企业版才可使用。</a></p>
-<p><img src="http://kirito.iocoder.cn/image-20180712200520739.png" alt="kong 插件"></p>
+<p><img src="https://kirito.iocoder.cn/image-20180712200520739.png" alt="kong 插件"></p>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>Kong 是目前市场上相对较为成熟的开源 API 网关产品，无论是性能，扩展性，还是功能特性，都决定了它是一款优秀的产品，对 OpenResty 和 Lua 感兴趣的同学，Kong 也是一个优秀的学习参考对象。基于 OpenResty，可以在现有 Kong 的基础上进行一些扩展，从而实现更复杂的特性，比如我司内部的 ABTest 插件和定制化的认证插件，开发成本都相对较低。Kong 系列的文章将会在以后持续连载。</p>
 <hr>
 <p>阅读扩展</p>
 <p>初识 Kong 之负载均衡 <a href="https://www.cnkirito.moe/kong-loadbalance/" target="_blank" rel="noopener">https://www.cnkirito.moe/kong-loadbalance/</a> </p>
 <p>Kong 集成 Jwt 插件 <a href="https://www.cnkirito.moe/kong-jwt/" target="_blank" rel="noopener">https://www.cnkirito.moe/kong-jwt/</a></p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -357,7 +357,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/kong-introduction/" data-id="ck2kho76y008aif9elcoj0ww9" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/kong-introduction/" data-id="ck2kil4pg008bug9e0eaejqa0" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

@@ -9,16 +9,16 @@
 <meta name="keywords" content="Spring,架构设计">
 <meta property="og:type" content="article">
 <meta property="og:title" content="浅析 Spring 中的事件驱动机制">
-<meta property="og:url" content="http://lexburner.github.io/event-1/index.html">
+<meta property="og:url" content="https://lexburner.github.io/event-1/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="今天来简单地聊聊事件驱动，其实写这篇文章挺令我挺苦恼的，因为事件驱动这个名词，我没有找到很好的定性解释，担心自己的表述有误，而说到事件驱动可能立刻联想到如此众多的概念：观察者模式，发布订阅模式，消息队列 MQ，消息驱动，事件，EventSourcing… 为了不产生歧义，笔者把自己所了解的这些模棱两可的概念都列了出来，再开始今天的分享。  在设计模式中，观察者模式可以算得上是一个非常经典的行为型设">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/event1.png">
-<meta property="og:updated_time" content="2019-09-26T09:45:31.634Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/event1.png">
+<meta property="og:updated_time" content="2019-11-04T14:18:03.082Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="浅析 Spring 中的事件驱动机制">
 <meta name="twitter:description" content="今天来简单地聊聊事件驱动，其实写这篇文章挺令我挺苦恼的，因为事件驱动这个名词，我没有找到很好的定性解释，担心自己的表述有误，而说到事件驱动可能立刻联想到如此众多的概念：观察者模式，发布订阅模式，消息队列 MQ，消息驱动，事件，EventSourcing… 为了不产生歧义，笔者把自己所了解的这些模棱两可的概念都列了出来，再开始今天的分享。  在设计模式中，观察者模式可以算得上是一个非常经典的行为型设">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/event1.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/event1.png">
     
 
     
@@ -301,7 +301,7 @@ ga('send', 'pageview');
 <p>其他两个 Service，也同样编写，实际的业务操作仅仅是打印一句内容即可，篇幅限制，这里省略。</p>
 <h3 id="编写启动类"><a href="#编写启动类" class="headerlink" title="编写启动类"></a>编写启动类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EventDemoApp</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(EventDemoApp.class, args);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    UserService userService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(<span class="string">"/register"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">register</span><span class="params">()</span></span>&#123;</span><br><span class="line">        userService.register(<span class="string">"kirito"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"success"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>当我们调用 userService.register(“kirito”); 方法时，控制台打印信息如下：</p>
-<p><img src="http://kirito.iocoder.cn/event1.png" alt="用户注册"></p>
+<p><img src="https://kirito.iocoder.cn/event1.png" alt="用户注册"></p>
 <p>他们的顺序是无序的，如果需要控制顺序，需要重写 order 接口，这点不做介绍。其次，我们完成了用户注册和其他服务的解耦，这也是事件驱动的最大特性之一，如果需要在用户注册时完成其他操作，只需要再添加相应的事件订阅者即可。</p>
 <h2 id="Spring-对-Event-的注解支持"><a href="#Spring-对-Event-的注解支持" class="headerlink" title="Spring 对 Event 的注解支持"></a>Spring 对 Event 的注解支持</h2><p>上述的几个接口已经非常清爽了，如果习惯使用注解，Spring 也提供了，不再需要显示实现</p>
 <h3 id="注解式的事件发布者"><a href="#注解式的事件发布者" class="headerlink" title="注解式的事件发布者"></a>注解式的事件发布者</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">register</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"用户："</span> + name + <span class="string">"已注册！"</span>);</span><br><span class="line">        applicationEventPublisher.publishEvent(<span class="keyword">new</span> UserRegisterEvent(name));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ApplicationEventPublisher applicationEventPublisher;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -336,7 +336,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/event-1/" data-id="ck2kho76f0072if9ew5dklel7" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/event-1/" data-id="ck2kil4p5006zug9e3lecu1qt" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

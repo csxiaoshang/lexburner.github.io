@@ -9,18 +9,18 @@
 <meta name="keywords" content="Spring Security OAuth2">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Re：从零开始的 Spring Security OAuth2（一）">
-<meta property="og:url" content="http://lexburner.github.io/Spring-Security-OAuth2-1/index.html">
+<meta property="og:url" content="https://lexburner.github.io/Spring-Security-OAuth2-1/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="前言今天来聊聊一个接口对接的场景，A 厂家有一套 HTTP 接口需要提供给 B 厂家使用，由于是外网环境，所以需要有一套安全机制保障，这个时候 oauth2 就可以作为一个方案。 关于 oauth2，其实是一个规范，本文重点讲解 spring 对他进行的实现，如果你还不清楚授权服务器，资源服务器，认证授权等基础概念，可以移步 理解 OAuth 2.0 - 阮一峰，这是一篇对于 oauth2 很好的">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/20170808145230975.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/20170808145304794.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:31.162Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/20170808145230975.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/20170808145304794.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.788Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Re：从零开始的 Spring Security OAuth2（一）">
 <meta name="twitter:description" content="前言今天来聊聊一个接口对接的场景，A 厂家有一套 HTTP 接口需要提供给 B 厂家使用，由于是外网环境，所以需要有一套安全机制保障，这个时候 oauth2 就可以作为一个方案。 关于 oauth2，其实是一个规范，本文重点讲解 spring 对他进行的实现，如果你还不清楚授权服务器，资源服务器，认证授权等基础概念，可以移步 理解 OAuth 2.0 - 阮一峰，这是一篇对于 oauth2 很好的">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/20170808145230975.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/20170808145230975.png">
     
 
     
@@ -326,14 +326,14 @@ ga('send', 'pageview');
 <p>使用 client 模式获得的 token:<code>http://localhost:8080/order/1?access_token=56465b41-429d-436c-ad8d-613d476ff322</code>，同上的响应 <code>order id : 1</code></p>
 <p>我们重点关注一下 debug 后，对资源访问时系统记录的用户认证信息，可以看到如下的 debug 信息</p>
 <p>password 模式：</p>
-<p><img src="http://kirito.iocoder.cn/20170808145230975.png" alt="password 模式"></p>
+<p><img src="https://kirito.iocoder.cn/20170808145230975.png" alt="password 模式"></p>
 <p>client 模式：</p>
-<p><img src="http://kirito.iocoder.cn/20170808145304794.png" alt="client 模式"></p>
+<p><img src="https://kirito.iocoder.cn/20170808145304794.png" alt="client 模式"></p>
 <p>和我们的配置是一致的，仔细看可以发现两者的身份有些许的不同。想要查看更多的 debug 信息，可以选择下载 demo 代码自己查看，为了方便读者调试和验证，我去除了很多复杂的特性，基本实现了一个最简配置，涉及到数据库的地方也尽量配置到了内存中，这点记住在实际使用时一定要修改。</p>
 <p>到这儿，一个简单的 oauth2 入门示例就完成了，一个简单的配置教程。token 的工作原理是什么，它包含了哪些信息？spring 内部如何对身份信息进行验证？以及上述的配置到底影响了什么？这些内容会放到后面的文章中去分析。</p>
 <h2 id="示例代码下载"><a href="#示例代码下载" class="headerlink" title="示例代码下载"></a>示例代码下载</h2><p>全部的代码可以在我的 github 上进行下载，项目使用 springboot+maven 构建：<br><a href="https://github.com/lexburner/oauth2-demo" target="_blank" rel="noopener">https://github.com/lexburner/oauth2-demo</a></p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -344,7 +344,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/Spring-Security-OAuth2-1/" data-id="ck2kho75g005gif9e8e04ftsd" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/Spring-Security-OAuth2-1/" data-id="ck2kil4oj005gug9edz6va4fq" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

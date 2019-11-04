@@ -9,19 +9,19 @@
 <meta name="keywords" content="JWT">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JSON Web Token - 在 Web 应用间安全地传递信息">
-<meta property="og:url" content="http://lexburner.github.io/jwt-learn/index.html">
+<meta property="og:url" content="https://lexburner.github.io/jwt-learn/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="转载自：http://blog.leapoahead.com/2015/09/06/understanding-jwt/ 作者：John Wu  JSON Web Token（JWT）是一个非常轻巧的 规范。这个规范允许我们使用 JWT 在用户和服务器之间传递安全可靠的信息。 让我们来假想一下一个场景。在 A 用户关注了 B 用户的时候，系统发邮件给 B 用户，并且附有一个链接“点此关注 A 用">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/jwt.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/sig1.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/sig2.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:31.481Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/jwt.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/sig1.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/sig2.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:47.406Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JSON Web Token - 在 Web 应用间安全地传递信息">
 <meta name="twitter:description" content="转载自：http://blog.leapoahead.com/2015/09/06/understanding-jwt/ 作者：John Wu  JSON Web Token（JWT）是一个非常轻巧的 规范。这个规范允许我们使用 JWT 在用户和服务器之间传递安全可靠的信息。 让我们来假想一下一个场景。在 A 用户关注了 B 用户的时候，系统发邮件给 B 用户，并且附有一个链接“点此关注 A 用">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/jwt.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/jwt.png">
     
 
     
@@ -279,7 +279,7 @@ ga('send', 'pageview');
 <p>JSON Web Token（JWT）是一个非常轻巧的 <a href="https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-32" target="_blank" rel="noopener">规范</a>。这个规范允许我们使用 JWT 在用户和服务器之间传递安全可靠的信息。</p>
 <p>让我们来假想一下一个场景。在 A 用户关注了 B 用户的时候，系统发邮件给 B 用户，并且附有一个链接“点此关注 A 用户”。链接的地址可以是这样的<br><a id="more"></a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://your.awesome-app.com/make-friend/?from_user=B&amp;target_user=A</span><br></pre></td></tr></table></figure></p>
 <p>上面的 URL 主要通过 URL 来描述这个当然这样做有一个弊端，那就是要求用户 B 用户是一定要先登录的。可不可以简化这个流程，让 B 用户不用登录就可以完成这个操作。JWT 就允许我们做到这点。</p>
-<p><img src="http://kirito.iocoder.cn/jwt.png" alt="jwt"></p>
+<p><img src="https://kirito.iocoder.cn/jwt.png" alt="jwt"></p>
 <h3 id="JWT-的组成"><a href="#JWT-的组成" class="headerlink" title="JWT 的组成"></a>JWT 的组成</h3><p>一个 JWT 实际上就是一个字符串，它由三部分组成，<strong> 头部 </strong>、<strong> 载荷 </strong> 与 <strong> 签名 </strong>。</p>
 <h5 id="载荷（Payload）"><a href="#载荷（Payload）" class="headerlink" title="载荷（Payload）"></a>载荷（Payload）</h5><p>我们先将上面的添加好友的操作描述成一个 JSON 对象。其中添加了一些其他的信息，帮助今后收到这个 JWT 的服务器理解这个 JWT。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;iss&quot;: &quot;John Wu JWT&quot;,</span><br><span class="line">    &quot;iat&quot;: 1441593502,</span><br><span class="line">    &quot;exp&quot;: 1441594722,</span><br><span class="line">    &quot;aud&quot;: &quot;www.example.com&quot;,</span><br><span class="line">    &quot;sub&quot;: &quot;jrocket@example.com&quot;,</span><br><span class="line">    &quot;from_user&quot;: &quot;B&quot;,</span><br><span class="line">    &quot;target_user&quot;: &quot;A&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -312,7 +312,7 @@ ga('send', 'pageview');
 <p>最后，我们将上面拼接完的字符串用 HS256 算法进行加密。在加密的时候，我们还需要提供一个密钥（secret）。如果我们用 <code>mystar</code> 作为密钥的话，那么就可以得到我们加密后的内容</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rSWamyAYwuHCo7IFAgd1oRpSP7nzL7BF5t7ItqpKViM</span><br></pre></td></tr></table></figure>
 <p>这一部分又叫做 <strong> 签名 </strong>。</p>
-<p><img src="http://kirito.iocoder.cn/sig1.png" alt="sig1"></p>
+<p><img src="https://kirito.iocoder.cn/sig1.png" alt="sig1"></p>
 <p>最后将这一部分签名也拼接在被签名的字符串后面，我们就得到了完整的 JWT</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcm9tX3VzZXIiOiJCIiwidGFyZ2V0X3VzZXIiOiJBIn0.rSWamyAYwuHCo7IFAgd1oRpSP7nzL7BF5t7ItqpKViM</span><br></pre></td></tr></table></figure>
 <p>于是，我们就可以将邮件中的 URL 改成</p>
@@ -326,7 +326,7 @@ ga('send', 'pageview');
 <p>让我逐一为你说明。</p>
 <h3 id="签名的目的"><a href="#签名的目的" class="headerlink" title="签名的目的"></a>签名的目的</h3><p>最后一步签名的过程，实际上是对头部以及载荷内容进行签名。一般而言，加密算法对于不同的输入产生的输出总是不一样的。对于两个不同的输入，产生同样的输出的概率极其地小（有可能比我成世界首富的概率还小）。所以，我们就把“不一样的输入产生不一样的输出”当做必然事件来看待吧。</p>
 <p>所以，如果有人对头部以及载荷的内容解码之后进行修改，再进行编码的话，那么新的头部和载荷的签名和之前的签名就将是不一样的。而且，如果不知道服务器加密的时候用的密钥的话，得出来的签名也一定会是不一样的。</p>
-<p><img src="http://kirito.iocoder.cn/sig2.png" alt="sig2"></p>
+<p><img src="https://kirito.iocoder.cn/sig2.png" alt="sig2"></p>
 <p>服务器应用在接受到 JWT 后，会首先对头部和载荷的内容用同一算法再次签名。那么服务器应用是怎么知道我们用的是哪一种算法呢？别忘了，我们在 JWT 的头部中已经用 <code>alg</code> 字段指明了我们的加密算法了。</p>
 <p>如果服务器应用对头部和载荷再次以同样方法签名之后发现，自己计算出来的签名和接受到的签名不一样，那么就说明这个 Token 的内容被别人动过的，我们应该拒绝这个 Token，返回一个 HTTP 401 Unauthorized 响应。</p>
 <h3 id="信息会暴露？"><a href="#信息会暴露？" class="headerlink" title="信息会暴露？"></a>信息会暴露？</h3><p>是的。</p>
@@ -335,7 +335,7 @@ ga('send', 'pageview');
 <h3 id="JWT-的适用场景"><a href="#JWT-的适用场景" class="headerlink" title="JWT 的适用场景"></a>JWT 的适用场景</h3><p>我们可以看到，JWT 适合用于向 Web 应用传递一些非敏感信息。例如在上面提到的完成加好友的操作，还有诸如下订单的操作等等。</p>
 <p>其实 JWT 还经常用于设计用户认证和授权系统，甚至实现 Web 应用的单点登录。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -346,7 +346,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/jwt-learn/" data-id="ck2kho73i001bif9ejww6m24b" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/jwt-learn/" data-id="ck2kil4mo0017ug9eniw09obs" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

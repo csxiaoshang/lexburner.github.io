@@ -9,18 +9,18 @@
 <meta name="keywords" content="JAVA">
 <meta property="og:type" content="article">
 <meta property="og:title" content="定时器的几种实现方式">
-<meta property="og:url" content="http://lexburner.github.io/timer/index.html">
+<meta property="og:url" content="https://lexburner.github.io/timer/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="1 前言在开始正题之前，先闲聊几句。有人说，计算机科学这个学科，软件方向研究到头就是数学，硬件方向研究到头就是物理，最轻松的是中间这批使用者，可以不太懂物理，不太懂数学，依旧可以使用计算机作为自己谋生的工具。这个规律具有普适应，看看“定时器”这个例子，往应用层研究，有 Quartz，Spring Schedule 等框架；往分布式研究，又有 SchedulerX，ElasticJob 等分布式任务">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/201807171109599678a80c-075a-40ee-b25f-10fd82c1025c.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/7f03c027b1de345a0b1e57239d73de74.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:31.563Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/201807171109599678a80c-075a-40ee-b25f-10fd82c1025c.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/7f03c027b1de345a0b1e57239d73de74.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.789Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="定时器的几种实现方式">
 <meta name="twitter:description" content="1 前言在开始正题之前，先闲聊几句。有人说，计算机科学这个学科，软件方向研究到头就是数学，硬件方向研究到头就是物理，最轻松的是中间这批使用者，可以不太懂物理，不太懂数学，依旧可以使用计算机作为自己谋生的工具。这个规律具有普适应，看看“定时器”这个例子，往应用层研究，有 Quartz，Spring Schedule 等框架；往分布式研究，又有 SchedulerX，ElasticJob 等分布式任务">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/201807171109599678a80c-075a-40ee-b25f-10fd82c1025c.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/201807171109599678a80c-075a-40ee-b25f-10fd82c1025c.png">
     
 
     
@@ -306,7 +306,7 @@ ga('send', 'pageview');
 <p>expireTime 是  <code>Comparator</code>  的对比参数。NewTask O(logN) 和 Cancel O(logN) 分别对应堆插入和删除元素的时间复杂度 ；Run O(1)，由 expireTime 形成的小根堆，我们总能在堆顶找到最快的即将过期的任务。</p>
 <p>堆与双向有序链表相比，NewTask 和 Cancel 形成了 trade off，但考虑到现实中，定时任务取消的场景并不是很多，所以堆实现的定时器要比双向有序链表优秀。</p>
 <h4 id="3-3-时间轮"><a href="#3-3-时间轮" class="headerlink" title="3.3 时间轮"></a>3.3 时间轮</h4><p>Netty 针对 I/O 超时调度的场景进行了优化，实现了 <code>HashedWheelTimer</code> 时间轮算法。</p>
-<p><img src="http://kirito.iocoder.cn/201807171109599678a80c-075a-40ee-b25f-10fd82c1025c.png" alt="时间轮算法"></p>
+<p><img src="https://kirito.iocoder.cn/201807171109599678a80c-075a-40ee-b25f-10fd82c1025c.png" alt="时间轮算法"></p>
 <p><code>HashedWheelTimer</code> 是一个环形结构，可以用时钟来类比，钟面上有很多 bucket ，每一个 bucket 上可以存放多个任务，使用一个 List 保存该时刻到期的所有任务，同时一个指针随着时间流逝一格一格转动，并执行对应 bucket 上所有到期的任务。任务通过 <code>取模</code> 决定应该放入哪个 bucket 。和 HashMap 的原理类似，newTask 对应 put，使用 List 来解决 Hash 冲突。</p>
 <p>以上图为例，假设一个 bucket 是 1 秒，则指针转动一轮表示的时间段为 8s，假设当前指针指向 0，此时需要调度一个 3s 后执行的任务，显然应该加入到 (0+3=3) 的方格中，指针再走 3 次就可以执行了；如果任务要在 10s 后执行，应该等指针走完一轮零 2 格再执行，因此应放入 2，同时将 round（1）保存到任务中。检查到期任务时只执行 round 为 0 的， bucket 上其他任务的 round 减 1。</p>
 <p>再看图中的 bucket5，我们可以知道在 $1<em>8+5=13s$  后，有两个任务需要执行，在 $2</em>8+5=21s$ 后有一个任务需要执行。</p>
@@ -324,7 +324,7 @@ ga('send', 'pageview');
 </ol>
 <h4 id="3-4-层级时间轮"><a href="#3-4-层级时间轮" class="headerlink" title="3.4 层级时间轮"></a>3.4 层级时间轮</h4><p>Kafka 针对时间轮算法进行了优化，实现了层级时间轮 <code>TimingWheel</code></p>
 <p>如果任务的时间跨度很大，数量也多，传统的 <code>HashedWheelTimer</code> 会造成任务的 <code>round</code> 很大，单个 bucket 的任务 List 很长，并会维持很长一段时间。这时可将轮盘按时间粒度分级：</p>
-<p><img src="http://kirito.iocoder.cn/7f03c027b1de345a0b1e57239d73de74.png" alt="层级时间轮"></p>
+<p><img src="https://kirito.iocoder.cn/7f03c027b1de345a0b1e57239d73de74.png" alt="层级时间轮"></p>
 <p>现在，每个任务除了要维护在当前轮盘的 <code>round</code>，还要计算在所有下级轮盘的 <code>round</code>。当本层的 <code>round</code> 为 0 时，任务按下级 <code>round</code> 值被下放到下级轮子，最终在最底层的轮盘得到执行。</p>
 <blockquote>
 <p>NewTask：O(H)<br>Cancel：O(H)<br>Run：O(M)<br>Tick：O(1)<br>H：层级数量</p>
@@ -376,7 +376,7 @@ ga('send', 'pageview');
 <p>[2] <a href="http://novoland.github.io/" target="_blank" rel="noopener">http://novoland.github.io/</a> 并发 /2014/07/26/ 定时器（Timer）的实现.html</p>
 <p>[3] <a href="http://www.cs.columbia.edu/~nahum/w6998/papers/sosp87-timing-wheels.pdf" target="_blank" rel="noopener">http://www.cs.columbia.edu/~nahum/w6998/papers/sosp87-timing-wheels.pdf</a></p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -387,7 +387,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/timer/" data-id="ck2kho78500b1if9esu3pof0p" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/timer/" data-id="ck2kil4q600b2ug9etyp2i9hd" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

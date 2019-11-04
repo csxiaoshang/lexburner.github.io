@@ -9,17 +9,17 @@
 <meta name="keywords" content="Spring,架构设计">
 <meta property="og:type" content="article">
 <meta property="og:title" content="浅析分布式下的事件驱动机制（PubSub 模式）">
-<meta property="og:url" content="http://lexburner.github.io/event-2/index.html">
+<meta property="og:url" content="https://lexburner.github.io/event-2/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="上一篇文章《浅析 Spring 中的事件驱动机制》简单介绍了 Spring 对事件的支持。Event 的整个生命周期，从 publisher 发出，经过 applicationContext 容器通知到 EventListener，都是发生在单个 Spring 容器中，而在分布式场景下，有些时候一个事件的产生，可能需要被多个实例响应，本文主要介绍分布式场景下的事件驱动机制，由于使用了 Redis，">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170913232959.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170914001552.png">
-<meta property="og:updated_time" content="2019-09-26T09:45:29.655Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170913232959.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170914001552.png">
+<meta property="og:updated_time" content="2019-11-04T14:18:11.679Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="浅析分布式下的事件驱动机制（PubSub 模式）">
 <meta name="twitter:description" content="上一篇文章《浅析 Spring 中的事件驱动机制》简单介绍了 Spring 对事件的支持。Event 的整个生命周期，从 publisher 发出，经过 applicationContext 容器通知到 EventListener，都是发生在单个 Spring 容器中，而在分布式场景下，有些时候一个事件的产生，可能需要被多个实例响应，本文主要介绍分布式场景下的事件驱动机制，由于使用了 Redis，">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170913232959.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170913232959.png">
     
 
     
@@ -278,7 +278,7 @@ ga('send', 'pageview');
 </blockquote>
 <p>消息中间件有非常多的实现，如 ActiveMQ，RabbitMQ，RocketMQ，而他们同一遵循的接口规范，便是 JMS。在下文中即将出现的 ConnectionFactory，Destination，Connection，Session，MessageListener，Topic，Queue 等等名词，都是 JMS 核心的接口，由于本文的初衷并不是讲解 MQ&amp;JMS，所以这些机制暂且跳过。</p>
 <h2 id="定义分布式事件需求"><a href="#定义分布式事件需求" class="headerlink" title="定义分布式事件需求"></a>定义分布式事件需求</h2><p>在上一个项目中，我们对接了外网的 http 接口，而安全性的保障则是交给 OAuth2 来完成，作为 OAuth2 的客户端，我们需要获取服务端返回的 token，而 token 接口的获取次数每个月是有限制的，于是我们选择使用 Redis 来保存，定时刷新。由于每次发起请求时都要携带 token，为了更高的性能减少一次 redis io，我们在 TokenService 中使用了本地变量缓存 token。于是形成如下的 token 获取机制：</p>
-<p><img src="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170913232959.png" alt="token 获取流程"></p>
+<p><img src="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170913232959.png" alt="token 获取流程"></p>
 <p>这个图并不复杂，只是为了方便描述需求：首先去本地变量中加载 token，若 token==null，则去 Redis 加载，若 Redis 未命中（token 过期了），则最终调用外部的 http 接口获取实时的 token，同时存入 redis 中和本地变量中。</p>
 <p>这个需求设计到这样一个问题：大多数情况下是单个实例中发现 redis 中的 token 为空，而它需要同时获取最新 token，并通知其他的实例也去加载最新的 token，这个时候事件广播就可以派上用场了。</p>
 <p>由于 token 缓存在了 Redis 中，我们首先介绍 Redis 的发布订阅机制。</p>
@@ -316,7 +316,7 @@ ga('send', 'pageview');
 <h3 id="配置-ActiveMQ-的-topic"><a href="#配置-ActiveMQ-的-topic" class="headerlink" title="配置 ActiveMQ 的 topic"></a>配置 ActiveMQ 的 topic</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ActivemqPubSubConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> String tokenTopic = <span class="string">"tokenTopic"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function">Topic <span class="title">tokenTopic</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ActiveMQTopic(ActivemqPubSubConfig.tokenTopic);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>非常简单的配置，因为 ActiveMQAutoConfiguration 已经帮我们做了相当多的配置，我们只需要顶一个 topic 即可使用 ActiveMQ 的功能。</p>
 <h3 id="查看-ActiveMQ-的监控端"><a href="#查看-ActiveMQ-的监控端" class="headerlink" title="查看 ActiveMQ 的监控端"></a>查看 ActiveMQ 的监控端</h3><p>省略了发送消息的过程，实际上可以得到和 Redis PubSub 一样的效果。来看一下 ActiveMQ 自带的监控端，在发送消息后，发生了什么变化，访问本地端口 <code>http://localhost:8161/admin</code> ，可以看到消息被消费了。</p>
-<p><img src="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170914001552.png" alt="ActiveMQ 监控端"></p>
+<p><img src="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170914001552.png" alt="ActiveMQ 监控端"></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文介绍了 Redis，ActiveMQ 的 PubSub 特性，这是我理解的分布式场景下的事件驱动的使用。事件驱动是一种思想，PubSub 是一种模式，Redis，ActiveMQ 是一种应用，落到实处，便可以是本文介绍的 token 这个小小的业务实现。但是注意，使用 Redis，ActiveMQ 理解事件驱动可以，但是不能等同事件驱动，事件驱动还有很多其他场景下体现，笔者功力不够，无法一一介绍，怕人误解，特此强调一下。</p>
 
         
@@ -328,7 +328,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/event-2/" data-id="ck2kho76g0076if9e25kjup0r" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/event-2/" data-id="ck2kil4p60073ug9em5f6orir" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

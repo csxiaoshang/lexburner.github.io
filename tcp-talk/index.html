@@ -9,18 +9,18 @@
 <meta name="keywords" content="TCP">
 <meta property="og:type" content="article">
 <meta property="og:title" content="聊聊 TCP 长连接和心跳那些事">
-<meta property="og:url" content="http://lexburner.github.io/tcp-talk/index.html">
+<meta property="og:url" content="https://lexburner.github.io/tcp-talk/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="前言可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳问题，做一个统一的整理。  在 Java 中，使用 TCP 通信，大概率">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20190106203341694.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/359310b9-b980-3254-aed6-78aa6c482e53.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:29.692Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20190106203341694.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/359310b9-b980-3254-aed6-78aa6c482e53.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.788Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="聊聊 TCP 长连接和心跳那些事">
 <meta name="twitter:description" content="前言可能很多 Java 程序员对 TCP 的理解只有一个三次握手，四次握手的认识，我觉得这样的原因主要在于 TCP 协议本身稍微有点抽象（相比较于应用层的 HTTP 协议）；其次，非框架开发者不太需要接触到 TCP 的一些细节。其实我个人对 TCP 的很多细节也并没有完全理解，这篇文章主要针对微信交流群里有人提出的长连接，心跳问题，做一个统一的整理。  在 Java 中，使用 TCP 通信，大概率">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/image-20190106203341694.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/image-20190106203341694.png">
     
 
     
@@ -283,7 +283,7 @@ ga('send', 'pageview');
 <p>长连接还常常被用来做数据的推送，我们大多数时候对通信的认知还是 request/response 模型，但 TCP 双工通信的性质决定了它还可以被用来做双向通信。在长连接之下，可以很方便的实现 push 模型，长连接的这一特性在本文并不会进行探讨，有兴趣的同学可以专门去搜索相关的文章。</p>
 <p>短连接没有太多东西可以讲，所以下文我们将目光聚焦在长连接的一些问题上。纯讲理论未免有些过于单调，所以下文我借助一些 RPC 框架的实践来展开 TCP 的相关讨论。</p>
 <h3 id="服务治理框架中的长连接"><a href="#服务治理框架中的长连接" class="headerlink" title="服务治理框架中的长连接"></a>服务治理框架中的长连接</h3><p>前面已经提到过，追求性能时，必然会选择使用长连接，所以借助 Dubbo 可以很好的来理解 TCP。我们开启两个 Dubbo 应用，一个 server 负责监听本地 20880 端口（众所周知，这是 Dubbo 协议默认的端口），一个 client 负责循环发送请求。执行 <code>lsof -i:20880</code> 命令可以查看端口的相关使用情况：</p>
-<p><img src="http://kirito.iocoder.cn/image-20190106203341694.png" alt="image-20190106203341694"></p>
+<p><img src="https://kirito.iocoder.cn/image-20190106203341694.png" alt="image-20190106203341694"></p>
 <ul>
 <li><code>*:20880 (LISTEN)</code> 说明了 Dubbo 正在监听本地的 20880 端口，处理发送到本地 20880 端口的请求</li>
 <li>后两条信息说明请求的发送情况，验证了 TCP 是一个双向的通信过程，由于我是在同一个机器开启了两个 Dubbo 应用，所以你能够看到是本地的 53078 端口与 20880 端口在通信。我们并没有手动设置 53078 这个客户端端口，它是随机的。通过这两条信息，阐释了一个事实：<strong> 即使是发送请求的一方，也需要占用一个端口 </strong>。</li>
@@ -320,7 +320,7 @@ ga('send', 'pageview');
 <p>对于客户端，HSF 使用 <code>SendHeartbeat</code> 来进行心跳，每次失败累加心跳失败的耗时，当超过最大限制时断开乱接；对于服务端 HSF 使用 <code>CloseIdle</code> 来处理闲置连接，直接关闭连接。一般来说，服务端的闲置时间会设置的稍长。</p>
 <p>熟悉其他 RPC 框架的同学会发现，不同框架的心跳机制真的是差距非常大。心跳设计还跟连接创建，重连机制，黑名单连接相关，还需要具体框架具体分析。</p>
 <p>除了定时任务的设计，还需要在协议层面支持心跳。最简单的例子可以参考 nginx 的健康检查，而针对 Dubbo 协议，自然也需要做心跳的支持，如果将心跳请求识别为正常流量，会造成服务端的压力问题，干扰限流等诸多问题。</p>
-<p><img src="http://kirito.iocoder.cn/359310b9-b980-3254-aed6-78aa6c482e53.png" alt="dubbo protocol"></p>
+<p><img src="https://kirito.iocoder.cn/359310b9-b980-3254-aed6-78aa6c482e53.png" alt="dubbo protocol"></p>
 <p>其中 Flag 代表了 Dubbo 协议的标志位，一共 8 个地址位。低四位用来表示消息体数据用的序列化工具的类型（默认 hessian），高四位中，第一位为 1 表示是 request 请求，第二位为 1 表示双向传输（即有返回 response），<strong> 第三位为 1 表示是心跳事件 </strong>。</p>
 <blockquote>
 <p>心跳请求应当和普通请求区别对待。</p>
@@ -356,7 +356,7 @@ ga('send', 'pageview');
 </ol>
 <p>各个框架的设计都有所不同，例如 Dubbo 使用的是方案三，但阿里内部的 HSF 框架则没有设置 TCP 的 KeepAlive，仅仅由应用心跳保活。和心跳策略一样，这和框架整体的设计相关。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -367,7 +367,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/tcp-talk/" data-id="ck2kho77u00anif9e63ef2tag" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/tcp-talk/" data-id="ck2kil4q400asug9ern6ivzrl" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

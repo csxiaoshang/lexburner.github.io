@@ -9,20 +9,20 @@
 <meta name="keywords" content="Spring Security">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Spring Security(二)--Guides">
-<meta property="og:url" content="http://lexburner.github.io/spring-security-2/index.html">
+<meta property="og:url" content="https://lexburner.github.io/spring-security-2/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="上一篇文章《Spring Security(一)–Architecture Overview》，我们介绍了 Spring Security 的基础架构，这一节我们通过 Spring 官方给出的一个 guides 例子，来了解 Spring Security 是如何保护我们的应用的，之后会对进行一个解读。 [TOC] 2 Spring Security Guides2.1 引入依赖123456789">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/home.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/login.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/hello.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/logout.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:31.113Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/home.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/login.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/hello.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/logout.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.788Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Spring Security(二)--Guides">
 <meta name="twitter:description" content="上一篇文章《Spring Security(一)–Architecture Overview》，我们介绍了 Spring Security 的基础架构，这一节我们通过 Spring 官方给出的一个 guides 例子，来了解 Spring Security 是如何保护我们的应用的，之后会对进行一个解读。 [TOC] 2 Spring Security Guides2.1 引入依赖123456789">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/home.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/home.png">
     
 
     
@@ -299,17 +299,17 @@ ga('send', 'pageview');
 <p>我们使用 Spring Security 之后，HttpServletRequest#getRemoteUser() 可以用来获取用户名。 登出请求将被发送到“/ logout”。 成功注销后，会将用户重定向到“/ login?logout”。</p>
 <h3 id="2-4-添加启动类"><a href="#2-4-添加启动类" class="headerlink" title="2.4 添加启动类"></a>2.4 添加启动类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">        SpringApplication.run(Application.class, args);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3 id="2-5-测试"><a href="#2-5-测试" class="headerlink" title="2.5 测试"></a>2.5 测试</h3><p>访问首页 <code>http://localhost:8080/</code>:</p>
-<p><img src="http://kirito.iocoder.cn/home.png" alt="home.html"></p>
+<p><img src="https://kirito.iocoder.cn/home.png" alt="home.html"></p>
 <p>点击 here，尝试访问受限的页面：<code>/hello</code>, 由于未登录，结果被强制跳转到登录也 <code>/login</code>：</p>
-<p><img src="http://kirito.iocoder.cn/login.png" alt="login.html"></p>
+<p><img src="https://kirito.iocoder.cn/login.png" alt="login.html"></p>
 <p>输入正确的用户名和密码之后，跳转到之前想要访问的 <code>/hello</code>:</p>
-<p><img src="http://kirito.iocoder.cn/hello.png" alt="hello.html"></p>
+<p><img src="https://kirito.iocoder.cn/hello.png" alt="hello.html"></p>
 <p>点击 Sign out 退出按钮，访问:<code>/logout</code>, 回到登录页面:</p>
-<p><img src="http://kirito.iocoder.cn/logout.png" alt="logout.html"></p>
+<p><img src="https://kirito.iocoder.cn/logout.png" alt="logout.html"></p>
 <h3 id="2-6-总结"><a href="#2-6-总结" class="headerlink" title="2.6 总结"></a>2.6 总结</h3><p>本篇文章没有什么干货，基本算是翻译了 Spring Security Guides 的内容，稍微了解 Spring Security 的朋友都不会对这个翻译感到陌生。考虑到受众的问题，一个入门的例子是必须得有的，方便后续对 Spring Security 的自定义配置进行讲解。下一节，以此 guides 为例，讲解这些最简化的配置背后，Spring Security 都帮我们做了什么工作。</p>
 <p>本节所有的代码，可以直接在 Spring 的官方仓库下载得到，<code>git clone https://github.com/spring-guides/gs-securing-web.git</code>。不过，建议初学者根据文章先一步步配置，出了问题，再与 demo 进行对比。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -320,7 +320,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-security-2/" data-id="ck2kho73p001sif9erb3kz4g6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/spring-security-2/" data-id="ck2kil4mx001pug9eggjy45c1" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

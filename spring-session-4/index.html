@@ -9,16 +9,16 @@
 <meta name="keywords" content="Spring,Spring Session">
 <meta property="og:type" content="article">
 <meta property="og:title" content="从 Spring-Session 源码看 Session 机制的实现细节">
-<meta property="og:url" content="http://lexburner.github.io/spring-session-4/index.html">
+<meta property="og:url" content="https://lexburner.github.io/spring-session-4/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="去年我曾经写过几篇和 Spring Session 相关的文章，从一个未接触过 Spring Session 的初学者视角介绍了 Spring Session 如何上手，如果你未接触过 Spring Session，推荐先阅读下「从零开始学习 Spring Session」系列（https://www.cnkirito.moe/categories/Spring-Session/） Spring">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:31.323Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.789Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从 Spring-Session 源码看 Session 机制的实现细节">
 <meta name="twitter:description" content="去年我曾经写过几篇和 Spring Session 相关的文章，从一个未接触过 Spring Session 的初学者视角介绍了 Spring Session 如何上手，如果你未接触过 Spring Session，推荐先阅读下「从零开始学习 Spring Session」系列（https://www.cnkirito.moe/categories/Spring-Session/） Spring">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
     
 
     
@@ -354,7 +354,7 @@ ga('send', 'pageview');
 <p>解释下之前卖的第二个关子，C 类型键的组成为前缀 +”sessions:expires”+sessionId，对应一个空值，同时也是 B 类型键桶中存放的 session 引用，ttl 为 30 分钟，具体作用便是在自身过期后触发 redis 的  <a href="http://redis.io/topics/notifications" target="_blank" rel="noopener">keyspace notifications</a> (<a href="http://redis.io/topics/notifications)，具体如何监听" target="_blank" rel="noopener">http://redis.io/topics/notifications)，具体如何监听</a> redis 的过期事件简单介绍下：org.springframework.session.data.redis.config.ConfigureNotifyKeyspaceEventsAction 该类配置了相关的过期监听，并使用 SessionExpiredEvent 事件发放 session 的过期事件。为什么引入 C 类型键？keyspace notifications 只会告诉我们哪个键过期了，不会告诉我们内容是什么。<strong> 关键就在于如果 session 过期后监听器可能想要访问 session 的具体内容，然而自身都过期了，还怎么获取内容 </strong>。所以，C 类型键存在的意义便是解耦 session 的存储和 session 的过期，并且使得 server 获取到过期通知后可以访问到 session 真实的值。对于用户来说，C 类型键过期后，意味着登录失效，而对于服务端而言，真正的过期其实是 A 类型键过期，这中间会有 5 分钟的误差。</p>
 <h3 id="一点点想法，担忧，疑惑"><a href="#一点点想法，担忧，疑惑" class="headerlink" title="一点点想法，担忧，疑惑"></a>一点点想法，担忧，疑惑</h3><p>本文大概介绍了 Spring Session 的三种 key 的原因，理清楚其中的逻辑花了不少时间，项目改造正好涉及到相关的缓存值过期这一需求，完全可以参考 Spring Session 的方案。但担忧也是有的，如果真的只是 1~2 两分钟的延迟过期（对应 A 轮改造中遇到的问题），以及 1 分钟的提前删除（对应 B 轮改造中的并发问题）其实个人感觉没必要计较。从产品体验上来说，用户应该不会在意 32 分钟自动退出和 30 分钟退出，可以说 Spring Session 是为了严谨而设计了这一套方案，但引入了定时器和很多辅助的键值对，无疑对内存消耗和 cpu 消耗都是一种浪费。如果在生产环境大量使用 Spring Session，最好权衡下本文提及的相关问题。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -365,7 +365,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-session-4/" data-id="ck2kho77o00abif9e62wqyjvg" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/spring-session-4/" data-id="ck2kil4py00a9ug9ewa12qgjl" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

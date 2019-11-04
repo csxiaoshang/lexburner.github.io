@@ -9,17 +9,17 @@
 <meta name="keywords" content="Spring,Spring Session">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Re：从零开始的 Spring Session(一)">
-<meta property="og:url" content="http://lexburner.github.io/spring-session-1/index.html">
+<meta property="og:url" content="https://lexburner.github.io/spring-session-1/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="Session 和 Cookie 这两个概念，在学习 java web 开发之初，大多数人就已经接触过了。最近在研究跨域单点登录的实现时，发现对于 Session 和 Cookie 的了解，并不是很深入，所以打算写两篇文章记录一下自己的理解。在我们的应用集成 Spring Session 之前，先补充一点 Session 和 Cookie 的关键知识。 Session 与 Cookie 基础由于">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/image/EditThisCookie.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:48:31.907Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/image/EditThisCookie.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.790Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Re：从零开始的 Spring Session(一)">
 <meta name="twitter:description" content="Session 和 Cookie 这两个概念，在学习 java web 开发之初，大多数人就已经接触过了。最近在研究跨域单点登录的实现时，发现对于 Session 和 Cookie 的了解，并不是很深入，所以打算写两篇文章记录一下自己的理解。在我们的应用集成 Spring Session 之前，先补充一点 Session 和 Cookie 的关键知识。 Session 与 Cookie 基础由于">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/image/EditThisCookie.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/image/EditThisCookie.png">
     
 
     
@@ -297,13 +297,13 @@ ga('send', 'pageview');
 <li>360 浏览器访问时，JSESSIONID 为 320C21A645A160C4843D076204DA2F40, 后端 session 记录的值为：browser=360。</li>
 </ul>
 <p>我们使用 chrome 插件 Edit this Cookie，将 chrome 浏览器中的 JSESSIONID 修改为 360 浏览器中的值</p>
-<p><img src="http://kirito.iocoder.cn/image/EditThisCookie.png" alt="EditThisCookie"></p>
+<p><img src="https://kirito.iocoder.cn/image/EditThisCookie.png" alt="EditThisCookie"></p>
 <p>同样访问原来的端点：localhost:8080/test/cookie?browser=chrome，得到的输出如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">存在 session，browser=360</span><br><span class="line">JSESSIONID : 320C21A645A160C4843D076204DA2F40</span><br></pre></td></tr></table></figure>
 <p>证实了一点，存放在客户端的 Cookie 的确是存在安全问题的，我们使用 360 的 JSESSIONID“骗”过了服务器。毕竟，服务器只能通过 Cookie 中的 JSESSIONID 来辨别身份。（这提示我们不要在公共场合保存 Cookie 信息，现在的浏览器在保存 Cookie 时通常会让你确定一次）</p>
 <p>下一篇文章，将正式讲解如何在应用中集成 Spring Session。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -314,7 +314,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-session-1/" data-id="ck2kho73r001yif9ezcvygt73" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/spring-session-1/" data-id="ck2kil4my001tug9ex72w42j5" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

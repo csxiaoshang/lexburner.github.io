@@ -9,19 +9,19 @@
 <meta name="keywords" content="Spring,XML">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Spring 中的 XML schema 扩展机制">
-<meta property="og:url" content="http://lexburner.github.io/spring-xsd/index.html">
+<meta property="og:url" content="https://lexburner.github.io/spring-xsd/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="前言很久没有写关于 Spring 的文章了，最近在系统梳理 Dubbo 代码的过程中发现了 XML schema 这个被遗漏的知识点。由于工作中使用 SpringBoot 比较多的原因，几乎很少接触 XML，此文可以算做是亡羊补牢，另一方面，也为后续的 Dubbo 源码解析做个铺垫。 XML schema 扩展机制是啥？这并不是一块很大的知识点，翻阅一下 Spring 的文档，我甚至没找到一个贯穿">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180903175207354.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180903180938053.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/image-20180903190429383.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:30.042Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180903175207354.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180903180938053.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20180903190429383.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.786Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Spring 中的 XML schema 扩展机制">
 <meta name="twitter:description" content="前言很久没有写关于 Spring 的文章了，最近在系统梳理 Dubbo 代码的过程中发现了 XML schema 这个被遗漏的知识点。由于工作中使用 SpringBoot 比较多的原因，几乎很少接触 XML，此文可以算做是亡羊补牢，另一方面，也为后续的 Dubbo 源码解析做个铺垫。 XML schema 扩展机制是啥？这并不是一块很大的知识点，翻阅一下 Spring 的文档，我甚至没找到一个贯穿">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/image-20180903175207354.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/image-20180903175207354.png">
     
 
     
@@ -277,7 +277,7 @@ ga('send', 'pageview');
 <blockquote>
 <p>Spring 为基于 XML 构建的应用提供了一种扩展机制，用于定义和配置 Bean。 它允许使用者编写自定义的 XML bean 解析器，并将解析器本身以及最终定义的 Bean 集成到 Spring IOC 容器中。</p>
 </blockquote>
-<p><img src="http://kirito.iocoder.cn/image-20180903175207354.png" alt="dubbo.xml"></p>
+<p><img src="https://kirito.iocoder.cn/image-20180903175207354.png" alt="dubbo.xml"></p>
 <p>Dubbo 依赖了 Spring，并提供了一套自定义的 XML 标签，<code>&lt;dubbo:application&gt;</code> ,<code>&lt;dubbo:registry&gt;</code> ,<code>&lt;dubbo:protocol&gt;</code>,<code>&lt;dubbo:service&gt;</code>。作为使用者，大多数人只需要关心这些参数如何配置，但不知道有没有人好奇过，它们是如何加载进入 Spring 的 IOC 容器中被其他组件使用的呢？这便牵扯出了今天的主题：Spring 对 XML schema 的扩展支持。</p>
 <h3 id="自定义-XML-扩展"><a href="#自定义-XML-扩展" class="headerlink" title="自定义 XML 扩展"></a>自定义 XML 扩展</h3><p>为了搞懂 Spring 的 XML 扩展机制，最直接的方式便是实现一个自定义的扩展。实现的步骤也非常简单，分为四步：</p>
 <ol>
@@ -287,7 +287,7 @@ ga('send', 'pageview');
 <li>注册上述的 schema 和 handler。</li>
 </ol>
 <p>我们的目的便是想要实现一个 <code>kirito XML schema</code>，我们的项目中可以自定义 kirito.xml，在其中会以 kirito 为标签来定义不同的类，并在最终的测试代码中验证这些声明在 kirito.xml 的类是否被 Spring 成功加载。大概像这样，是不是和 dubbo.xml 的格式很像呢？</p>
-<p><img src="http://kirito.iocoder.cn/image-20180903180938053.png" alt="kirito.xml"></p>
+<p><img src="https://kirito.iocoder.cn/image-20180903180938053.png" alt="kirito.xml"></p>
 <h3 id="动手实现"><a href="#动手实现" class="headerlink" title="动手实现"></a>动手实现</h3><p>有了明确的目标，我们逐步开展自己的工作。</p>
 <h4 id="1-编写-kirito-xsd"><a href="#1-编写-kirito-xsd" class="headerlink" title="1 编写 kirito.xsd"></a>1 编写 kirito.xsd</h4><p><strong>resources/META-INF/kirito.xsd</strong> </p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span><br><span class="line"><span class="tag">&lt;<span class="name">xsd:schema</span> <span class="attr">xmlns</span>=<span class="string">"http://www.cnkirito.moe/schema/kirito"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">xmlns:xsd</span>=<span class="string">"http://www.w3.org/2001/XMLSchema"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">xmlns:beans</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">targetNamespace</span>=<span class="string">"http://www.cnkirito.moe/schema/kirito"</span>&gt;</span>  ①</span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">xsd:import</span> <span class="attr">namespace</span>=<span class="string">"http://www.springframework.org/schema/beans"</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">xsd:element</span> <span class="attr">name</span>=<span class="string">"application"</span>&gt;</span> ②</span><br><span class="line">        <span class="tag">&lt;<span class="name">xsd:complexType</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">xsd:complexContent</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">xsd:extension</span> <span class="attr">base</span>=<span class="string">"beans:identifiedType"</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">xsd:attribute</span> <span class="attr">name</span>=<span class="string">"name"</span> <span class="attr">type</span>=<span class="string">"xsd:string"</span> <span class="attr">use</span>=<span class="string">"required"</span>/&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">xsd:extension</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">xsd:complexContent</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">xsd:complexType</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">xsd:element</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">xsd:element</span> <span class="attr">name</span>=<span class="string">"service"</span>&gt;</span> ②</span><br><span class="line">        <span class="tag">&lt;<span class="name">xsd:complexType</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">xsd:complexContent</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">xsd:extension</span> <span class="attr">base</span>=<span class="string">"beans:identifiedType"</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">xsd:attribute</span> <span class="attr">name</span>=<span class="string">"name"</span> <span class="attr">type</span>=<span class="string">"xsd:string"</span> <span class="attr">use</span>=<span class="string">"required"</span>/&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">xsd:extension</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">xsd:complexContent</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">xsd:complexType</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">xsd:element</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">xsd:schema</span>&gt;</span></span><br></pre></td></tr></table></figure>
@@ -323,11 +323,11 @@ ga('send', 'pageview');
 </blockquote>
 <p>一个基础的基于 XML schema 的扩展便完成了。</p>
 <h3 id="Dubbo-中的-XML-schema-扩展"><a href="#Dubbo-中的-XML-schema-扩展" class="headerlink" title="Dubbo 中的 XML schema 扩展"></a>Dubbo 中的 XML schema 扩展</h3><p>最后我们以 Dubbo 为例，看看一个成熟的 XML schema 扩展是如何被应用的。</p>
-<p><img src="http://kirito.iocoder.cn/image-20180903190429383.png" alt="Dubbo 中的应用"></p>
+<p><img src="https://kirito.iocoder.cn/image-20180903190429383.png" alt="Dubbo 中的应用"></p>
 <p>刚好对应了四个标准的扩展步骤，是不是对 XML 配置下的 Dubbo 应用有了更好的理解了呢？</p>
 <p>顺带一提，仅仅完成 Bean 的注册还是不够的，在“注册”的同时，Dubbo 还进行了一系列其他操作如：暴露端口，开启服务器，完成注册中心的注册，生成代理对象等等行为，由于不在本文的范围内，后续的 Dubbo 专题会专门介绍这些细节，本文便是了解 Dubbo 加载流程的前置文章了。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -338,7 +338,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-xsd/" data-id="ck2kho77p00aeif9euwrsoxk2" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/spring-xsd/" data-id="ck2kil4q000afug9eismlbvas" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

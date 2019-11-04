@@ -9,18 +9,18 @@
 <meta name="keywords" content="Spring,Spring Session">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Re：从零开始的 Spring Session(三)">
-<meta property="og:url" content="http://lexburner.github.io/spring-session-3/index.html">
+<meta property="og:url" content="https://lexburner.github.io/spring-session-3/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="上一篇文章中，我们使用 Redis 集成了 Spring Session。大多数的配置都是 Spring Boot 帮我们自动配置的，这一节我们介绍一点 Spring Session 较为高级的特性。 集成 Spring Security之所以把 Spring Session 和 Spring Security 放在一起讨论，是因为我们的应用在集成 Spring Security 之后，用户相关的">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170904212709.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/2.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:30.066Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170904212709.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/2.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.786Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Re：从零开始的 Spring Session(三)">
 <meta name="twitter:description" content="上一篇文章中，我们使用 Redis 集成了 Spring Session。大多数的配置都是 Spring Boot 帮我们自动配置的，这一节我们介绍一点 Spring Session 较为高级的特性。 集成 Spring Security之所以把 Spring Session 和 Spring Security 放在一起讨论，是因为我们的应用在集成 Spring Security 之后，用户相关的">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170904212709.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170904212709.png">
     
 
     
@@ -278,7 +278,7 @@ ga('send', 'pageview');
 <p>我们引入依赖后，就已经自动配置了 Spring Security，我们在 application.yml 添加一个内存中的用户：</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">security:</span></span><br><span class="line"><span class="attr">  user:</span></span><br><span class="line"><span class="attr">    name:</span> <span class="string">admin</span></span><br><span class="line"><span class="attr">    password:</span> <span class="string">admin</span></span><br></pre></td></tr></table></figure>
 <p>测试登录点沿用上一篇文章的端点，访问 <code>http://localhost:8080/test/cookie?browser=chrome</code> 端点后会出现 http basic 的认证框，我们输入 admin/admin，即可获得结果，也遇到了第一个坑点，我们会发现每次请求，sessionId 都会被刷新，这显然不是我们想要的结果。</p>
-<p><img src="http://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170904212709.png" alt="诡异的运行结果"></p>
+<p><img src="https://kirito.iocoder.cn/QQ%E5%9B%BE%E7%89%8720170904212709.png" alt="诡异的运行结果"></p>
 <p>这个现象笔者研究了不少源码，但并没有得到非常满意的解释，只能理解为 SecurityAutoConfiguration 提供的默认配置，没有触发到响应的配置，导致了 session 的不断刷新（如果读者有合理的解释可以和我沟通）。Spring Session 之所以能够替换默认的 tomcat httpSession 是因为配置了 <code>springSessionRepositoryFilter</code> 这个过滤器，且提供了非常高的优先级，这归功于 <code>AbstractSecurityWebApplicationInitializer</code> ，<code>AbstractHttpSessionApplicationInitializer</code> 这两个初始化器，当然，也保证了 Spring Session 会在 Spring Security 之前起作用。</p>
 <p>而解决上述的诡异现象也比较容易（但原理不清），我们使用 @EnableWebSecurity 对 Spring Security 进行一些配置，即可解决这个问题。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableWebSecurity</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SecurityConfig</span> <span class="keyword">extends</span> <span class="title">WebSecurityConfigurerAdapter</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// @formatter:off</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">configure</span><span class="params">(HttpSecurity http)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        http</span><br><span class="line">            .authorizeRequests()</span><br><span class="line">            .antMatchers(<span class="string">"/resources/**"</span>).permitAll()</span><br><span class="line">            .anyRequest().authenticated()</span><br><span class="line">            .and()</span><br><span class="line">                .httpBasic()<span class="comment">//&lt;1&gt;</span></span><br><span class="line">            .and()</span><br><span class="line">            .logout().permitAll();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// @formatter:on</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// @formatter:off</span></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">configureGlobal</span><span class="params">(AuthenticationManagerBuilder auth)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        auth</span><br><span class="line">                .inMemoryAuthentication()</span><br><span class="line">                .withUser(<span class="string">"admin"</span>).password(<span class="string">"admin"</span>).roles(<span class="string">"USER"</span>);<span class="comment">//&lt;2&gt;</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// @formatter:on</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -291,11 +291,11 @@ ga('send', 'pageview');
 <p>我们使用 Redis 作为 Session Store 还有一个好处，就是其实现了 <code>FindByIndexNameSessionRepository</code> 接口，下面让我们来见证这一点。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CookieController</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    FindByIndexNameSessionRepository&lt;? extends ExpiringSession&gt; sessionRepository;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(<span class="string">"/test/findByUsername"</span>)</span><br><span class="line">    <span class="meta">@ResponseBody</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Map <span class="title">findByUsername</span><span class="params">(@RequestParam String username)</span> </span>&#123;</span><br><span class="line">        Map&lt;String, ? extends ExpiringSession&gt; usersSessions = sessionRepository.findByIndexNameAndIndexValue(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME, username);</span><br><span class="line">        <span class="keyword">return</span> usersSessions;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>由于一个用户可能拥有多个 Session，所以返回的是一个 Map 信息，而这里的 username，则就是与 Spring Security 集成之后的用户名，最令人感动 Spring 厉害的地方，是这一切都是自动配置好的。我们在内存中配置的用户的 username 是 admin，于是我们访问这个端点, 可以看到如下的结果</p>
-<p><img src="http://kirito.iocoder.cn/2.png" alt="用户名访问 session"></p>
+<p><img src="https://kirito.iocoder.cn/2.png" alt="用户名访问 session"></p>
 <p>连同我们存入 session 中的 browser=chrome，browser=360 都可以看见（只有键名）。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Spring Session 对各种场景下的 Session 管理提供一套非常完善的实现。笔者所介绍的，仅仅是 Spring Session 常用的一些特性，更多的知识点可以在 spring.io 的文档中一览无余，以及本文中作者存在的一个疑惑，如有兴趣可与我沟通。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -306,7 +306,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-session-3/" data-id="ck2kho73t0022if9efk7tjeot" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/spring-session-3/" data-id="ck2kil4n0001wug9e2bxlh340" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

@@ -9,17 +9,17 @@
 <meta name="keywords" content="Spring Security">
 <meta property="og:type" content="article">
 <meta property="og:title" content="该如何设计你的 PasswordEncoder?">
-<meta property="og:url" content="http://lexburner.github.io/spring-security-6/index.html">
+<meta property="og:url" content="https://lexburner.github.io/spring-security-6/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="缘起前端时间将一个集成了 spring-security-oauth2 的旧项目改造了一番，将 springboot 升级成了 springboot 2.0，众所周知 springboot 2.0 依赖的是 spring5，并且许多相关的依赖都发生了较大的改动，与本文相关的改动罗列如下，有兴趣的同学可以看看：Spring Security 5.0 New Features ，增强了 oauth2">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/1_QdbniDuZiiF1N7ArNJChOA.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-09-26T09:45:31.245Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/1_QdbniDuZiiF1N7ArNJChOA.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:37.788Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="该如何设计你的 PasswordEncoder?">
 <meta name="twitter:description" content="缘起前端时间将一个集成了 spring-security-oauth2 的旧项目改造了一番，将 springboot 升级成了 springboot 2.0，众所周知 springboot 2.0 依赖的是 spring5，并且许多相关的依赖都发生了较大的改动，与本文相关的改动罗列如下，有兴趣的同学可以看看：Spring Security 5.0 New Features ，增强了 oauth2">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/1_QdbniDuZiiF1N7ArNJChOA.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/1_QdbniDuZiiF1N7ArNJChOA.png">
     
 
     
@@ -294,7 +294,7 @@ ga('send', 'pageview');
 <p>虽然仅仅依赖于传统 hash 算法的思路被否决了，但这种 hash 后比对的思路，几乎被后续所有的优化方案继承。</p>
 <p>hash 方案迎来的第一个改造是对引入一个“随机的因子”来掺杂进明文中进行 hash 计算，这样的随机因子通常被称之为盐 （salt）。salt 一般是用户相关的，每个用户持有各自的 salt。此时狗蛋和二丫的密码即使相同，由于 salt 的影响，存储在数据库中的密码也是不同的，除非…为每个用户单独建议一张 rainbow table。很明显 salted hash 相比普通的单向 hash 方案加大了 hacker 攻击的难度。但了解过 GPU 并行计算能力之强大的童鞋，都能够意识到，虽然破解 salted hash 比较麻烦，却并非不可行，勤劳勇敢的安全专家似乎也对这个方案不够满意。</p>
 <p>为解决上述 salted hash 仍然存在的问题，一些新型的单向 hash 算法被研究了出来。其中就包括：Bcrypt，PBKDF2，Scrypt，Argon2。为什么这些 hash 算法能保证密码存储的安全性？因为他们足够慢，恰到好处的慢。这么说不严谨，只是为了给大家留个深刻的映像：慢。这类算法有一个特点，存在一个影响因子，可以用来控制计算强度，这直接决定了破解密码所需要的资源和时间，直观的体会可以见下图，在一年内破解如下算法所需要的硬件资源花费（折算成美元）</p>
-<p><img src="http://kirito.iocoder.cn/1_QdbniDuZiiF1N7ArNJChOA.png" alt="一年内破解如下算法所需要的硬件资源花费"></p>
+<p><img src="https://kirito.iocoder.cn/1_QdbniDuZiiF1N7ArNJChOA.png" alt="一年内破解如下算法所需要的硬件资源花费"></p>
 <p>这使得破解成了一件极其困难的事，并且，其中的计算强度因子是可控的，这样，即使未来量子计算机的计算能力爆表，也可以通过其控制计算强度以防破解。注意，普通的验证过程只需要计算一次 hash 计算，使用此类 hash 算法并不会影响到用户体验。</p>
 <h3 id="慢-hash-算法真的安全吗？"><a href="#慢-hash-算法真的安全吗？" class="headerlink" title="慢 hash 算法真的安全吗？"></a>慢 hash 算法真的安全吗？</h3><p>Bcrypt，Scrypt，PBKDF2 这些慢 hash 算法是目前最为推崇的 password encoding 方式，好奇心驱使我思考了这样一个问题：慢 hash 算法真的安全吗？</p>
 <p>我暂时还没有精力仔细去研究他们中每一个算法的具体实现，只能通过一些文章来拾人牙慧，简单看看这几个算法的原理和安全性。</p>
@@ -332,7 +332,7 @@ ga('send', 'pageview');
 <h3 id="show-me-the-code"><a href="#show-me-the-code" class="headerlink" title="show me the code"></a>show me the code</h3><p>spring security oauth2 的 github 代码示例，体会下 spring security 4 -&gt; spring security 5 的相关变化。</p>
 <p><a href="https://github.com/lexburner/oauth2-demo" target="_blank" rel="noopener">https://github.com/lexburner/oauth2-demo</a></p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -343,7 +343,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/spring-security-6/" data-id="ck2kho77l00a3if9e7bal3qis" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/spring-security-6/" data-id="ck2kil4pw00a4ug9ecpslcmxf" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

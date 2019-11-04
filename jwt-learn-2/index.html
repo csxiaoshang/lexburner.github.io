@@ -9,24 +9,24 @@
 <meta name="keywords" content="JWT">
 <meta property="og:type" content="article">
 <meta property="og:title" content="八幅漫画理解使用 JSON Web Token 设计单点登录系统">
-<meta property="og:url" content="http://lexburner.github.io/jwt-learn-2/index.html">
+<meta property="og:url" content="https://lexburner.github.io/jwt-learn-2/index.html">
 <meta property="og:site_name" content="徐靖峰|个人博客">
 <meta property="og:description" content="转载自：http://blog.leapoahead.com/2015/09/06/understanding-jwt/ 作者：John Wu  博主前言这篇转载的文章和上一篇《JSON Web Token - 在 Web 应用间安全地传递信息》文章均为转载，是我个人在研究 jwt 时浏览下来发现的两篇质量比较高的文章，所以分享给大家。个人对于 jwt 使用场景的理解，包括微信公众号留言中的提问">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://kirito.iocoder.cn/jwtauth1.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/jwtauth2.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/jwtauth3.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/jwtauth4.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/jwtauth5.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/jwtauth6.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/jwtauth7.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/jwtauth8.png">
-<meta property="og:image" content="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
-<meta property="og:updated_time" content="2019-10-10T08:54:03.809Z">
+<meta property="og:image" content="https://kirito.iocoder.cn/jwtauth1.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/jwtauth2.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/jwtauth3.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/jwtauth4.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/jwtauth5.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/jwtauth6.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/jwtauth7.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/jwtauth8.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg">
+<meta property="og:updated_time" content="2019-11-04T14:22:47.406Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="八幅漫画理解使用 JSON Web Token 设计单点登录系统">
 <meta name="twitter:description" content="转载自：http://blog.leapoahead.com/2015/09/06/understanding-jwt/ 作者：John Wu  博主前言这篇转载的文章和上一篇《JSON Web Token - 在 Web 应用间安全地传递信息》文章均为转载，是我个人在研究 jwt 时浏览下来发现的两篇质量比较高的文章，所以分享给大家。个人对于 jwt 使用场景的理解，包括微信公众号留言中的提问">
-<meta name="twitter:image" content="http://kirito.iocoder.cn/jwtauth1.png">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/jwtauth1.png">
     
 
     
@@ -289,22 +289,22 @@ ga('send', 'pageview');
 <p>小知识：可别把用户认证和用户授权（Authorization）搞混了。用户授权指的是规定并允许用户使用自己的权限，例如发布帖子、管理站点等。</p>
 </blockquote>
 <p>首先，服务器应用（下面简称“应用”）让用户通过 Web 表单将自己的用户名和密码发送到服务器的接口。这一过程一般是一个 HTTP POST 请求。建议的方式是通过 SSL 加密的传输（https 协议），从而避免敏感信息被嗅探。</p>
-<p><img src="http://kirito.iocoder.cn/jwtauth1.png" alt="auth1"></p>
+<p><img src="https://kirito.iocoder.cn/jwtauth1.png" alt="auth1"></p>
 <p>接下来，应用和数据库核对用户名和密码。</p>
-<p><img src="http://kirito.iocoder.cn/jwtauth2.png" alt="auth2"></p>
+<p><img src="https://kirito.iocoder.cn/jwtauth2.png" alt="auth2"></p>
 <p>核对用户名和密码成功后，应用将用户的 <code>id</code>（图中的 <code>user_id</code>）作为 JWT Payload 的一个属性，将其与头部分别进行 Base64 编码拼接后签名，形成一个 JWT。这里的 JWT 就是一个形同 <code>lll.zzz.xxx</code> 的字符串。</p>
-<p><img src="http://kirito.iocoder.cn/jwtauth3.png" alt="auth3"></p>
+<p><img src="https://kirito.iocoder.cn/jwtauth3.png" alt="auth3"></p>
 <p>应用将 JWT 字符串作为该请求 Cookie 的一部分返回给用户。注意，在这里必须使用 <code>HttpOnly</code> 属性来防止 Cookie 被 JavaScript 读取，从而避免 <a href="http://www.cnblogs.com/bangerlee/archive/2013/04/06/3002142.html" target="_blank" rel="noopener">跨站脚本攻击（XSS 攻击）</a>。</p>
-<p><img src="http://kirito.iocoder.cn/jwtauth4.png" alt="auth4"></p>
+<p><img src="https://kirito.iocoder.cn/jwtauth4.png" alt="auth4"></p>
 <p>在 Cookie 失效或者被删除前，用户每次访问应用，应用都会接受到含有 <code>jwt</code> 的 Cookie。从而应用就可以将 JWT 从请求中提取出来。</p>
-<p><img src="http://kirito.iocoder.cn/jwtauth5.png" alt="auth5"></p>
+<p><img src="https://kirito.iocoder.cn/jwtauth5.png" alt="auth5"></p>
 <p>应用通过一系列任务检查 JWT 的有效性。例如，检查签名是否正确；检查 Token 是否过期；检查 Token 的接收方是否是自己（可选）。</p>
-<p><img src="http://kirito.iocoder.cn/jwtauth6.png" alt="auth6"></p>
+<p><img src="https://kirito.iocoder.cn/jwtauth6.png" alt="auth6"></p>
 <p>应用在确认 JWT 有效之后，JWT 进行 Base64 解码（可能在上一步中已经完成），然后在 Payload 中读取用户的 id 值，也就是 <code>user_id</code> 属性。这里用户的 <code>id</code> 为 1025。</p>
 <p>应用从数据库取到 <code>id</code> 为 1025 的用户的信息，加载到内存中，进行 ORM 之类的一系列底层逻辑初始化。</p>
-<p><img src="http://kirito.iocoder.cn/jwtauth7.png" alt="auth7"></p>
+<p><img src="https://kirito.iocoder.cn/jwtauth7.png" alt="auth7"></p>
 <p>应用根据用户请求进行响应。</p>
-<p><img src="http://kirito.iocoder.cn/jwtauth8.png" alt="auth8"></p>
+<p><img src="https://kirito.iocoder.cn/jwtauth8.png" alt="auth8"></p>
 <h3 id="和-Session-方式存储-id-的差异"><a href="#和-Session-方式存储-id-的差异" class="headerlink" title="和 Session 方式存储 id 的差异"></a>和 Session 方式存储 id 的差异</h3><p>Session 方式存储用户 id 的最大弊病在于要占用大量服务器内存，对于较大型应用而言可能还要保存许多的状态。一般而言，大型应用还需要借助一些 KV 数据库和一系列缓存机制来实现 Session 的存储。</p>
 <p>而 JWT 方式将用户状态分散到了客户端中，可以明显减轻服务端的内存压力。除了用户 id 之外，还可以存储其他的和用户相关的信息，例如该用户是否是管理员、用户所在的分桶（见 [《你所应该知道的 A/B 测试基础》一文] 等。</p>
 <p>虽说 JWT 方式让服务器有一些计算压力（例如加密、编码和解码），但是这些压力相比磁盘 I/O 而言或许是半斤八两。具体是否采用，需要在不同场景下用数据说话。</p>
@@ -320,7 +320,7 @@ ga('send', 'pageview');
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Set-Cookie: jwt=lll.zzz.xxx; HttpOnly; max-age=980000; domain=.taobao.com</span><br></pre></td></tr></table></figure>
 <p>注意 <code>domain</code> 必须设置为一个点加顶级域名，即 <code>.taobao.com</code>。这样，taobao.com 和 *.taobao.com 就都可以接受到这个 Cookie，并获取 JWT 了。</p>
 <p><strong> 欢迎关注我的微信公众号：「Kirito 的技术分享」，关于文章的任何疑问都会得到回复，带来更多 Java 相关的技术分享。</strong></p>
-<p><img src="http://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
+<p><img src="https://kirito.iocoder.cn/qrcode_for_gh_c06057be7960_258%20%281%29.jpg" alt="关注微信公众号"></p>
 
         
         </div>
@@ -331,7 +331,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="http://lexburner.github.io/jwt-learn-2/" data-id="ck2kho73h0017if9e9biydpar" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/jwt-learn-2/" data-id="ck2kil4mn0016ug9enytc2tnk" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
