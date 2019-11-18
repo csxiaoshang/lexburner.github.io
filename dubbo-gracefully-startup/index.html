@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>一文聊透 Dubbo 优雅上线 | 徐靖峰|个人博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="1 前言在此文之前，我写过一篇 《一文聊透 Dubbo 优雅停机》，这篇文章算是一个续集，优雅停机和优雅上线两者都是微服务生命周期中，开发者必须关心的环节。 优雅上线还有很多称呼：「无损上线」，「延迟发布」，「延迟暴露」。它们的对立面自然是：「有损上线」，「直接发布」。 我最近写的「一文聊透 Dubbo xx」系列文章，都有一个特点，即当你不注重文章中实践，你的 Dubbo 应用依旧可以正常运行，">
+<meta name="keywords" content="Dubbo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一文聊透 Dubbo 优雅上线">
+<meta property="og:url" content="https://lexburner.github.io/dubbo-gracefully-startup/index.html">
+<meta property="og:site_name" content="徐靖峰|个人博客">
+<meta property="og:description" content="1 前言在此文之前，我写过一篇 《一文聊透 Dubbo 优雅停机》，这篇文章算是一个续集，优雅停机和优雅上线两者都是微服务生命周期中，开发者必须关心的环节。 优雅上线还有很多称呼：「无损上线」，「延迟发布」，「延迟暴露」。它们的对立面自然是：「有损上线」，「直接发布」。 我最近写的「一文聊透 Dubbo xx」系列文章，都有一个特点，即当你不注重文章中实践，你的 Dubbo 应用依旧可以正常运行，">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20191117205139227.png">
+<meta property="og:image" content="https://kirito.iocoder.cn/image-20191117205207044.png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/3ej9lic1DDEEVRdqK4k4ic0Xic0wr6FsZyNYx6Wia9CKYITzibtaeMrTM7ngvVop91rrXyGWLGKMicgBNlQPubfXfBNw/640?wx_fmt=jpeg">
+<meta property="og:updated_time" content="2019-11-18T01:40:54.900Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一文聊透 Dubbo 优雅上线">
+<meta name="twitter:description" content="1 前言在此文之前，我写过一篇 《一文聊透 Dubbo 优雅停机》，这篇文章算是一个续集，优雅停机和优雅上线两者都是微服务生命周期中，开发者必须关心的环节。 优雅上线还有很多称呼：「无损上线」，「延迟发布」，「延迟暴露」。它们的对立面自然是：「有损上线」，「直接发布」。 我最近写的「一文聊透 Dubbo xx」系列文章，都有一个特点，即当你不注重文章中实践，你的 Dubbo 应用依旧可以正常运行，">
+<meta name="twitter:image" content="https://kirito.iocoder.cn/image-20191117205139227.png">
+    
+
+    
+        <link rel="alternate" href="/atom.xml" title="徐靖峰|个人博客" type="application/atom+xml">
+    
+
+    
+        <link rel="icon" href="/css/images/avatar.png">
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-118574570-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">徐靖峰|个人博客</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/categories">分类</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/about">关于</a>
+                
+                    <a class="main-nav-link" href="https://github.com/YunaiV/onemall">开源项目</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">分类</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/about">关于</a></td>
+                
+                    <td><a class="main-nav-link" href="https://github.com/YunaiV/onemall">开源项目</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile" class="profile-fixed">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png">
+            <h2 id="name">徐靖峰</h2>
+            <h3 id="title">阿里巴巴中间件研发</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>中国，杭州</span>
+            <img id="wechat" src="/css/images/wechat_public.jpg">
+            <a id="follow" target="_blank" href="/css/images/wechat_public.jpg">⬆关注公众号⬆</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                123
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lexburner" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/css/images/kirito_wechat.jpeg" target="_blank" title="wechat" class="tooltip">
+                            <i class="fa fa-wechat"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/atom.xml" target="_blank" title="rss" class="tooltip">
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-dubbo-gracefully-startup" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            一文聊透 Dubbo 优雅上线
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        <!-- 增加文章类型 -->
+                        
+	
+		<div class="article-type">
+		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
+		</div>
+	
+	
+	
+		
+	
+
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/dubbo-gracefully-startup/">
+            <time datetime="2019-11-17T09:25:04.000Z" itemprop="datePublished">2019-11-17</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/RPC/">RPC</a>
+    </div>
+
+                        <!-- 不显示标签 -->
+                        <!-- 
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/Dubbo/">Dubbo</a>
+    </div>
+ -->
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h2><p>在此文之前，我写过一篇 《一文聊透 Dubbo 优雅停机》，这篇文章算是一个续集，优雅停机和优雅上线两者都是微服务生命周期中，开发者必须关心的环节。</p>
+<p>优雅上线还有很多称呼：「无损上线」，「延迟发布」，「延迟暴露」。它们的对立面自然是：「有损上线」，「直接发布」。</p>
+<p>我最近写的「一文聊透 Dubbo xx」系列文章，都有一个特点，即当你不注重文章中实践，你的 Dubbo 应用依旧可以正常运行，但总归在某些场景 case 下，你的系统会出现问题。做不到优雅上线，你的系统将会出现：在应用刚启动时，就有流量进入，而此时应用尚未初始化完毕，导致调用失败，在集群规模较大时，影响会变得很明显。</p>
+<h2 id="2-方案一：延迟发布"><a href="#2-方案一：延迟发布" class="headerlink" title="2 方案一：延迟发布"></a>2 方案一：延迟发布</h2><p>以 SpingBoot 下使用 Dubbo 为例，被 Dubbo 的 @Service 注解修饰的服务，会按照 Spring 中初始化 Bean 的顺序，串行执行发布逻辑。Dubbo 框架会完成一系列的操作：</p>
+<ul>
+<li>创建远程调用的 Proxy</li>
+<li>把代理对象注册到 ProviderConsumerRegTable，方便远程调用到来时寻找到对应的服务</li>
+<li>向注册中心注册</li>
+</ul>
+<p>一旦服务信息注册到注册中心，在消费者看来该服务就是可以被调用的。然而，此时可能出现一些数据库、缓存资源尚未加载完毕的场景，这取决于你的系统有没有对应的组件，它们何时加载完毕，也完全取决于你的业务。如果你担心你的系统存在这种隐患，可以尝试多次重启集群中的任意一台机器，查看调用方是否存在报错，如果有报错，一种可能性是没有实现优雅停机，一种可能性是没有实现优雅上线。</p>
+<p>Dubbo 服务暴露的起点一般是以 Spring 容器启动完毕后发出的 <code>ContextRefreshedEvent</code> 事件为准，Dubbo 的 <code>ServiceBean</code> 实现了 <code>ApplicationListener&lt;E extends ApplicationEvent&gt;</code> 接口，用以接收这一容器刷新事件。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onApplicationEvent</span><span class="params">(ContextRefreshedEvent event)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 是否有延迟导出 &amp;&amp; 是否已导出 &amp;&amp; 是不是已被取消导出</span></span><br><span class="line">    <span class="keyword">if</span> (isDelay() &amp;&amp; !isExported() &amp;&amp; !isUnexported()) &#123;</span><br><span class="line">        <span class="comment">// 导出服务</span></span><br><span class="line">        export();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Dubbo 为服务提供了 <code>delay</code> 配置：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dubbo:service</span> <span class="attr">delay</span>=<span class="string">"5000"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+<p>如上配置后，Dubbo 服务将会在 Spring 容器启动后 5s，再执行暴露逻辑。这里 delay 的时长，取决于你系统资源初始化的耗时，没有一个经验值。如果不配置改值，Dubbo 将会在收到 <code>ContextRefreshedEvent</code> 事件后，立即执行发布逻辑。</p>
+<blockquote>
+<p>Dubbo 2.6.5 版本对服务延迟发布逻辑进行了细微的调整，将需要延迟暴露（delay &gt; 0）服务的倒计时动作推迟到了 Spring 初始化完成后进行。在此之前的版本的逻辑不太合理，如果想要让 2.6.5 之前的版本延迟到 Spring 初始化完成后，再暴露服务，可以这样配置：&lt;dubbo:service delay=”-1” /&gt;</p>
+</blockquote>
+<blockquote>
+<p>本节参考 Dubbo 官方文档</p>
+<p>延迟暴露：<a href="http://dubbo.apache.org/zh-cn/docs/user/demos/delay-publish.html" target="_blank" rel="noopener">http://dubbo.apache.org/zh-cn/docs/user/demos/delay-publish.html</a></p>
+</blockquote>
+<h2 id="3-方案二：QOS-命令上线"><a href="#3-方案二：QOS-命令上线" class="headerlink" title="3 方案二：QOS 命令上线"></a>3 方案二：QOS 命令上线</h2><p>Dubbo 还为服务提供了另一个配置项：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dubbo:service</span> <span class="attr">register</span>=<span class="string">"false"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+<p>该配置项配置后，服务将不会发布到注册中心，可能很多 Dubbo 用户不会注意到这个配置，它的作用恰恰是 QOS 指令使用的。</p>
+<p>Dubbo 2.5.8 及以上的版本，还提供了一些在线运维命令。为了演示该命令，我们准备一个 <code>GreetingService</code> 的 demo：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DubboProvider</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        ServiceConfig&lt;GreetingsService&gt; service = <span class="keyword">new</span> ServiceConfig&lt;&gt;();</span><br><span class="line">        service.setApplication(<span class="keyword">new</span> ApplicationConfig(<span class="string">"dubbo-provider"</span>));</span><br><span class="line">        service.setRegistry(<span class="keyword">new</span> RegistryConfig(<span class="string">"nacos://127.0.0.1:8848"</span>));</span><br><span class="line">        service.setInterface(GreetingsService.class);</span><br><span class="line">        service.setRef(<span class="keyword">new</span> GreetingsServiceImpl());</span><br><span class="line">        service.setRegister(<span class="keyword">false</span>);</span><br><span class="line">        service.export();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"dubbo service started"</span>);</span><br><span class="line">        <span class="keyword">new</span> CountDownLatch(<span class="number">1</span>).await();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意我们配置了不发布：<code>service.setRegister(false)</code>，由于 QOS 配置是默认打开的，在本地的 22222 端口，可以进入 QOS 控制台。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"> krito git:(master) ✗ telnet localhost 22222</span><br><span class="line">Trying ::1...</span><br><span class="line">Connected to localhost.</span><br><span class="line">Escape character is &apos;^]&apos;.</span><br><span class="line">   ___   __  __ ___   ___   ____     </span><br><span class="line">  / _ \ / / / // _ ) / _ ) / __ \  </span><br><span class="line"> / // // /_/ // _  |/ _  |/ /_/ /    </span><br><span class="line">/____/ \____//____//____/ \____/   </span><br><span class="line">dubbo&gt;ls</span><br><span class="line">As Provider side:</span><br><span class="line">+-------------------------------------+---+</span><br><span class="line">|        Provider Service Name        |PUB|</span><br><span class="line">+-------------------------------------+---+</span><br><span class="line">|com.alibaba.edas.api.GreetingsService| N |</span><br><span class="line">+-------------------------------------+---+</span><br><span class="line">As Consumer side:</span><br><span class="line">+---------------------+---+</span><br><span class="line">|Consumer Service Name|NUM|</span><br><span class="line">+---------------------+---+</span><br><span class="line"></span><br><span class="line">dubbo&gt;online  </span><br><span class="line">OK</span><br><span class="line">dubbo&gt;ls</span><br><span class="line">As Provider side:</span><br><span class="line">+-------------------------------------+---+</span><br><span class="line">|        Provider Service Name        |PUB|</span><br><span class="line">+-------------------------------------+---+</span><br><span class="line">|com.alibaba.edas.api.GreetingsService| Y |</span><br><span class="line">+-------------------------------------+---+</span><br><span class="line">As Consumer side:</span><br><span class="line">+---------------------+---+</span><br><span class="line">|Consumer Service Name|NUM|</span><br><span class="line">+---------------------+---+</span><br><span class="line"></span><br><span class="line">dubbo&gt;</span><br></pre></td></tr></table></figure>
+<p>如上图所示，我们首先查看到 <code>com.alibaba.edas.api.GreetingsService</code> 服务是未发布的，通过 online 命令手动将服务发布，再使用 <code>ls</code> 查看服务列表时，已经显示服务处于发布状态了。</p>
+<p>除了使用 telnet，还可以通过 HTTP 访问：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl localhost:22222/online</span><br></pre></td></tr></table></figure>
+<p>小 tips：在使用 SpringBoot 注解式声明一个 Service 时，register 属性会失效，在 xml 或者 API 方式下声明则运行正常，怀疑是 dubbo-spring-boot-starter 的一个 bug。</p>
+<p><img src="https://kirito.iocoder.cn/image-20191117205139227.png" alt="image-20191117205139227"></p>
+<p><img src="https://kirito.iocoder.cn/image-20191117205207044.png" alt="image-20191117205207044"></p>
+<p>大家在 SpringBoot 下使用 Dubbo 需要留意类似的问题，之前有过一些属性在 SpringBoot 注解中未解析或为提供注解配置的案例，在使用时需要注意。</p>
+<blockquote>
+<p>本节参考 Dubbo 官方文档</p>
+<p>服务配置说明：<a href="http://dubbo.apache.org/zh-cn/docs/user/references/xml/dubbo-service.html" target="_blank" rel="noopener">http://dubbo.apache.org/zh-cn/docs/user/references/xml/dubbo-service.html</a></p>
+<p>QOS：<a href="http://dubbo.apache.org/zh-cn/docs/user/references/qos.html" target="_blank" rel="noopener">http://dubbo.apache.org/zh-cn/docs/user/references/qos.html</a></p>
+</blockquote>
+<h2 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h2><p>本文介绍了两种 Dubbo 的机制：</p>
+<ul>
+<li>方案一：延迟发布（delay=5000）</li>
+<li>方案二：不发布 + QOS 指令发布（register=false）</li>
+</ul>
+<p>想要实现优雅上线，可以采取适合你系统的方式。方案一延迟发布的优势在于实现简单，但具体 delay 多少秒，比较依赖系统维护者的经验。方案二使用 QOS 指令，一般依靠于发布系统，当发布系统检测到固定的资源加载完毕这样一个信号时，自动触发上线命令，更加灵活。</p>
+<p>当你系统遇到应用启动时流量有所损失时，就应该考虑一下优雅上线的问题了，更多 Dubbo 使用的注意点，请持续关注公众号。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/3ej9lic1DDEEVRdqK4k4ic0Xic0wr6FsZyNYx6Wia9CKYITzibtaeMrTM7ngvVop91rrXyGWLGKMicgBNlQPubfXfBNw/640?wx_fmt=jpeg" alt="img"></p>
+<p><em>「技术分享」<strong>某种程度上，是让作者和读者，不那么孤独的东西。</strong>欢迎关注我的微信公众号：<strong>「</strong>Kirito的技术分享」</em></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="https://lexburner.github.io/dubbo-gracefully-startup/" data-id="ck33rjliu001to59eeg3rqi2s" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+    
+        <a href="/dubbo-metadata/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">一文聊透 Dubbo 元数据中心</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+	<div id="commentContainer"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/dubbo-gracefully-startup/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
+                            <p class="item-title"><a href="/dubbo-gracefully-startup/" class="title">一文聊透 Dubbo 优雅上线</a></p>
+                            <p class="item-date"><time datetime="2019-11-17T09:25:04.000Z" itemprop="datePublished">2019-11-17</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/dubbo-metadata/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
+                            <p class="item-title"><a href="/dubbo-metadata/" class="title">一文聊透 Dubbo 元数据中心</a></p>
+                            <p class="item-date"><time datetime="2019-11-03T07:05:50.000Z" itemprop="datePublished">2019-11-03</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/linux-io-benchmark/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/数据库/">数据库</a></p>
+                            <p class="item-title"><a href="/linux-io-benchmark/" class="title">Linux 环境写文件如何稳定跑满磁盘 I/O 带宽?</a></p>
+                            <p class="item-date"><time datetime="2019-10-09T11:01:38.000Z" itemprop="datePublished">2019-10-09</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/live2d/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/技术杂谈/">技术杂谈</a></p>
+                            <p class="item-title"><a href="/live2d/" class="title">一个看板娘入住你的个人博客只需要三步</a></p>
+                            <p class="item-date"><time datetime="2019-10-09T11:01:38.000Z" itemprop="datePublished">2019-10-09</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
+                            <a href="/dubbo-gracefully-shutdown/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
+                            <p class="item-title"><a href="/dubbo-gracefully-shutdown/" class="title">一文聊透 Dubbo 优雅停机</a></p>
+                            <p class="item-date"><time datetime="2019-09-29T14:46:55.000Z" itemprop="datePublished">2019-09-29</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-并发合集/">JAVA 并发合集</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">十一月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">一月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Cloud-Toolkit/" style="font-size: 10px;">Cloud Toolkit</a> <a href="/tags/DUBBO/" style="font-size: 11px;">DUBBO</a> <a href="/tags/DevOps/" style="font-size: 11px;">DevOps</a> <a href="/tags/DirectIO/" style="font-size: 10px;">DirectIO</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Dubbo/" style="font-size: 17px;">Dubbo</a> <a href="/tags/JAVA/" style="font-size: 20px;">JAVA</a> <a href="/tags/JMM/" style="font-size: 10px;">JMM</a> <a href="/tags/JMeter/" style="font-size: 10px;">JMeter</a> <a href="/tags/JNA/" style="font-size: 10px;">JNA</a> <a href="/tags/JWT/" style="font-size: 12px;">JWT</a> <a href="/tags/Kong/" style="font-size: 12px;">Kong</a> <a href="/tags/MQ/" style="font-size: 10px;">MQ</a> <a href="/tags/Network/" style="font-size: 10px;">Network</a> <a href="/tags/PolarDB-性能挑战赛/" style="font-size: 10px;">PolarDB 性能挑战赛</a> <a href="/tags/RPC/" style="font-size: 19px;">RPC</a> <a href="/tags/Reactor/" style="font-size: 10px;">Reactor</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a> <a href="/tags/Servlet/" style="font-size: 10px;">Servlet</a> <a href="/tags/Spring/" style="font-size: 18px;">Spring</a> <a href="/tags/Spring-Cloud/" style="font-size: 12px;">Spring Cloud</a> <a href="/tags/Spring-Cloud-Zuul/" style="font-size: 11px;">Spring Cloud Zuul</a> <a href="/tags/Spring-Data-Redis/" style="font-size: 11px;">Spring Data Redis</a> <a href="/tags/Spring-Security/" style="font-size: 15px;">Spring Security</a> <a href="/tags/Spring-Security-OAuth2/" style="font-size: 12px;">Spring Security OAuth2</a> <a href="/tags/Spring-Session/" style="font-size: 13px;">Spring Session</a> <a href="/tags/TCP/" style="font-size: 11px;">TCP</a> <a href="/tags/Validation/" style="font-size: 11px;">Validation</a> <a href="/tags/XML/" style="font-size: 11px;">XML</a> <a href="/tags/Zipkin/" style="font-size: 10px;">Zipkin</a> <a href="/tags/drools/" style="font-size: 13px;">drools</a> <a href="/tags/live2d/" style="font-size: 10px;">live2d</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a> <a href="/tags/motan/" style="font-size: 10px;">motan</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/中文排版/" style="font-size: 10px;">中文排版</a> <a href="/tags/事务/" style="font-size: 11px;">事务</a> <a href="/tags/代码规范/" style="font-size: 10px;">代码规范</a> <a href="/tags/多线程/" style="font-size: 14px;">多线程</a> <a href="/tags/开源/" style="font-size: 10px;">开源</a> <a href="/tags/微服务/" style="font-size: 10px;">微服务</a> <a href="/tags/心跳/" style="font-size: 10px;">心跳</a> <a href="/tags/技术杂谈/" style="font-size: 16px;">技术杂谈</a> <a href="/tags/数据库/" style="font-size: 12px;">数据库</a> <a href="/tags/文件-IO/" style="font-size: 11px;">文件 IO</a> <a href="/tags/日本旅游攻略/" style="font-size: 10px;">日本旅游攻略</a> <a href="/tags/杂谈/" style="font-size: 10px;">杂谈</a> <a href="/tags/架构设计/" style="font-size: 13px;">架构设计</a> <a href="/tags/求职/" style="font-size: 10px;">求职</a> <a href="/tags/网关/" style="font-size: 11px;">网关</a> <a href="/tags/网卡/" style="font-size: 10px;">网卡</a> <a href="/tags/规则引擎/" style="font-size: 13px;">规则引擎</a> <a href="/tags/领域驱动设计/" style="font-size: 11px;">领域驱动设计</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="https://ntzyz.io/">namespace_ntzyz</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://blog.didispace.com/">程序猿DD|博客</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://vip.iocoder.cn/">芋道源码</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.jiangxinlingdu.com/">匠心零度</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.liangsonghua.me">松花皮蛋的黑板报</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2019 徐靖峰<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+	<link rel="stylesheet" href="https://billts.site/extra_css/gitment.css">
+	<script src="https://billts.site/js/gitment.js"></script>
+	<script>
+		var gitment = new Gitment({
+			owner: 'lexburner',
+			repo: 'lexburner.github.io',
+			oauth: {
+				client_id: 'd5fc3e1150477a0d433d',
+				client_secret: 'aa94acd5f130281051b9e703c19b4c6d878e90c4',
+			},
+		})
+		gitment.render('commentContainer')
+	</script>
+	
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script src="/node_modules/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"node_modules/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/node_modules/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7},"log":false});</script></body>
+</html>
