@@ -166,7 +166,7 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                123
+                124
                 <span>文章</span>
             </div>
             <div class="article-info-block">
@@ -207,6 +207,187 @@ ga('send', 'pageview');
 
             
             <section id="main">
+    <article id="post-rpc-transport" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/rpc-transport/">深入理解 RPC 之传输篇</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        <!-- 增加文章类型 -->
+                        
+	
+		<div class="article-type">
+		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
+		</div>
+	
+	
+	
+		
+	
+
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/rpc-transport/">
+            <time datetime="2017-12-22T12:16:28.000Z" itemprop="datePublished">2017-12-22</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/RPC/">RPC</a>
+    </div>
+
+                        <!-- 不显示标签 -->
+                        <!-- 
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/RPC/">RPC</a>
+    </div>
+ -->
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>RPC 被称为“远程过程调用”，表明了一个方法调用会跨越网络，跨越进程，所以传输层是不可或缺的。一说到网络传输，一堆名词就蹦了出来：TCP、UDP、HTTP，同步 or 异步，阻塞 or 非阻塞，长连接 or 短连接…</p>
+<p>本文介绍两种传输层的实现：使用 Socket 和使用 Netty。前者实现的是阻塞式的通信，是一个较为简单的传输层实现方式，借此可以了解传输层的工作原理及工作内容；后者是非阻塞式的，在一般的 RPC 场景下，性能会表现的很好，所以被很多开源 RPC 框架作为传输层的实现方式。</p>
+<h2 id="RpcRequest-和-RpcResponse"><a href="#RpcRequest-和-RpcResponse" class="headerlink" title="RpcRequest 和 RpcResponse"></a>RpcRequest 和 RpcResponse</h2><p>传输层传输的主要对象其实就是这两个类，它们封装了请求 id，方法名，方法参数，返回值，异常等 RPC 调用中需要的一系列信息。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RpcRequest</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String interfaceName;</span><br><span class="line">    <span class="keyword">private</span> String methodName;</span><br><span class="line">    <span class="keyword">private</span> String parametersDesc;</span><br><span class="line">    <span class="keyword">private</span> Object[] arguments;</span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, String&gt; attachments;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> retries = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> requestId;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">byte</span> rpcProtocolVersion;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RpcResponse</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Object value;</span><br><span class="line">    <span class="keyword">private</span> Exception exception;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> requestId;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> processTime;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> timeout;</span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, String&gt; attachments;<span class="comment">// rpc 协议版本兼容时可以回传一些额外的信息</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">byte</span> rpcProtocolVersion;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Socket-传输"><a href="#Socket-传输" class="headerlink" title="Socket 传输"></a>Socket 传输</h2><p>Server</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RpcServerSocketProvider</span> </span>&#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 序列化层实现参考之前的章节</span></span><br><span class="line">        Serialization serialization = <span class="keyword">new</span> Hessian2Serialization();</span><br><span class="line"></span><br><span class="line">        ServerSocket serverSocket = <span class="keyword">new</span> ServerSocket(<span class="number">8088</span>);</span><br><span class="line">        ExecutorService executorService = Executors.newFixedThreadPool(<span class="number">10</span>);</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">            <span class="keyword">final</span> Socket socket = serverSocket.accept();</span><br><span class="line">            executorService.execute(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    InputStream is = socket.getInputStream();</span><br><span class="line">                    OutputStream os = socket.getOutputStream();</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        DataInputStream dis = <span class="keyword">new</span> DataInputStream(is);</span><br><span class="line">                        <span class="keyword">int</span> length = dis.readInt();</span><br><span class="line">                        <span class="keyword">byte</span>[] requestBody = <span class="keyword">new</span> <span class="keyword">byte</span>[length];</span><br><span class="line">                        dis.read(requestBody);</span><br><span class="line">                        <span class="comment">// 反序列化 requestBody =&gt; RpcRequest</span></span><br><span class="line">                        RpcRequest rpcRequest = serialization.deserialize(requestBody, RpcRequest.class);</span><br><span class="line">                        <span class="comment">// 反射调用生成响应 并组装成 rpcResponse</span></span><br><span class="line">                        RpcResponse rpcResponse = invoke(rpcRequest);</span><br><span class="line">                        <span class="comment">// 序列化 rpcResponse =&gt; responseBody</span></span><br><span class="line">                        <span class="keyword">byte</span>[] responseBody = serialization.serialize(rpcResponse);</span><br><span class="line">                        DataOutputStream dos = <span class="keyword">new</span> DataOutputStream(os);</span><br><span class="line">                        dos.writeInt(responseBody.length);</span><br><span class="line">                        dos.write(responseBody);</span><br><span class="line">                        dos.flush();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                        is.close();</span><br><span class="line">                        os.close();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        socket.close();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> RpcResponse <span class="title">invoke</span><span class="params">(RpcRequest rpcRequest)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 模拟反射调用</span></span><br><span class="line">        RpcResponse rpcResponse = <span class="keyword">new</span> RpcResponse();</span><br><span class="line">        rpcResponse.setRequestId(rpcRequest.getRequestId());</span><br><span class="line">        <span class="comment">//... some operation</span></span><br><span class="line">        <span class="keyword">return</span> rpcResponse;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Client</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RpcSocketConsumer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 序列化层实现参考之前的章节</span></span><br><span class="line">        Serialization serialization = <span class="keyword">new</span> Hessian2Serialization();</span><br><span class="line"></span><br><span class="line">        Socket socket = <span class="keyword">new</span> Socket(<span class="string">"localhost"</span>, <span class="number">8088</span>);</span><br><span class="line">        InputStream is = socket.getInputStream();</span><br><span class="line">        OutputStream os = socket.getOutputStream();</span><br><span class="line">        <span class="comment">// 封装 rpc 请求</span></span><br><span class="line">        RpcRequest rpcRequest = <span class="keyword">new</span> RpcRequest();</span><br><span class="line">        rpcRequest.setRequestId(<span class="number">12345L</span>);</span><br><span class="line">        <span class="comment">// 序列化 rpcRequest =&gt; requestBody</span></span><br><span class="line">        <span class="keyword">byte</span>[] requestBody = serialization.serialize(rpcRequest);</span><br><span class="line">        DataOutputStream dos = <span class="keyword">new</span> DataOutputStream(os);</span><br><span class="line">        dos.writeInt(requestBody.length);</span><br><span class="line">        dos.write(requestBody);</span><br><span class="line">        dos.flush();</span><br><span class="line">        DataInputStream dis = <span class="keyword">new</span> DataInputStream(is);</span><br><span class="line">        <span class="keyword">int</span> length = dis.readInt();</span><br><span class="line">        <span class="keyword">byte</span>[] responseBody = <span class="keyword">new</span> <span class="keyword">byte</span>[length];</span><br><span class="line">        dis.read(responseBody);</span><br><span class="line">        <span class="comment">// 反序列化 responseBody =&gt; rpcResponse</span></span><br><span class="line">        RpcResponse rpcResponse = serialization.deserialize(responseBody, RpcResponse.class);</span><br><span class="line">        is.close();</span><br><span class="line">        os.close();</span><br><span class="line">        socket.close();</span><br><span class="line"></span><br><span class="line">        System.out.println(rpcResponse.getRequestId());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>dis.readInt()和 dis.read(byte[] bytes) 决定了使用 Socket 通信是一种阻塞式的操作，报文头 + 报文体的传输格式是一种常见的格式，除此之外，使用特殊的字符如空行也可以划分出报文结构。在示例中，我们使用一个 int（4 字节）来传递报问题的长度，之后传递报文体，在复杂的通信协议中，报文头除了存储报文体还会额外存储一些信息，包括协议名称，版本，心跳标识等。</p>
+<p>在网络传输中，只有字节能够被识别，所以我们在开头引入了 Serialization 接口，负责完成 RpcRequest 和 RpcResponse 与字节的相互转换。（Serialization 的工作机制可以参考之前的文章）</p>
+<p>使用 Socket 通信可以发现：每次 Server 处理 Client 请求都会从线程池中取出一个线程来处理请求，这样的开销对于一般的 Rpc 调用是不能够接受的，而 Netty 一类的网络框架便派上了用场。</p>
+<h2 id="Netty-传输"><a href="#Netty-传输" class="headerlink" title="Netty 传输"></a>Netty 传输</h2><p>Server 和 ServerHandler</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RpcNettyProvider</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line"></span><br><span class="line">        EventLoopGroup bossGroup = <span class="keyword">new</span> NioEventLoopGroup();</span><br><span class="line">        EventLoopGroup workerGroup = <span class="keyword">new</span> NioEventLoopGroup();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 创建并初始化 Netty 服务端 Bootstrap 对象</span></span><br><span class="line">            ServerBootstrap bootstrap = <span class="keyword">new</span> ServerBootstrap();</span><br><span class="line">            bootstrap.group(bossGroup, workerGroup);</span><br><span class="line">            bootstrap.channel(NioServerSocketChannel.class);</span><br><span class="line">            bootstrap.childHandler(<span class="keyword">new</span> ChannelInitializer&lt;SocketChannel&gt;() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initChannel</span><span class="params">(SocketChannel channel)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">                    ChannelPipeline pipeline = channel.pipeline();</span><br><span class="line">                    pipeline.addLast(<span class="keyword">new</span> RpcDecoder(RpcRequest.class)); <span class="comment">// 解码 RPC 请求</span></span><br><span class="line">                    pipeline.addLast(<span class="keyword">new</span> RpcEncoder(RpcResponse.class)); <span class="comment">// 编码 RPC 响应</span></span><br><span class="line">                    pipeline.addLast(<span class="keyword">new</span> RpcServerHandler()); <span class="comment">// 处理 RPC 请求</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">            bootstrap.option(ChannelOption.SO_BACKLOG, <span class="number">1024</span>);</span><br><span class="line">            bootstrap.childOption(ChannelOption.SO_KEEPALIVE, <span class="keyword">true</span>);</span><br><span class="line">            ChannelFuture future = bootstrap.bind(<span class="string">"127.0.0.1"</span>, <span class="number">8087</span>).sync();</span><br><span class="line">            <span class="comment">// 关闭 RPC 服务器</span></span><br><span class="line">            future.channel().closeFuture().sync();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            workerGroup.shutdownGracefully();</span><br><span class="line">            bossGroup.shutdownGracefully();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RpcServerHandler</span> <span class="keyword">extends</span> <span class="title">SimpleChannelInboundHandler</span>&lt;<span class="title">RpcRequest</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead0</span><span class="params">(<span class="keyword">final</span> ChannelHandlerContext ctx, RpcRequest request)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        RpcResponse rpcResponse = invoke(request);</span><br><span class="line">        <span class="comment">// 写入 RPC 响应对象并自动关闭连接</span></span><br><span class="line">        ctx.writeAndFlush(rpcResponse).addListener(ChannelFutureListener.CLOSE);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> RpcResponse <span class="title">invoke</span><span class="params">(RpcRequest rpcRequest)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 模拟反射调用</span></span><br><span class="line">        RpcResponse rpcResponse = <span class="keyword">new</span> RpcResponse();</span><br><span class="line">        rpcResponse.setRequestId(rpcRequest.getRequestId());</span><br><span class="line">        <span class="comment">//... some operation</span></span><br><span class="line">        <span class="keyword">return</span> rpcResponse;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">exceptionCaught</span><span class="params">(ChannelHandlerContext ctx, Throwable cause)</span> </span>&#123;</span><br><span class="line">        cause.printStackTrace();</span><br><span class="line">        ctx.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Client 和 ClientHandler</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RpcNettyConsumer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">        EventLoopGroup group = <span class="keyword">new</span> NioEventLoopGroup();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 创建并初始化 Netty 客户端 Bootstrap 对象</span></span><br><span class="line">            Bootstrap bootstrap = <span class="keyword">new</span> Bootstrap();</span><br><span class="line">            bootstrap.group(group);</span><br><span class="line">            bootstrap.channel(NioSocketChannel.class);</span><br><span class="line">            bootstrap.handler(<span class="keyword">new</span> ChannelInitializer&lt;SocketChannel&gt;() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initChannel</span><span class="params">(SocketChannel channel)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">                    ChannelPipeline pipeline = channel.pipeline();</span><br><span class="line">                    pipeline.addLast(<span class="keyword">new</span> RpcEncoder(RpcRequest.class)); <span class="comment">// 编码 RPC 请求</span></span><br><span class="line">                    pipeline.addLast(<span class="keyword">new</span> RpcDecoder(RpcResponse.class)); <span class="comment">// 解码 RPC 响应</span></span><br><span class="line">                    pipeline.addLast(<span class="keyword">new</span> RpcClientHandler()); <span class="comment">// 处理 RPC 响应</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">            bootstrap.option(ChannelOption.TCP_NODELAY, <span class="keyword">true</span>);</span><br><span class="line">            <span class="comment">// 连接 RPC 服务器</span></span><br><span class="line">            ChannelFuture future = bootstrap.connect(<span class="string">"127.0.0.1"</span>, <span class="number">8087</span>).sync();</span><br><span class="line">            <span class="comment">// 写入 RPC 请求数据并关闭连接</span></span><br><span class="line">            Channel channel = future.channel();</span><br><span class="line"></span><br><span class="line">            RpcRequest rpcRequest = <span class="keyword">new</span> RpcRequest();</span><br><span class="line">            rpcRequest.setRequestId(<span class="number">123456L</span>);</span><br><span class="line"></span><br><span class="line">            channel.writeAndFlush(rpcRequest).sync();</span><br><span class="line">            channel.closeFuture().sync();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            group.shutdownGracefully();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RpcClientHandler</span> <span class="keyword">extends</span> <span class="title">SimpleChannelInboundHandler</span>&lt;<span class="title">RpcResponse</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead0</span><span class="params">(ChannelHandlerContext ctx, RpcResponse response)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        System.out.println(response.getRequestId());<span class="comment">// 处理响应</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">exceptionCaught</span><span class="params">(ChannelHandlerContext ctx, Throwable cause)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        cause.printStackTrace();</span><br><span class="line">        ctx.close();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用 Netty 的好处是很方便地实现了非阻塞式的调用，关键部分都给出了注释。上述的代码虽然很多，并且和我们熟悉的 Socket 通信代码大相径庭，但大多数都是 Netty 的模板代码，启动服务器，配置编解码器等。真正的 RPC 封装操作大多集中在 Handler 的 channelRead 方法（负责读取）以及 channel.writeAndFlush 方法（负责写入）中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RpcEncoder</span> <span class="keyword">extends</span> <span class="title">MessageToByteEncoder</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Class&lt;?&gt; genericClass;</span><br><span class="line"></span><br><span class="line">    Serialization serialization = <span class="keyword">new</span> Hessian2Serialization();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RpcEncoder</span><span class="params">(Class&lt;?&gt; genericClass)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.genericClass = genericClass;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">encode</span><span class="params">(ChannelHandlerContext ctx, Object in, ByteBuf out)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (genericClass.isInstance(in)) &#123;</span><br><span class="line">            <span class="keyword">byte</span>[] data = serialization.serialize(in);</span><br><span class="line">            out.writeInt(data.length);</span><br><span class="line">            out.writeBytes(data);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RpcDecoder</span> <span class="keyword">extends</span> <span class="title">ByteToMessageDecoder</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Class&lt;?&gt; genericClass;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RpcDecoder</span><span class="params">(Class&lt;?&gt; genericClass)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.genericClass = genericClass;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Serialization serialization = <span class="keyword">new</span> Hessian2Serialization();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">decode</span><span class="params">(ChannelHandlerContext ctx, ByteBuf in, List&lt;Object&gt; out)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (in.readableBytes() &lt; <span class="number">4</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        in.markReaderIndex();</span><br><span class="line">        <span class="keyword">int</span> dataLength = in.readInt();</span><br><span class="line">        <span class="keyword">if</span> (in.readableBytes() &lt; dataLength) &#123;</span><br><span class="line">            in.resetReaderIndex();</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">byte</span>[] data = <span class="keyword">new</span> <span class="keyword">byte</span>[dataLength];</span><br><span class="line">        in.readBytes(data);</span><br><span class="line">        out.add(serialization.deserialize(data, genericClass));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用 Netty 不能保证返回的字节大小，所以需要加上 in.readableBytes()&lt; 4 这样的判断，以及 in.markReaderIndex() 这样的标记，用来区分报文头和报文体。</p>
+<h2 id="同步与异步-阻塞与非阻塞"><a href="#同步与异步-阻塞与非阻塞" class="headerlink" title="同步与异步 阻塞与非阻塞"></a>同步与异步 阻塞与非阻塞</h2><p>这两组传输特性经常被拿来做对比，很多文章声称 Socket 是同步阻塞的，Netty 是异步非阻塞，其实有点问题。</p>
+<p>其实这两组并没有必然的联系，同步阻塞，同步非阻塞，异步非阻塞都有可能（同步非阻塞倒是没见过），而大多数使用 Netty 实现的 RPC 调用其实应当是同步非阻塞的（当然一般 RPC 也支持异步非阻塞）。</p>
+<blockquote>
+<p>同步和异步关注的是 <strong> 消息通信机制 </strong><br>所谓同步，就是在发出一个 <em> 调用 </em> 时，在没有得到结果之前，该 <em> 调用 </em> 就不返回。但是一旦调用返回，就得到返回值了。<br>换句话说，就是由 <em> 调用者 </em> 主动等待这个 <em> 调用 </em> 的结果。</p>
+<p>而异步则是相反，调用在发出之后，这个调用就直接返回了，所以没有返回结果。换句话说，当一个异步过程调用发出后，调用者不会立刻得到结果。而是在 <em> 调用 </em> 发出后，<em> 被调用者 </em> 通过状态、通知来通知调用者，或通过回调函数处理这个调用。</p>
+</blockquote>
+<p>如果需要 RPC 调用返回一个结果，该结果立刻被使用，那意味着着大概率需要是一个同步调用。如果不关心其返回值，则可以将其做成异步接口，以提升效率。</p>
+<blockquote>
+<p>阻塞和非阻塞关注的是 <strong> 程序在等待调用结果（消息，返回值）时的状态 </strong>.</p>
+<p>阻塞调用是指调用结果返回之前，当前线程会被挂起。调用线程只有在得到结果之后才会返回。<br>非阻塞调用指在不能立刻得到结果之前，该调用不会阻塞当前线程。</p>
+</blockquote>
+<p>在上述的例子中可以看出 Socket 通信我们显示声明了一个包含 10 个线程的线程池，每次请求到来，分配一个线程，等待客户端传递报文头和报文体的行为都会阻塞该线程，可以见得其整体是阻塞的。而在 Netty 通信的例子中，每次请求并没有分配一个线程，而是通过 Handler 的方式处理请求（联想 NIO 中 Selector），是非阻塞的。</p>
+<p>使用同步非阻塞方式的通信机制并不一定同步阻塞式的通信强，所谓没有最好，只有更合适，而一般的同步非阻塞 通信适用于 1. 网络连接数量多 2. 每个连接的 io 不频繁 的场景，与 RPC 调用较为契合。而成熟的 RPC 框架的传输层和协议层通常也会提供多种选择，以应对不同的场景。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文堆砌了一些代码，而难点主要是对 Socket 的理解，和 Netty 框架的掌握。Netty 的学习有一定的门槛，但实际需要掌握的知识点其实并不多（仅仅针对 RPC 框架所涉及的知识点而言），学习 Netty ，个人推荐《Netty IN ACTION》以及 <a href="https://waylau.gitbooks.io/netty-4-user-guide/Getting%20Started/Before%20Getting%20Started.html" target="_blank" rel="noopener">https://waylau.gitbooks.io/netty-4-user-guide/Getting%20Started/Before%20Getting%20Started.html</a> 该网站的例子。</p>
+<p>参考资料：</p>
+<p><a href="http://javatar.iteye.com/blog/1123915" target="_blank" rel="noopener">http://javatar.iteye.com/blog/1123915</a> – 梁飞</p>
+<p><a href="https://gitee.com/huangyong/rpc" target="_blank" rel="noopener">https://gitee.com/huangyong/rpc</a> – 黄勇</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="https://lexburner.github.io/rpc-transport/" data-id="ck3poyaz9008bsg9edj5oumkn" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
     <article id="post-rpc-dynamic-proxy" class="article article-type-post" itemscope="" itemprop="blogPost">
     <div class="article-inner">
         
@@ -341,7 +522,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://lexburner.github.io/rpc-dynamic-proxy/" data-id="ck33rjllg007wo59evk000lxw" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/rpc-dynamic-proxy/" data-id="ck3poyayo007msg9eeffbk77l" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -610,7 +791,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://lexburner.github.io/rpc-serialize-2/" data-id="ck33rjlly009jo59efy9ss9ol" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/rpc-serialize-2/" data-id="ck3poyaz10084sg9ev241qhwy" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -850,7 +1031,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://lexburner.github.io/NJIAS2017/" data-id="ck33rjlic000oo59eerj70pfe" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/NJIAS2017/" data-id="ck3poyauh0000sg9e2nkb1adg" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1124,7 +1305,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://lexburner.github.io/rpc-serialize-1/" data-id="ck33rjlle007to59equ6iz2hk" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/rpc-serialize-1/" data-id="ck3poyaz00081sg9e400j02bu" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1394,7 +1575,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://lexburner.github.io/view-1/" data-id="ck33rjlmp00bmo59e4j18bvol" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/view-1/" data-id="ck3poyb0v00bhsg9e6gm5uhv2" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1619,7 +1800,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://lexburner.github.io/orika/" data-id="ck33rjll20070o59eiz0c8adb" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/orika/" data-id="ck3poyayc006vsg9e15ud71jn" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1831,7 +2012,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://lexburner.github.io/spi/" data-id="ck33rjlll008co59emsi9ql89" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/spi/" data-id="ck3poyaza008fsg9ei2g3vm1y" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -2050,7 +2231,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://lexburner.github.io/spring-cloud-sleuth/" data-id="ck33rjllm008ho59em9eyagvr" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/spring-cloud-sleuth/" data-id="ck3poyazd008msg9et9dfslei" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -2250,237 +2431,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://lexburner.github.io/spring-data-redis-2/" data-id="ck33rjllo008no59eu4lq2pf3" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
-    <article id="post-spring-data-redis-1" class="article article-type-post" itemscope="" itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/spring-data-redis-1/">Spring Data Redis（一）-- 解析 RedisTemplate</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        <!-- 增加文章类型 -->
-                        
-	
-		<div class="article-type">
-		    <span class="label label-success" style="float: left;padding: 3px 5px 3px 5px;margin-right: 15px;margin-top: 2px;">原创</span>
-		</div>
-	
-	
-	
-		
-	
-
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/spring-data-redis-1/">
-            <time datetime="2017-10-27T08:10:55.000Z" itemprop="datePublished">2017-10-27</time>
-        </a>
-    </div>
-
-
-                        
-    <div class="article-category">
-    	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a>
-    </div>
-
-                        <!-- 不显示标签 -->
-                        <!-- 
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Spring-Data-Redis/">Spring Data Redis</a>
-    </div>
- -->
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p>谈及系统优化，缓存一直是不可或缺的一点。在缓存中间件层面，我们有 MemCache，Redis 等选择；在系统分层层面，又需要考虑多级缓存；在系统可用性层面，又要考虑到缓存雪崩，缓存穿透，缓存失效等常见的缓存问题… 缓存的使用与优化值得我们花费一定的精力去深入理解。《Spring Data Redis》这个系列打算围绕 spring-data-redis 来进行分析，从 hello world 到源码分析，夹杂一些不多实战经验（经验有限），不止限于 spring-data-redis 本身，也会扩展谈及缓存这个大的知识点。</p>
-<p>至于为何选择 redis，相信不用我赘述，redis 如今非常流行，几乎成了项目必备的组件之一。而 spring-boot-starter-data-redis 模块又为我们在 spring 集成的项目中提供了开箱即用的功能，更加便捷了我们开发。系列的第一篇便是简单介绍下整个组件最常用的一个工具类：RedisTemplate。</p>
-<h2 id="1-引入依赖"><a href="#1-引入依赖" class="headerlink" title="1 引入依赖"></a>1 引入依赖</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.5.7.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-data-redis<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>springboot 的老用户会发现 redis 依赖名称发生了一点小的变化，在 springboot1.4 之前，redis 依赖的名称为：spring-boot-starter-redis，而在之后较新的版本中，使用 spring-boot-starter-redis 依赖，则会在项目启动时得到一个过期警告。意味着，我们应该彻底放弃旧的依赖。spring-data 这个项目定位为 spring 提供一个统一的数据仓库接口，如（spring-boot-starter-data-jpa,spring-boot-starter-data-mongo,spring-boot-starter-data-rest），将 redis 纳入后，改名为了 spring-boot-starter-data-redis。</p>
-<h2 id="2-配置-redis-连接"><a href="#2-配置-redis-连接" class="headerlink" title="2 配置 redis 连接"></a>2 配置 redis 连接</h2><p><code>resources/application.yml</code></p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line"><span class="attr">  redis:</span></span><br><span class="line"><span class="attr">    host:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span></span><br><span class="line"><span class="attr">    database:</span> <span class="number">0</span></span><br><span class="line"><span class="attr">    port:</span> <span class="number">6379</span></span><br><span class="line"><span class="attr">    password:</span></span><br></pre></td></tr></table></figure>
-<p>本机启动一个单点的 redis 即可，使用 redis 的 0 号库作为默认库（默认有 16 个库），在生产项目中一般会配置 redis 集群和哨兵保证 redis 的高可用，同样可以在 application.yml 中修改，非常方便。</p>
-<h2 id="3-编写测试类"><a href="#3-编写测试类" class="headerlink" title="3 编写测试类"></a>3 编写测试类</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.assertj.core.api.Assertions;</span><br><span class="line"><span class="keyword">import</span> org.junit.Test;</span><br><span class="line"><span class="keyword">import</span> org.junit.runner.RunWith;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.test.context.SpringBootTest;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.redis.core.RedisTemplate;</span><br><span class="line"><span class="keyword">import</span> org.springframework.test.context.junit4.SpringRunner;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RunWith</span>(SpringRunner.class)</span><br><span class="line"><span class="meta">@SpringBootTest</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ApplicationTests</span> </span>&#123;</span><br><span class="line">   <span class="meta">@Autowired</span></span><br><span class="line">   <span class="keyword">private</span> RedisTemplate redisTemplate;<span class="comment">// &lt;1&gt;</span></span><br><span class="line"></span><br><span class="line">   <span class="meta">@Test</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">     redisTemplate.opsForValue().set(<span class="string">"student:1"</span>, <span class="string">"kirito"</span>); <span class="comment">// &lt;2&gt;</span></span><br><span class="line">     Assertions.assertThat(redisTemplate.opsForValue().get(<span class="string">"student:1"</span>)).isEqualTo(<span class="string">"kirito"</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><1> 引入了 RedisTemplate，这个类是 spring-starter-data-redis 提供给应用直接访问 redis 的入口。从其命名就可以看出，其是模板模式在 spring 中的体现，与 restTemplate，jdbcTemplate 类似，而 springboot 为我们做了自动的配置，具体会在下文详解。</1></p>
-<p><2> redisTemplate 通常不直接操作键值，而是通过 opsForXxx() 访问，在本例中，key 和 value 均为字符串类型。绑定字符串在实际开发中也是最为常用的操作类型。</2></p>
-<h2 id="4-详解-RedisTemplate-的-API"><a href="#4-详解-RedisTemplate-的-API" class="headerlink" title="4 详解 RedisTemplate 的 API"></a>4 详解 RedisTemplate 的 API</h2><p>RedisTemplate 为我们操作 Redis 提供了丰富的 API，可以将他们简单进行下归类。</p>
-<h3 id="4-1-常用数据操作"><a href="#4-1-常用数据操作" class="headerlink" title="4.1 常用数据操作"></a>4.1 常用数据操作</h3><p>这一类 API 也是我们最常用的一类。</p>
-<p>众所周知，redis 存在 5 种数据类型：</p>
-<p>字符串类型（string），散列类型（hash），列表类型（list），集合类型（set），有序集合类型（zset）</p>
-<p>而 redisTemplate 实现了 RedisOperations 接口，在其中，定义了一系列与 redis 相关的基础数据操作接口，数据类型分别于下来 API 对应：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 非绑定 key 操作</span></span><br><span class="line"><span class="function">ValueOperations&lt;K, V&gt; <span class="title">opsForValue</span><span class="params">()</span></span>;</span><br><span class="line">&lt;HK, HV&gt; <span class="function">HashOperations&lt;K, HK, HV&gt; <span class="title">opsForHash</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function">ListOperations&lt;K, V&gt; <span class="title">opsForList</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function">SetOperations&lt;K, V&gt; <span class="title">opsForSet</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function">ZSetOperations&lt;K, V&gt; <span class="title">opsForZSet</span><span class="params">()</span></span>;</span><br><span class="line"><span class="comment">// 绑定 key 操作</span></span><br><span class="line"><span class="function">BoundValueOperations&lt;K, V&gt; <span class="title">boundValueOps</span><span class="params">(K key)</span></span>;</span><br><span class="line">&lt;HK, HV&gt; <span class="function">BoundHashOperations&lt;K, HK, HV&gt; <span class="title">boundHashOps</span><span class="params">(K key)</span></span>;</span><br><span class="line"><span class="function">BoundListOperations&lt;K, V&gt; <span class="title">boundListOps</span><span class="params">(K key)</span></span>;</span><br><span class="line"><span class="function">BoundSetOperations&lt;K, V&gt; <span class="title">boundSetOps</span><span class="params">(K key)</span></span>;</span><br><span class="line"><span class="function">BoundZSetOperations&lt;K, V&gt; <span class="title">boundZSetOps</span><span class="params">(K key)</span></span>;</span><br></pre></td></tr></table></figure>
-<p>若以 bound 开头，则意味着在操作之初就会绑定一个 key，后续的所有操作便默认认为是对该 key 的操作，算是一个小优化。</p>
-<h3 id="4-2-对原生-Redis-指令的支持"><a href="#4-2-对原生-Redis-指令的支持" class="headerlink" title="4.2 对原生 Redis 指令的支持"></a>4.2 对原生 Redis 指令的支持</h3><p>Redis 原生指令中便提供了一些很有用的操作，如设置 key 的过期时间，判断 key 是否存在等等…</p>
-<p>常用的 API 列举：</p>
-<table>
-<thead>
-<tr>
-<th>RedisTemplate API</th>
-<th>原生 Redis 指令</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>public void delete(K key)</td>
-<td>DEL key [key …]</td>
-<td>删除给定的一个或多个 <code>key</code></td>
-</tr>
-<tr>
-<td>public Boolean hasKey(K key)</td>
-<td>EXISTS key</td>
-<td>检查给定 <code>key</code> 是否存在</td>
-</tr>
-<tr>
-<td>public Boolean expire/expireAt(…)</td>
-<td>EXPIRE key seconds</td>
-<td>为给定 <code>key</code> 设置生存时间，当 <code>key</code> 过期时 (生存时间为 <code>0</code>)，它会被自动删除。</td>
-</tr>
-<tr>
-<td>public Long getExpire(K key)</td>
-<td>TTL key</td>
-<td>以秒为单位，返回给定 <code>key</code> 的剩余生存时间 (TTL, time to live)。</td>
-</tr>
-</tbody>
-</table>
-<p>更多的原生 Redis 指令支持可以参考 javadoc</p>
-<h3 id="4-3-CAS-操作"><a href="#4-3-CAS-操作" class="headerlink" title="4.3 CAS 操作"></a>4.3 CAS 操作</h3><p>CAS（Compare and Swap）通常有 3 个操作数，内存值 V，旧的预期值 A，要修改的新值 B。当且仅当预期值 A 和内存值 V 相同时，将内存值 V 修改为 B，否则什么都不做。CAS 也通常与并发，乐观锁，非阻塞，机器指令等关键词放到一起讲解。可能会有很多朋友在秒杀场景的架构设计中见到了 Redis，本质上便是利用了 Redis 分布式共享内存的特性以及一系列的 CAS 指令。还记得在 4.1 中通过 redisTemplate.opsForValue()或者 redisTemplate.boundValueOps() 可以得到一个 ValueOperations 或 BoundValueOperations 接口 (以值为字符串的操作接口为例)，这些接口除了提供了基础操作外，还提供了一系列 CAS 操作，也可以放到 RedisTemplate 中一起理解。</p>
-<p>常用的 API 列举：</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:left">ValueOperations API</th>
-<th style="text-align:left">原生 Redis 指令</th>
-<th style="text-align:left">说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left">Boolean setIfAbsent(K key, V value)</td>
-<td style="text-align:left">SETNX key value</td>
-<td style="text-align:left">将 <code>key</code> 的值设为 <code>value</code> ，当且仅当 <code>key</code> 不存在。设置成功，返回 <code>1</code> ， 设置失败，返回 <code>0</code> 。</td>
-</tr>
-<tr>
-<td style="text-align:left">V getAndSet(K key, V value)</td>
-<td style="text-align:left">GETSET key value</td>
-<td style="text-align:left">将给定 <code>key</code> 的值设为 <code>value</code> ，并返回 <code>key</code> 的旧值 (old value)。</td>
-</tr>
-<tr>
-<td style="text-align:left">Long increment(K key, long delta)/Double increment(K key, double delta)</td>
-<td style="text-align:left">INCR/INCRBY/INCRBYFLOAT</td>
-<td style="text-align:left">将 <code>key</code> 所储存的值加上增量 <code>increment</code> 。 如果 <code>key</code> 不存在，那么 <code>key</code> 的值会先被初始化为 <code>0</code> ，然后再执行 INCR/INCRBY/INCRBYFLOAT 命令。线程安全的 +</td>
-</tr>
-</tbody>
-</table>
-<p>关于 CAS 的理解可以参考我之前的文章 <a href="https://www.cnkirito.moe/2017/03/12/java%E5%B9%B6%E5%8F%91%E5%AE%9E%E8%B7%B5--ConcurrentHashMap%E4%B8%8ECAS/" target="_blank" rel="noopener">java 并发实践 –CAS</a> 或者其他博文。</p>
-<h3 id="4-4-发布订阅"><a href="#4-4-发布订阅" class="headerlink" title="4.4 发布订阅"></a>4.4 发布订阅</h3><p>redis 之所以被冠以银弹，万金油的称号，关键在于其实现的功能真是太多了，甚至实现了一部分中间件队列的功能，其内置的 channel 机制，可以用于实现分布式的队列和广播。</p>
-<p>RedisTemplate 提供了 convertAndSend()功能，用于发送消息，与 RedisMessageListenerContainer 配合接收，便实现了一个简易的发布订阅。如果想要使用 Redis 实现发布订阅，可以参考我之前的文章。<a href="https://www.cnkirito.moe/2017/09/13/event-2/" target="_blank" rel="noopener"> 浅析分布式下的事件驱动机制</a></p>
-<h3 id="4-5-Lua-脚本"><a href="#4-5-Lua-脚本" class="headerlink" title="4.5 Lua 脚本"></a>4.5 Lua 脚本</h3><p>RedisTemplate 中包含了这样一个 Lua 执行器，意味着我们可以使用 RedisTemplate 执行 Lua 脚本。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> ScriptExecutor&lt;K&gt; scriptExecutor;</span><br></pre></td></tr></table></figure>
-<p>Lua 这门语言也非常有意思，小巧而精悍，有兴趣的朋友可以去了解一下 nginx+lua 开发，使用 openResty 框架。而 Redis 内置了 Lua 的解析器，由于 Redis 单线程的特性（不严谨），可以使用 Lua 脚本，完成一些线程安全的符合操作（CAS 操作仅仅只能保证单个操作的线程安全，无法保证复合操作，如果你有这样的需求，可以考虑使用 Redis+Lua 脚本）。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">execute</span><span class="params">(RedisScript&lt;T&gt; script, List&lt;K&gt; keys, Object... args)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">return</span> scriptExecutor.execute(script, keys, args);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上述操作便可以完成对 Lua 脚本的调用。这儿有一个简单的示例，使用 Redis+Lua 脚本实现分布式的应用限流。<a href="https://www.cnkirito.moe/2017/03/18/%E5%88%86%E5%B8%83%E5%BC%8F%E9%99%90%E6%B5%81/" target="_blank" rel="noopener">分布式限流</a></p>
-<h3 id="5-总结"><a href="#5-总结" class="headerlink" title="5 总结"></a>5 总结</h3><p>Spring Data Redis 系列的第一篇，介绍了 spring-data 对 redis 操作的封装，顺带了解 redis 具备的一系列特性，如果你对 redis 的理解还仅仅停留在它是一个分布式的 key-value 数据库，那么相信现在你一定会感叹其竟然如此强大。后续将会对缓存在项目中的应用以及 spring-boot-starter-data-redis 进一步解析。</p>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
-</div>
-
-    <a data-url="https://lexburner.github.io/spring-data-redis-1/" data-id="ck33rjlln008ko59esghk2vnb" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://lexburner.github.io/spring-data-redis-2/" data-id="ck3poyazg008ssg9eprz0b0hy" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -2573,6 +2524,25 @@ ga('send', 'pageview');
                     <li>
                         
                         <!-- <div class="item-thumbnail">
+                            <a href="/dubbo-nacos-stability/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div> -->
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
+                            <p class="item-title"><a href="/dubbo-nacos-stability/" class="title">Dubbo 稳定性案例：Nacos 注册中心可用性问题复盘</a></p>
+                            <p class="item-date"><time datetime="2019-12-02T13:44:00.000Z" itemprop="datePublished">2019-12-02</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <!-- <div class="item-thumbnail">
                             <a href="/dubbo-gracefully-startup/" class="thumbnail">
     
     
@@ -2646,25 +2616,6 @@ ga('send', 'pageview');
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <!-- <div class="item-thumbnail">
-                            <a href="/dubbo-gracefully-shutdown/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div> -->
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/RPC/">RPC</a></p>
-                            <p class="item-title"><a href="/dubbo-gracefully-shutdown/" class="title">一文聊透 Dubbo 优雅停机</a></p>
-                            <p class="item-date"><time datetime="2019-09-29T14:46:55.000Z" itemprop="datePublished">2019-09-29</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -2674,7 +2625,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-并发合集/">JAVA 并发合集</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA/">JAVA</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-并发合集/">JAVA 并发合集</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JWT/">JWT</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Kong/">Kong</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RPC/">RPC</a><span class="category-list-count">24</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Cloud/">Spring Cloud</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Data-Redis/">Spring Data Redis</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security/">Spring Security</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Security-OAuth2/">Spring Security OAuth2</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-Session/">Spring Session</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/响应式编程/">响应式编程</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/性能挑战赛/">性能挑战赛</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术杂谈/">技术杂谈</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构设计/">架构设计</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/规则引擎/">规则引擎</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/领域驱动设计/">领域驱动设计</a><span class="category-list-count">2</span></li></ul>
         </div>
     </div>
 
@@ -2683,7 +2634,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">十一月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">一月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">十一月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">一月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">3</span></li></ul>
         </div>
     </div>
 
